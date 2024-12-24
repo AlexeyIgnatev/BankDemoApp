@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1050372104724",
+    "project_id": "esom-bank",
+    "storage_bucket": "esom-bank.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1050372104724:android:868f31fc14251c4a52bd01",
+        "android_client_info": {
+          "package_name": "com.esom.bank"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAix3VyUsf0VrnFlKWvM03t8zrFTim5b8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

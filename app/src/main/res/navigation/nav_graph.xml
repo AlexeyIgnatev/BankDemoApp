@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainFragment">
+
+    <action
+        android:id="@+id/startMainFragment"
+        app:destination="@id/mainFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.esom.bank.screens.main.MainFragment"
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_main" />
+
+    <action
+        android:id="@+id/startSwapFragment"
+        app:destination="@id/swapFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
+        android:id="@+id/swapFragment"
+        android:name="com.esom.bank.screens.swap.SwapFragment"
+        android:label="fragment_swap"
+        tools:layout="@layout/fragment_swap">
+        <argument
+            android:name="direction"
+            android:defaultValue="0"
+            app:argType="integer" />
+    </fragment>
+
+    <action
+        android:id="@+id/startTransferFragment"
+        app:destination="@id/transferFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
+        android:id="@+id/transferFragment"
+        android:name="com.esom.bank.screens.transfer.TransferFragment"
+        android:label="fragment_transfer"
+        tools:layout="@layout/fragment_transfer" />
+
+    <action
+        android:id="@+id/startReceiveFragment"
+        app:destination="@id/receiveFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
+        android:id="@+id/receiveFragment"
+        android:name="com.esom.bank.screens.receive.ReceiveFragment"
+        android:label="fragment_receive"
+        tools:layout="@layout/fragment_receive" />
+
+</navigation>

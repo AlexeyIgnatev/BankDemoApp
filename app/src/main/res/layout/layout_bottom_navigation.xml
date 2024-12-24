@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/_54dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/wallet_btn"
+        android:layout_width="@dimen/_0dp"
+        android:layout_height="match_parent"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintEnd_toStartOf="@id/activity_btn"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/ic_wallet"
+            android:layout_width="@dimen/_25dp"
+            android:layout_height="@dimen/_25dp"
+            android:layout_marginTop="@dimen/_7dp"
+            android:src="@drawable/ic_tab_wallet"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/wallet_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/semi_bold"
+            android:includeFontPadding="false"
+            android:text="Кошелек"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ic_wallet" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/activity_btn"
+        android:layout_width="@dimen/_0dp"
+        android:layout_height="match_parent"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintEnd_toStartOf="@id/browser_btn"
+        app:layout_constraintStart_toEndOf="@id/wallet_btn">
+
+        <ImageView
+            android:id="@+id/ic_activity"
+            android:layout_width="@dimen/_25dp"
+            android:layout_height="@dimen/_25dp"
+            android:layout_marginTop="@dimen/_7dp"
+            android:src="@drawable/ic_tab_activity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/activity_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/semi_bold"
+            android:includeFontPadding="false"
+            android:text="Действия"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ic_activity" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/browser_btn"
+        android:layout_width="@dimen/_0dp"
+        android:layout_height="match_parent"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintEnd_toStartOf="@id/settings_btn"
+        app:layout_constraintStart_toEndOf="@id/activity_btn">
+
+        <ImageView
+            android:id="@+id/ic_browser"
+            android:layout_width="@dimen/_25dp"
+            android:layout_height="@dimen/_25dp"
+            android:layout_marginTop="@dimen/_7dp"
+            android:src="@drawable/ic_tab_browser"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/browser_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/semi_bold"
+            android:includeFontPadding="false"
+            android:text="DApps"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ic_browser" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/settings_btn"
+        android:layout_width="@dimen/_0dp"
+        android:layout_height="match_parent"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/browser_btn">
+
+        <ImageView
+            android:id="@+id/ic_settings"
+            android:layout_width="@dimen/_25dp"
+            android:layout_height="@dimen/_25dp"
+            android:layout_marginTop="@dimen/_7dp"
+            android:src="@drawable/ic_tab_settings"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/settings_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/semi_bold"
+            android:includeFontPadding="false"
+            android:text="Настройки"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ic_settings" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

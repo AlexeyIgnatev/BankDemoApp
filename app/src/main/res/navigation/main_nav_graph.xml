@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@id/walletFragment">
+
+    <action
+        android:id="@+id/startWalletFragment"
+        app:destination="@id/walletFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
+        android:id="@+id/walletFragment"
+        android:name="com.esom.bank.screens.wallet.WalletFragment"
+        android:label="fragment_wallet"
+        tools:layout="@layout/fragment_wallet" />
+
+    <action
+        android:id="@+id/startActionsFragment"
+        app:destination="@id/actionsFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
+        android:id="@+id/actionsFragment"
+        android:name="com.esom.bank.screens.actions.ActionsFragment"
+        android:label="fragment_actions"
+        tools:layout="@layout/fragment_actions" />
+
+    <action
+        android:id="@+id/startSettingsFragment"
+        app:destination="@id/settingsFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.esom.bank.screens.settigns.SettingsFragment"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings" />
+
+</navigation>

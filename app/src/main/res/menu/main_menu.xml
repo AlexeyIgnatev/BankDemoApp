@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/ic_wallet"
+        android:icon="@drawable/ic_tab_wallet"
+        android:title="Финансы"/>
+    <item
+        android:id="@+id/ic_activity"
+        android:icon="@drawable/ic_tab_activity"
+        android:title="Действия"/>
+    <item
+        android:id="@+id/ic_settings"
+        android:icon="@drawable/ic_tab_settings"
+        android:title="Настройки"/>
+</menu>

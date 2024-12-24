@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".screens.receive.ReceiveFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/back_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/_50dp"
+        android:background="?attr/selectableItemBackground"
+        android:paddingEnd="@dimen/_12dp"
+        app:layout_constraintBottom_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/title">
+
+        <ImageView
+            android:id="@+id/ic_back"
+            android:layout_width="@dimen/_40dp"
+            android:layout_height="@dimen/_50dp"
+            android:paddingVertical="@dimen/_16dp"
+            android:paddingStart="@dimen/_12dp"
+            android:src="@drawable/ic_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/semi_bold"
+            android:text="Назад"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ic_back"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_16dp"
+        android:fontFamily="@font/semi_bold"
+        android:text="Получить ЕСом"
+        android:textColor="@color/title"
+        android:textSize="@dimen/_20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/receive_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_12dp"
+        android:layout_marginTop="@dimen/_20dp"
+        app:cardBackgroundColor="@color/card_bg"
+        app:cardCornerRadius="@dimen/_12dp"
+        app:cardElevation="@dimen/_2dp"
+        app:layout_constraintTop_toBottomOf="@id/back_btn"
+        app:strokeWidth="@dimen/_0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:paddingBottom="@dimen/_16dp"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_marginEnd="16dp"
+                android:id="@+id/receive_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_16dp"
+                android:layout_marginTop="@dimen/_16dp"
+                android:fontFamily="@font/medium"
+                android:text="Для получения ЕСом, при переводе с другого аккаунта укажите в качестве получателя ваш номер телефона."
+                android:textColor="@color/subtitle"
+                android:textSize="@dimen/_18sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:layout_marginTop="@dimen/_12dp"
+                android:id="@+id/phone_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_16dp"
+                android:layout_marginBottom="@dimen/_16dp"
+                android:fontFamily="@font/semi_bold"
+                android:text="+996 (218) 000 74-14"
+                android:textColor="@color/title"
+                android:textSize="@dimen/_26sp"
+                app:layout_constraintTop_toBottomOf="@id/receive_title"
+                app:layout_constraintStart_toStartOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

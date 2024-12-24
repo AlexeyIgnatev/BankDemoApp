@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="window_bg">#F3F5F6</color>
+    <color name="card_bg">#FFFFFF</color>
+
+    <color name="title">#000000</color>
+    <color name="subtitle">#888888</color>
+    <color name="green">#009960</color>
+
+    <color name="edittext_title">#414141</color>
+    <color name="edittext_hint">#D8D8D8</color>
+    <color name="edittext_text">#000000</color>
+    <color name="checkbox">#37605F</color>
+
+    <color name="edittext_underline">#BCBCBC</color>
+
+    <color name="blue">#3175D9</color>
+    <color name="light_blue">#7999D9</color>
+
+    <color name="error">#EA4335</color>
+    <color name="yellow_btn_color_1">#F8D247</color>
+    <color name="yellow_btn_color_2">#FBBC05</color>
+
+    <color name="gray_btn_color_1">#27615F</color>
+    <color name="gray_btn_color_2">#1D4B4B</color>
+
+    <color name="share_item_company_name">#818898</color>
+    <color name="share_price_profit">#0FC283</color>
+    <color name="share_price_lose">#EF4444</color>
+
+    <color name="share_chart_shadow">#3342A06D</color>
+    <color name="back_btn_border">#EDF2F7</color>
+
+    <color name="tab_text_selected">#1D4B4B</color>
+    <color name="tab_text_not_selected">#6C757D</color>
+    <color name="tab_layout_bottom_line">#DFE2E4</color>
+    <color name="time_scale_active_bg">#205151</color>
+    <color name="time_scale_inactive_text">#A0AEC0</color>
+
+    <color name="baseline_top_color">#0FC283</color>
+    <color name="baseline_top_fill_color_1">#880FC283</color>
+    <color name="baseline_top_fill_color_2">#000FC283</color>
+
+    <color name="baseline_bottom_color">#EF4444</color>
+    <color name="baseline_bottom_fill_color_1">#00EF4444</color>
+    <color name="baseline_bottom_fill_color_2">#88EF4444</color>
+
+    <color name="sell_btn_bg">#EF4444</color>
+    <color name="buy_btn_bg">#1D4B4B</color>
+    <color name="fundamentals_subtitle">#A4ACB9</color>
+    <color name="fundamentals_divider">#DFE2E4</color>
+    <color name="card_stroke">#C1C7D0</color>
+    <color name="gray">#888888</color>
+
+    <color name="recommendation_hold">#fca903</color>
+    <color name="recommendation_buy">#0FC283</color>
+    <color name="recommendation_sell">#EF4444</color>
+    <color name="forgot_password">#ABABAB</color>
+    <color name="solid_box_bg">#F3F4EE</color>
+
+    <color name="user_stats_color">#03314B</color>
+    <color name="text_color_secondary">#62656A</color>
+
+    <color name="button_text_color">#FFFFFF</color>
+    <color name="button_bg_color">#3175D9</color>
+
+    <color name="disabled_btn_text_color">#B8BDCC</color>
+    <color name="disabled_btn_bg_color">#FAFBFD</color>
+
+    <color name="second_btn_color">#EBEFF7</color>
+    <color name="red">#ff193c</color>
+
+    <color name="compass_bg_color">#303030</color>
+    <color name="light_green">#00ff7b</color>
+
+    <color name="snackbar_error_bg_color">#3D0F14</color>
+    <color name="snackbar_error_text_color">#F5F0E7</color>
+</resources>

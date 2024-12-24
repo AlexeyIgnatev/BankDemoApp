@@ -1,0 +1,150 @@
+package com.esom.bank.screens.swap
+
+import android.graphics.PorterDuff
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import com.esom.bank.R
+import com.esom.bank.common.utils.format
+import com.esom.bank.common.utils.views.doOnApplyWindowInsets
+import com.esom.bank.common.utils.views.setOnUserTextChangeListener
+import com.esom.bank.common.utils.views.setTextProgrammatically
+import com.esom.bank.common.utils.views.showErrorSnackbar
+import com.esom.bank.common.utils.views.showSuccessSnackbar
+import com.esom.bank.databinding.FragmentSwapBinding
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
+class SwapFragment : Fragment() {
+    private lateinit var binding: FragmentSwapBinding
+
+    private val args: SwapFragmentArgs by navArgs()
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentSwapBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.root.doOnApplyWindowInsets { view, insets, rect ->
+            view.updatePadding(
+                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top,
+                bottom = rect.bottom + insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom,
+            )
+            insets
+        }
+
+        binding.backBtn.setOnClickListener {
+            findNavController().popBackStack()
+        }
+
+        binding.somInput.setOnUserTextChangeListener {
+            updateAmounts(it.toDoubleOrNull(), null)
+        }
+        binding.esomInput.setOnUserTextChangeListener {
+            updateAmounts(null, it.toDoubleOrNull())
+        }
+
+        if (args.direction == 0) {
+            binding.somLogoCard.setCardBackgroundColor(
+                ContextCompat.getColor(
+                    requireContext(), R.color.green
+                )
+            )
+            binding.somImage.setColorFilter(
+                ContextCompat.getColor(requireContext(), R.color.black),
+                PorterDuff.Mode.SRC_IN
+            )
+            binding.somSuffix.text = "Сом"
+            binding.somCurrencyName.text = "Фиатный\nСом"
+
+            binding.esomLogoCard.setCardBackgroundColor(
+                ContextCompat.getColor(
+                    requireContext(), R.color.blue
+                )
+            )
+            binding.esomImage.setColorFilter(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.white
+                ), PorterDuff.Mode.SRC_IN
+            )
+            binding.esomSuffix.text = "ЕСом"
+            binding.esomCurrencyName.text = "Електро\nСом"
+        } else {
+            binding.esomLogoCard.setCardBackgroundColor(
+                ContextCompat.getColor(
+                    requireContext(), R.color.green
+                )
+            )
+            binding.esomImage.setColorFilter(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.black
+                ), PorterDuff.Mode.SRC_IN
+            )
+            binding.esomSuffix.text = "Сом"
+            binding.esomCurrencyName.text = "Фиатный\nСом"
+
+            binding.somLogoCard.setCardBackgroundColor(
+                ContextCompat.getColor(
+                    requireContext(), R.color.blue
+                )
+            )
+            binding.somImage.setColorFilter(
+                ContextCompat.getColor(requireContext(), R.color.white),
+                PorterDuff.Mode.SRC_IN
+            )
+            binding.somSuffix.text = "ЕСом"
+            binding.somCurrencyName.text = "Електро\nСом"
+        }
+
+        binding.swapBtn.setOnClickListener {
+            val fromAmount = binding.somInput.text.toString().toDoubleOrNull()
+            val toAmount = binding.esomInput.text.toString().toDoubleOrNull()
+
+            if (fromAmount == null && toAmount == null) {
+                binding.root.showErrorSnackbar("Введите сумму для обмена")
+            } else {
+                binding.root.showSuccessSnackbar("Обмен совершён")
+                findNavController().popBackStack()
+            }
+        }
+    }
+
+    private fun updateAmounts(fromAmount: Double?, toAmount: Double?) {
+        if (fromAmount == null && toAmount == null) {
+            binding.somInput.setTextProgrammatically("")
+            binding.esomInput.setTextProgrammatically("")
+        } else if (fromAmount != null) {
+            val newToAmount = fromAmount * 0.999
+            val newSomText = fromAmount.format(2)
+            if (newSomText != binding.somInput.text.toString() && !binding.somInput.text.toString().endsWith(".")) {
+                binding.somInput.setTextProgrammatically(fromAmount.format(2))
+                binding.somInput.setSelection(fromAmount.format(2).length)
+            }
+            binding.esomInput.setTextProgrammatically(newToAmount.format(2))
+            binding.esomInput.setSelection(newToAmount.format(2).length)
+        } else if (toAmount != null) {
+            val newFromAmount = toAmount / 0.999
+            val newEsomTExt = toAmount.format(2)
+            if (newEsomTExt != binding.esomInput.text.toString() && !binding.esomInput.text.toString().endsWith(".")) {
+                binding.esomInput.setTextProgrammatically(toAmount.format(2))
+                binding.esomInput.setSelection(toAmount.format(2).length)
+            }
+            binding.somInput.setTextProgrammatically(newFromAmount.format(2))
+            binding.somInput.setSelection(newFromAmount.format(2).length)
+        }
+    }
+}

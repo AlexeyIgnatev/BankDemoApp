@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">BankDemoApp</string>
+    <string name="something_went_wrong">Что-то пошло не так</string>
+    <string name="server_error">Ошибка сервера</string>
+    <string name="check_internet">Проверьте интернет соединение</string>
+    <string name="need_auth">Ошибка авторизации. Вам необходимо заново авторизоваться в приложении</string>
+    <string name="invalid_login_or_password">Неверный логин или пароль</string>
+    <string name="invalid_credentials">Неверный телефон или пароль</string>
+    <string name="failure">Ошибка</string>
+    <string name="successful">Успех</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

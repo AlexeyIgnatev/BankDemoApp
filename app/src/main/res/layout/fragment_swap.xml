@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".screens.swap.SwapFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/back_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/_50dp"
+        android:background="?attr/selectableItemBackground"
+        android:paddingEnd="@dimen/_12dp"
+        app:layout_constraintBottom_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/title">
+
+        <ImageView
+            android:id="@+id/ic_back"
+            android:layout_width="@dimen/_40dp"
+            android:layout_height="@dimen/_50dp"
+            android:paddingVertical="@dimen/_16dp"
+            android:paddingStart="@dimen/_12dp"
+            android:src="@drawable/ic_back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/semi_bold"
+            android:text="Назад"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ic_back"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_16dp"
+        android:fontFamily="@font/semi_bold"
+        android:text="Обмен"
+        android:textColor="@color/title"
+        android:textSize="@dimen/_20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/send_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_12dp"
+        android:layout_marginTop="@dimen/_20dp"
+        android:fontFamily="@font/medium"
+        android:text="Отдаёте"
+        android:textColor="@color/subtitle"
+        android:textSize="@dimen/_18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/send_card"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_100dp"
+        android:layout_marginHorizontal="@dimen/_12dp"
+        android:layout_marginTop="@dimen/_12dp"
+        app:cardBackgroundColor="@color/card_bg"
+        app:cardCornerRadius="@dimen/_12dp"
+        app:cardElevation="@dimen/_2dp"
+        app:layout_constraintTop_toBottomOf="@id/send_title"
+        app:strokeWidth="@dimen/_0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/som_logo_card"
+                android:layout_width="@dimen/_50dp"
+                android:layout_height="@dimen/_50dp"
+                android:layout_marginStart="@dimen/_12dp"
+                app:cardBackgroundColor="?attr/colorPrimary"
+                app:cardCornerRadius="@dimen/_35dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:strokeWidth="@dimen/_0dp">
+
+                <ImageView
+                    android:id="@+id/som_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/_12dp"
+                    android:src="@drawable/ic_som" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/som_currency_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_12dp"
+                android:fontFamily="@font/semi_bold"
+                android:text="Фиатный\nСом"
+                android:textColor="@color/title"
+                android:textSize="@dimen/_18sp"
+                app:layout_constraintBottom_toBottomOf="@id/som_logo_card"
+                app:layout_constraintStart_toEndOf="@id/som_logo_card"
+                app:layout_constraintTop_toTopOf="@id/som_logo_card" />
+
+            <EditText
+                android:id="@+id/som_input"
+                android:layout_width="@dimen/_200dp"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:fontFamily="@font/medium"
+                android:gravity="center_vertical|end"
+                android:hint="0"
+                android:imeOptions="actionDone"
+                android:inputType="numberDecimal"
+                android:maxLines="1"
+                android:paddingEnd="@dimen/_82dp"
+                android:textColor="@color/title"
+                android:textColorHint="@color/subtitle"
+                android:textSize="@dimen/_22sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/som_suffix"
+                android:layout_marginEnd="@dimen/_12dp"
+                android:fontFamily="@font/medium"
+                android:textSize="@dimen/_22sp"
+                android:textColor="@color/title"
+                android:text="Сом"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="@dimen/_60dp"
+                android:layout_height="wrap_content"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <ImageView
+        android:id="@+id/double_arrow"
+        android:layout_width="@dimen/_40dp"
+        android:layout_height="@dimen/_40dp"
+        android:layout_marginTop="@dimen/_20dp"
+        android:src="@drawable/ic_double_arrow"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/send_card"
+        app:tint="@color/subtitle" />
+
+    <TextView
+        android:id="@+id/receive_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_12dp"
+        android:layout_marginTop="@dimen/_20dp"
+        android:fontFamily="@font/medium"
+        android:text="Получаете"
+        android:textColor="@color/subtitle"
+        android:textSize="@dimen/_18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/double_arrow" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/receive_card"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_100dp"
+        android:layout_marginHorizontal="@dimen/_12dp"
+        android:layout_marginTop="@dimen/_12dp"
+        app:cardBackgroundColor="@color/card_bg"
+        app:cardCornerRadius="@dimen/_12dp"
+        app:cardElevation="@dimen/_2dp"
+        app:layout_constraintTop_toBottomOf="@id/receive_title"
+        app:strokeWidth="@dimen/_0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/esom_logo_card"
+                android:layout_width="@dimen/_50dp"
+                android:layout_height="@dimen/_50dp"
+                android:layout_marginStart="@dimen/_12dp"
+                app:cardBackgroundColor="@color/blue"
+                app:cardCornerRadius="@dimen/_35dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:strokeWidth="@dimen/_0dp">
+
+                <ImageView
+                    android:id="@+id/esom_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/_12dp"
+                    android:src="@drawable/ic_som"
+                    app:tint="@color/white" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/esom_currency_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/_12dp"
+                android:fontFamily="@font/semi_bold"
+                android:text="Электро\nСом"
+                android:textColor="@color/title"
+                android:textSize="@dimen/_18sp"
+                app:layout_constraintBottom_toBottomOf="@id/esom_logo_card"
+                app:layout_constraintStart_toEndOf="@id/esom_logo_card"
+                app:layout_constraintTop_toTopOf="@id/esom_logo_card" />
+
+            <EditText
+                android:id="@+id/esom_input"
+                android:layout_width="@dimen/_200dp"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:fontFamily="@font/medium"
+                android:gravity="center_vertical|end"
+                android:hint="0"
+                android:inputType="numberDecimal"
+                android:imeOptions="actionDone"
+                android:maxLines="1"
+                android:paddingEnd="@dimen/_82dp"
+                android:textColor="@color/title"
+                android:textColorHint="@color/subtitle"
+                android:textSize="@dimen/_22sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/esom_suffix"
+                android:layout_marginEnd="@dimen/_12dp"
+                android:fontFamily="@font/medium"
+                android:textSize="@dimen/_22sp"
+                android:textColor="@color/title"
+                android:text="ЕСом"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_width="@dimen/_60dp"
+                android:layout_height="wrap_content"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/swap_btn"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_60dp"
+        android:layout_marginHorizontal="@dimen/_12dp"
+        android:layout_marginBottom="@dimen/_12dp"
+        app:cardBackgroundColor="@color/green"
+        app:cardCornerRadius="@dimen/_12dp"
+        app:cardElevation="@dimen/_0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:strokeWidth="@dimen/_0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/swap_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/semi_bold"
+                android:text="Обменять"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_22sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

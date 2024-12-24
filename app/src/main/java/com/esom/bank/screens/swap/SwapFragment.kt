@@ -9,9 +9,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.esom.bank.R
+import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
@@ -19,6 +21,7 @@ import com.esom.bank.common.utils.views.setTextProgrammatically
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentSwapBinding
+import com.esom.bank.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -26,6 +29,7 @@ class SwapFragment : Fragment() {
     private lateinit var binding: FragmentSwapBinding
 
     private val args: SwapFragmentArgs by navArgs()
+    private val model: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -116,9 +120,39 @@ class SwapFragment : Fragment() {
 
             if (fromAmount == null && toAmount == null) {
                 binding.root.showErrorSnackbar("Введите сумму для обмена")
-            } else {
-                binding.root.showSuccessSnackbar("Обмен совершён")
-                findNavController().popBackStack()
+            } else if (fromAmount != null && toAmount != null) {
+                if (args.direction == 0) {
+                    val somBalance = (model.myData.value as? UiState.Success)?.data?.balance ?: 0.0
+                    if (fromAmount <= somBalance) {
+                        if (model.swapRes.value !is UiState.Loading) {
+                            model.transferFromFiat(fromAmount)
+                        }
+                    } else {
+                        binding.root.showErrorSnackbar("Недостаточно Сом на балансе")
+                    }
+                } else {
+                    val tokenBalance = (model.tokenBalance.value as? UiState.Success)?.data ?: 0.0
+                    if (fromAmount <= tokenBalance) {
+                        if (model.swapRes.value !is UiState.Loading) {
+                            model.transferToFiat(fromAmount)
+                        }
+                    } else {
+                        binding.root.showErrorSnackbar("Недостаточно ЕСом на балансе")
+                    }
+                }
+            }
+        }
+
+        model.swapRes.observe(viewLifecycleOwner) {
+            when(it) {
+                is UiState.Loading -> {}
+                is UiState.Error -> {
+                    binding.root.showErrorSnackbar(it.message)
+                }
+                is UiState.Success -> {
+                    binding.root.showSuccessSnackbar("Обмен совершён")
+                    findNavController().popBackStack()
+                }
             }
         }
     }

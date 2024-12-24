@@ -3,25 +3,31 @@ package com.esom.bank.activities
 import android.os.Bundle
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.esom.bank.R
 import com.esom.bank.databinding.ActivityMainBinding
+import com.esom.bank.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+
+    private val model: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
-        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = true
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars =
+            true
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -32,6 +38,31 @@ class MainActivity : AppCompatActivity() {
                 navController.popBackStack()
             } else {
                 moveTaskToBack(true)
+            }
+        }
+
+        model.updateMyData()
+        model.updateAllUsers()
+        model.updateTokenBalance()
+
+        model.myData.observe(this) {
+            lifecycleScope.launch {
+                delay(1000L)
+                model.updateMyData()
+            }
+        }
+
+        model.allUsers.observe(this) {
+            lifecycleScope.launch {
+                delay(1000L)
+                model.updateAllUsers()
+            }
+        }
+
+        model.tokenBalance.observe(this) {
+            lifecycleScope.launch {
+                delay(1000L)
+                model.updateTokenBalance()
             }
         }
     }

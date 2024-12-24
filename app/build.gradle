@@ -20,7 +20,8 @@ android {
         versionCode 1
         versionName "1.0"
 
-        buildConfigField "String", "RPC_URL", "\"http://116.203.181.216:8545/\""
+        buildConfigField "String", "RPC_URL", "\"http://116.203.181.216:8545\""
+        buildConfigField "String", "TOKEN_ADDRESS", "\"0x3B72bed884B366ECe576f88b61b83812C3d0eaf0\""
         buildConfigField "int", "USER_ID", "1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -86,6 +87,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-crashlytics-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation 'com.google.firebase:firebase-database-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
 
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
@@ -122,4 +124,6 @@ dependencies {
     implementation 'ru.tinkoff.decoro:decoro:1.6.0'
     implementation 'androidx.hilt:hilt-navigation-fragment:1.0.0'
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+
+    implementation 'org.web3j:core:5.0.0'
 }

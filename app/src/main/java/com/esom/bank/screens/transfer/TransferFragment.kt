@@ -7,15 +7,17 @@ import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentTransferBinding
+import com.esom.bank.screens.main.MainViewModel
+import com.esom.bank.screens.settigns.SettingsFragment.Companion.PHONE_NUMBER
 import dagger.hilt.android.AndroidEntryPoint
 import ru.tinkoff.decoro.MaskImpl
-import ru.tinkoff.decoro.slots.PredefinedSlots
-import ru.tinkoff.decoro.slots.Slot
 import ru.tinkoff.decoro.watchers.FormatWatcher
 import ru.tinkoff.decoro.watchers.MaskFormatWatcher
 
@@ -24,6 +26,8 @@ import ru.tinkoff.decoro.watchers.MaskFormatWatcher
 class TransferFragment : Fragment() {
     private lateinit var binding: FragmentTransferBinding
 
+    private val model: MainViewModel by activityViewModels()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -31,29 +35,6 @@ class TransferFragment : Fragment() {
         binding = FragmentTransferBinding.inflate(inflater, container, false)
         return binding.root
     }
-
-    val PHONE_NUMBER: Array<Slot> = arrayOf(
-        PredefinedSlots.hardcodedSlot('+'),
-        PredefinedSlots.hardcodedSlot('9'),
-        PredefinedSlots.hardcodedSlot('9'),
-        PredefinedSlots.hardcodedSlot('6'),
-        PredefinedSlots.hardcodedSlot(' ').withTags(Slot.TAG_DECORATION),
-        PredefinedSlots.hardcodedSlot('(').withTags(Slot.TAG_DECORATION),
-        PredefinedSlots.digit(),
-        PredefinedSlots.digit(),
-        PredefinedSlots.digit(),
-        PredefinedSlots.hardcodedSlot(')').withTags(Slot.TAG_DECORATION),
-        PredefinedSlots.hardcodedSlot(' ').withTags(Slot.TAG_DECORATION),
-        PredefinedSlots.digit(),
-        PredefinedSlots.digit(),
-        PredefinedSlots.digit(),
-        PredefinedSlots.hardcodedSlot('-').withTags(Slot.TAG_DECORATION),
-        PredefinedSlots.digit(),
-        PredefinedSlots.digit(),
-        PredefinedSlots.hardcodedSlot('-').withTags(Slot.TAG_DECORATION),
-        PredefinedSlots.digit(),
-        PredefinedSlots.digit(),
-    )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -82,8 +63,42 @@ class TransferFragment : Fragment() {
             } else if (phone.length != PHONE_NUMBER.size) {
                 binding.root.showErrorSnackbar("Введите номер телефона получателя")
             } else {
-                binding.root.showSuccessSnackbar("Перевод совершён")
-                findNavController().popBackStack()
+                val tokenBalance = (model.tokenBalance.value as? UiState.Success)?.data ?: 0.0
+
+                if (tokenBalance < sum) {
+                    binding.root.showErrorSnackbar("Недостаточно ЕСом на балансе")
+                    return@setOnClickListener
+                }
+
+                val allUsers = (model.allUsers.value as? UiState.Success)?.data ?: emptyList()
+
+                val user = allUsers.firstOrNull {
+                    it.phone == phone.filter { it in "+0123456789" }
+                }
+
+                if (user == null) {
+                    binding.root.showErrorSnackbar("Пользователь с таким номером не найден")
+                    return@setOnClickListener
+                }
+
+                if (model.transferRes.value !is UiState.Loading) {
+                    model.transferToUser(sum, user.address)
+                }
+            }
+        }
+
+        model.transferRes.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> {}
+
+                is UiState.Error -> {
+                    binding.root.showErrorSnackbar(it.message)
+                }
+
+                is UiState.Success -> {
+                    binding.root.showSuccessSnackbar("Перевод совершён")
+                    findNavController().popBackStack()
+                }
             }
         }
     }

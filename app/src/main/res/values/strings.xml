@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BankDemoApp</string>
+    <string name="app_name">Демо ЕСом</string>
     <string name="something_went_wrong">Что-то пошло не так</string>
     <string name="server_error">Ошибка сервера</string>
     <string name="check_internet">Проверьте интернет соединение</string>

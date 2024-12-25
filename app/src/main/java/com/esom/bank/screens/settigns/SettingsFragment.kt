@@ -1,5 +1,8 @@
 package com.esom.bank.screens.settigns
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +14,7 @@ import androidx.fragment.app.activityViewModels
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
+import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentSettingsBinding
 import com.esom.bank.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -56,6 +60,17 @@ class SettingsFragment : Fragment() {
                         "${it.data.name}\n${it.data.phone.formatPhone()}\n${it.data.email}"
                 }
             }
+        }
+
+        binding.copyPhoneBtn.setOnClickListener {
+            val phone =
+                (model.myData.value as? UiState.Success)?.data?.phone ?: return@setOnClickListener
+            val clipboard: ClipboardManager =
+                requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText(phone, phone)
+            clipboard.setPrimaryClip(clip)
+
+            binding.root.showSuccessSnackbar("Номер телефона скопирован")
         }
     }
 

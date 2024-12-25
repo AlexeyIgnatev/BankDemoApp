@@ -7,6 +7,7 @@ import com.esom.bank.common.model.ErrorResponse
 import com.esom.bank.screens.main.dto.AdminDto
 import com.esom.bank.screens.main.dto.UserDto
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ interface MainCloudDataSource {
     fun changeBalance(userId: Int, newBalance: Double): Flow<ApiResponse<Unit>>
     fun getAllUsers(): Flow<ApiResponse<List<UserDto>>>
     fun getAdmin(): Flow<ApiResponse<AdminDto>>
+    fun changeSpecialDeposit(amount: Double): Flow<ApiResponse<Unit>>
 }
 
 class MainCloudDataSourceImpl @Inject constructor() : MainCloudDataSource {
@@ -74,6 +76,15 @@ class MainCloudDataSourceImpl @Inject constructor() : MainCloudDataSource {
             val data = Firebase.database.reference.child("admin").get().await()
             val admin = data.getValue(AdminDto::class.java)!!
             emit(ApiResponse.Success(admin, 200))
+        } catch (e: Exception) {
+            emit(ApiResponse.Error(R.string.something_went_wrong, ErrorResponse(message = e.message)))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    override fun changeSpecialDeposit(amount: Double): Flow<ApiResponse<Unit>> = flow {
+        try {
+            Firebase.database.reference.child("specialDeposit").setValue(ServerValue.increment(amount)).await()
+            emit(ApiResponse.Success(Unit, 200))
         } catch (e: Exception) {
             emit(ApiResponse.Error(R.string.something_went_wrong, ErrorResponse(message = e.message)))
         }

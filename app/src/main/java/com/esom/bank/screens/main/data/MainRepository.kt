@@ -83,6 +83,12 @@ class MainRepositoryImpl @Inject constructor(
             return@flow
         }
 
+        val changeSpecialDepositRes = mainCloudDataSource.changeSpecialDeposit(amount).last()
+        if (changeSpecialDepositRes is ApiResponse.Error) {
+            emit(UiState.Error(changeSpecialDepositRes.toString(context)))
+            return@flow
+        }
+
         val transferFromFiatRes = blockchainCloudDataSource.transferFromFiat(
             meRes.data.address,
             BigInteger((amount * 0.97 * 10.0.pow(18)).toDecimalNotationString()),
@@ -122,6 +128,13 @@ class MainRepositoryImpl @Inject constructor(
             emit(UiState.Error(changeConfigRes.toString(context)))
             return@flow
         }
+
+        val changeSpecialDepositRes = mainCloudDataSource.changeSpecialDeposit(-(amount * 0.97)).last()
+        if (changeSpecialDepositRes is ApiResponse.Error) {
+            emit(UiState.Error(changeSpecialDepositRes.toString(context)))
+            return@flow
+        }
+
         emit(UiState.Success(Unit))
     }
 

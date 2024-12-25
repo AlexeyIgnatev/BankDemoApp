@@ -85,7 +85,7 @@ class MainRepositoryImpl @Inject constructor(
 
         val transferFromFiatRes = blockchainCloudDataSource.transferFromFiat(
             meRes.data.address,
-            BigInteger((amount * 0.999 * 10.0.pow(18)).toDecimalNotationString()),
+            BigInteger((amount * 0.97 * 10.0.pow(18)).toDecimalNotationString()),
             (adminRes as ApiResponse.Success).data.privateKey
         ).last()
 
@@ -114,7 +114,7 @@ class MainRepositoryImpl @Inject constructor(
         }
 
         val balance = meRes.data.balance
-        val newBalance = balance + amount * 0.999
+        val newBalance = balance + amount * 0.97
 
         val changeConfigRes =
             mainCloudDataSource.changeBalance(BuildConfig.USER_ID, newBalance).last()

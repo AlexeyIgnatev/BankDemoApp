@@ -162,7 +162,7 @@ class SwapFragment : Fragment() {
             binding.somInput.setTextProgrammatically("")
             binding.esomInput.setTextProgrammatically("")
         } else if (fromAmount != null) {
-            val newToAmount = fromAmount * 0.999
+            val newToAmount = fromAmount * 0.97
             val newSomText = fromAmount.format(2)
             if (newSomText != binding.somInput.text.toString() && !binding.somInput.text.toString().endsWith(".")) {
                 binding.somInput.setTextProgrammatically(fromAmount.format(2))
@@ -171,7 +171,7 @@ class SwapFragment : Fragment() {
             binding.esomInput.setTextProgrammatically(newToAmount.format(2))
             binding.esomInput.setSelection(newToAmount.format(2).length)
         } else if (toAmount != null) {
-            val newFromAmount = toAmount / 0.999
+            val newFromAmount = toAmount / 0.97
             val newEsomTExt = toAmount.format(2)
             if (newEsomTExt != binding.esomInput.text.toString() && !binding.esomInput.text.toString().endsWith(".")) {
                 binding.esomInput.setTextProgrammatically(toAmount.format(2))

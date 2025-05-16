@@ -68,7 +68,8 @@ class TransferFragment : Fragment() {
             } else if (phone.length != PHONE_NUMBER.size) {
                 binding.root.showErrorSnackbar("Введите номер телефона получателя")
             } else {
-                val tokenBalance = (model.tokenBalance.value as? UiState.Success)?.data ?: 0.0
+                val tokenBalance =
+                    (model.myData.value as? UiState.Success)?.data?.balance?.esomBalance ?: 0.0
 
                 if (tokenBalance < sum) {
                     binding.root.showErrorSnackbar("Недостаточно ЕСом на балансе")

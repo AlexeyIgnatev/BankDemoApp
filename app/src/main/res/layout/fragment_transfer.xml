@@ -221,7 +221,7 @@
                 android:background="@null"
                 android:fontFamily="@font/medium"
                 android:gravity="center_vertical|start"
-                android:hint="+996 (900) 000 00-00"
+                android:hint="+996 (000) 000-000"
                 android:imeOptions="actionDone"
                 android:inputType="phone"
                 android:maxLines="1"

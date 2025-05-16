@@ -20,9 +20,6 @@ class MainViewModel @Inject constructor(
     private val _myData = MutableLiveData<UiState<UserModel>>()
     val myData: LiveData<UiState<UserModel>> = _myData
 
-    private val _tokenBalance = MutableLiveData<UiState<Double>>()
-    val tokenBalance: LiveData<UiState<Double>> = _tokenBalance
-
     private val _swapRes = SingleLiveEvent<UiState<Unit>>()
     val swapRes: LiveData<UiState<Unit>> = _swapRes
 

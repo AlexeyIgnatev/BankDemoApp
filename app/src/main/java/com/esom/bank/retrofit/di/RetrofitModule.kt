@@ -2,6 +2,7 @@ package com.esom.bank.retrofit.di
 
 import com.esom.bank.BuildConfig
 import com.esom.bank.retrofit.api.ServerApi
+import com.esom.bank.retrofit.interceptor.AuthInterceptor
 import com.esom.bank.retrofit.interceptor.InternetInterceptor
 import com.esom.bank.retrofit.service.InternetConnectionService
 import com.esom.bank.retrofit.service.InternetConnectionServiceImpl
@@ -43,7 +44,8 @@ object RetrofitModule {
 
     @Provides
     fun createHttpClient(
-        internetInterceptor: InternetInterceptor
+        internetInterceptor: InternetInterceptor,
+        authInterceptor: AuthInterceptor
     ): OkHttpClient {
         val httpClientBuilder = OkHttpClient.Builder()
 
@@ -51,6 +53,7 @@ object RetrofitModule {
         httpClientBuilder.writeTimeout(TIMEOUT_FOR_REQUEST, TimeUnit.SECONDS)
 
         httpClientBuilder.addInterceptor(internetInterceptor)
+        httpClientBuilder.addInterceptor(authInterceptor)
 
         if (BuildConfig.DEBUG) {
             val logging = HttpLoggingInterceptor()

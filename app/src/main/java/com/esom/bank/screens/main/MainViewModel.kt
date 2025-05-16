@@ -29,6 +29,8 @@ class MainViewModel @Inject constructor(
     private val _transferRes = SingleLiveEvent<UiState<Unit>>()
     val transferRes: LiveData<UiState<Unit>> = _transferRes
 
+    fun isAuthenticated() = mainRepository.isAuthenticated()
+
     fun authenticate(login: String, password: String) {
         _myData.value = UiState.Loading()
         mainRepository.authenticate(login, password).onEach {

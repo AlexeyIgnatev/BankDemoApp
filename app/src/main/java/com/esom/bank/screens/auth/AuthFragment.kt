@@ -9,13 +9,12 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentAuthBinding
-import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -69,10 +68,15 @@ class AuthFragment : Fragment() {
                     binding.logInText.isVisible = true
                     binding.indicator.isVisible = false
 
-                    findParentNavController().popBackStack()
-                    findParentNavController().navigate(NavGraphDirections.startMainFragment())
+                    findNavController().popBackStack()
+                    findNavController().navigate(NavGraphDirections.startMainFragment())
                 }
             }
+        }
+
+        if (model.isAuthenticated()) {
+            findNavController().popBackStack()
+            findNavController().navigate(NavGraphDirections.startMainFragment())
         }
     }
 }

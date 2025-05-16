@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 interface MainRepository {
+    fun isAuthenticated(): Boolean
     fun authenticate(login: String, password: String): Flow<UiState<UserModel>>
     fun getUserInfo(): Flow<UiState<UserModel>>
 
@@ -36,6 +37,9 @@ class MainRepositoryImpl @Inject constructor(
     private val mainCloudDataSource: MainCloudDataSource,
     private val authLocalDataSource: AuthLocalDataSource
 ) : MainRepository {
+    override fun isAuthenticated(): Boolean =
+        authLocalDataSource.getLogin() != null && authLocalDataSource.getPassword() != null
+
     override fun authenticate(login: String, password: String): Flow<UiState<UserModel>> = flow {
         authLocalDataSource.setLogin(login)
         authLocalDataSource.setPassword(password)
@@ -72,7 +76,7 @@ class MainRepositoryImpl @Inject constructor(
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
             }
         }
-    
+
     override fun transferToUser(amount: Double, phone: String): Flow<UiState<Unit>> =
         mainCloudDataSource.transfer(amount, phone).map { response ->
             when (response) {

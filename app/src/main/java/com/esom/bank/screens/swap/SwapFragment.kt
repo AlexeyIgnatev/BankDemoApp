@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -115,6 +116,10 @@ class SwapFragment : Fragment() {
         }
 
         binding.swapBtn.setOnClickListener {
+            if (model.swapRes.value is UiState.Loading) {
+                return@setOnClickListener
+            }
+
             val fromAmount = binding.somInput.text.toString().toDoubleOrNull()
             val toAmount = binding.esomInput.text.toString().toDoubleOrNull()
 
@@ -147,13 +152,21 @@ class SwapFragment : Fragment() {
 
         model.swapRes.observe(viewLifecycleOwner) {
             when (it) {
-                is UiState.Loading -> {}
+                is UiState.Loading -> {
+                    binding.swapText.isVisible = false
+                    binding.indicator.isVisible = true
+                }
+
                 is UiState.Error -> {
                     binding.root.showErrorSnackbar(it.message)
+                    binding.swapText.isVisible = true
+                    binding.indicator.isVisible = false
                 }
 
                 is UiState.Success -> {
                     binding.root.showSuccessSnackbar("Обмен совершён")
+                    binding.swapText.isVisible = true
+                    binding.indicator.isVisible = false
                     findNavController().popBackStack()
                 }
             }

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -55,6 +56,10 @@ class TransferFragment : Fragment() {
         watcher.installOn(binding.receiverInput)
 
         binding.sendBtn.setOnClickListener {
+            if (model.transferRes.value is UiState.Loading) {
+                return@setOnClickListener
+            }
+
             val sum = binding.somInput.text.toString().toDoubleOrNull()
             val phone = binding.receiverInput.text.toString()
 
@@ -78,14 +83,21 @@ class TransferFragment : Fragment() {
 
         model.transferRes.observe(viewLifecycleOwner) {
             when (it) {
-                is UiState.Loading -> {}
+                is UiState.Loading -> {
+                    binding.sendText.isVisible = false
+                    binding.indicator.isVisible = true
+                }
 
                 is UiState.Error -> {
                     binding.root.showErrorSnackbar(it.message)
+                    binding.sendText.isVisible = true
+                    binding.indicator.isVisible = false
                 }
 
                 is UiState.Success -> {
                     binding.root.showSuccessSnackbar("Перевод совершён")
+                    binding.sendText.isVisible = true
+                    binding.indicator.isVisible = false
                     findNavController().popBackStack()
                 }
             }

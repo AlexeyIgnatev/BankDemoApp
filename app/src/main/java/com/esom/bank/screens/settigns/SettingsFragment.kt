@@ -99,8 +99,6 @@ class SettingsFragment : Fragment() {
             PredefinedSlots.hardcodedSlot('-').withTags(Slot.TAG_DECORATION),
             PredefinedSlots.digit(),
             PredefinedSlots.digit(),
-            PredefinedSlots.hardcodedSlot('-').withTags(Slot.TAG_DECORATION),
-            PredefinedSlots.digit(),
             PredefinedSlots.digit(),
         )
     }

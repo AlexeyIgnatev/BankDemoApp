@@ -36,7 +36,6 @@ class MainViewModel @Inject constructor(
     }
 
     fun updateUserData() {
-        _myData.value = UiState.Loading()
         mainRepository.getUserInfo().onEach {
             _myData.value = it
         }.launchIn(viewModelScope)

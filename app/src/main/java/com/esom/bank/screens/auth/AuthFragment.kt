@@ -43,11 +43,13 @@ class AuthFragment : Fragment() {
             insets
         }
 
-        binding.loginInput.setOnClickListener {
-            model.authenticate(
-                binding.loginInput.editText!!.text.toString(),
-                binding.passwordInput.editText!!.text.toString(),
-            )
+        binding.logInBtn.setOnClickListener {
+            if (model.myData.value !is UiState.Loading) {
+                model.authenticate(
+                    binding.loginInput.editText!!.text.toString(),
+                    binding.passwordInput.editText!!.text.toString(),
+                )
+            }
         }
 
         model.myData.observe(viewLifecycleOwner) {

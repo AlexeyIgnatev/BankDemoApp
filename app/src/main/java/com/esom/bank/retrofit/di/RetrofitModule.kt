@@ -34,7 +34,7 @@ object RetrofitModule {
     ): ServerApi {
         return Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl(BuildConfig.RPC_URL)
+            .baseUrl(BuildConfig.BACKEND_URL)
             .client(httpClient)
             .build()
             .create(ServerApi::class.java)

@@ -19,8 +19,6 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
-    private val model: MainViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -38,31 +36,6 @@ class MainActivity : AppCompatActivity() {
                 navController.popBackStack()
             } else {
                 moveTaskToBack(true)
-            }
-        }
-
-        model.updateMyData()
-        model.updateAllUsers()
-        model.updateTokenBalance()
-
-        model.myData.observe(this) {
-            lifecycleScope.launch {
-                delay(1000L)
-                model.updateMyData()
-            }
-        }
-
-        model.allUsers.observe(this) {
-            lifecycleScope.launch {
-                delay(1000L)
-                model.updateAllUsers()
-            }
-        }
-
-        model.tokenBalance.observe(this) {
-            lifecycleScope.launch {
-                delay(1000L)
-                model.updateTokenBalance()
             }
         }
     }

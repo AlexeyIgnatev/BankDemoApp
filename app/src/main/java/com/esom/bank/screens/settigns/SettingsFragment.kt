@@ -57,7 +57,7 @@ class SettingsFragment : Fragment() {
 
                 is UiState.Success -> {
                     binding.phoneText.text =
-                        "${it.data.name}\n${it.data.phone.formatPhone()}\n${it.data.email}"
+                        "${it.data.firstName} ${it.data.middleName} ${it.data.lastName}\n${it.data.phone.formatPhone()}\n${it.data.email}"
                 }
             }
         }
@@ -77,7 +77,7 @@ class SettingsFragment : Fragment() {
     companion object {
         fun String.formatPhone(): String {
             val mask: Mask = MaskImpl(PHONE_NUMBER, true)
-            mask.insertFront(replace("+996", ""))
+            mask.insertFront(replace(" ", "").replace("+996", ""))
             return mask.toString()
         }
 

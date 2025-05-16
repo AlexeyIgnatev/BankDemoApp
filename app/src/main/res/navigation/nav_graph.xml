@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mainFragment">
+    app:startDestination="@id/authFragment">
 
     <action
         android:id="@+id/startMainFragment"
@@ -65,5 +65,21 @@
         android:name="com.esom.bank.screens.receive.ReceiveFragment"
         android:label="fragment_receive"
         tools:layout="@layout/fragment_receive" />
+
+    <action
+        android:id="@+id/startAuthFragment"
+        app:destination="@id/authFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true"/>
+
+    <fragment
+        android:id="@+id/authFragment"
+        android:name="com.esom.bank.screens.auth.AuthFragment"
+        android:label="fragment_auth"
+        tools:layout="@layout/fragment_auth" />
 
 </navigation>

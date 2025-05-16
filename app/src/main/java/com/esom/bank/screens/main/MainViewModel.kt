@@ -20,9 +20,6 @@ class MainViewModel @Inject constructor(
     private val _myData = MutableLiveData<UiState<UserModel>>()
     val myData: LiveData<UiState<UserModel>> = _myData
 
-    private val _allUsers = MutableLiveData<UiState<List<UserModel>>>()
-    val allUsers: LiveData<UiState<List<UserModel>>> = _allUsers
-
     private val _tokenBalance = MutableLiveData<UiState<Double>>()
     val tokenBalance: LiveData<UiState<Double>> = _tokenBalance
 
@@ -32,21 +29,17 @@ class MainViewModel @Inject constructor(
     private val _transferRes = SingleLiveEvent<UiState<Unit>>()
     val transferRes: LiveData<UiState<Unit>> = _transferRes
 
-    fun updateMyData() {
-        mainRepository.getMe().onEach {
+    fun authenticate(login: String, password: String) {
+        _myData.value = UiState.Loading()
+        mainRepository.authenticate(login, password).onEach {
             _myData.value = it
         }.launchIn(viewModelScope)
     }
 
-    fun updateAllUsers() {
-        mainRepository.getAllUsers().onEach {
-            _allUsers.value = it
-        }.launchIn(viewModelScope)
-    }
-
-    fun updateTokenBalance() {
-        mainRepository.getTokenBalance().onEach {
-            _tokenBalance.value = it
+    fun updateUserData() {
+        _myData.value = UiState.Loading()
+        mainRepository.getUserInfo().onEach {
+            _myData.value = it
         }.launchIn(viewModelScope)
     }
 

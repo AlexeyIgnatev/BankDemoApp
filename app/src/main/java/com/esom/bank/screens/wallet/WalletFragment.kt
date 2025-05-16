@@ -10,6 +10,7 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.esom.bank.NavGraphDirections
+import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
@@ -59,30 +60,24 @@ class WalletFragment : Fragment() {
             findParentNavController().navigate(NavGraphDirections.startReceiveFragment())
         }
 
+        model.updateUserData()
         model.myData.observe(viewLifecycleOwner) {
             when (it) {
                 is UiState.Loading -> {}
                 is UiState.Error -> {
                     binding.root.showErrorSnackbar(it.message)
+
+                    if (it.message == getString(R.string.logged_out)) {
+                        findParentNavController().navigate(
+                            NavGraphDirections.startAuthFragment()
+                        )
+                    }
                 }
 
                 is UiState.Success -> {
-                    binding.somText.text = "${it.data.balance.format(2)} Сом"
-                    binding.title.text = it.data.name
-                    updateTotalBalance()
-                }
-            }
-        }
-
-        model.tokenBalance.observe(viewLifecycleOwner) {
-            when (it) {
-                is UiState.Loading -> {}
-                is UiState.Error -> {
-                    binding.root.showErrorSnackbar(it.message)
-                }
-
-                is UiState.Success -> {
-                    binding.esomText.text = "${it.data.format(2)} ЕСом"
+                    binding.somText.text = "${it.data.balance.somBalance.format(2)} Сом"
+                    binding.esomText.text = "${it.data.balance.esomBalance.format(2)} ЕСом"
+                    binding.title.text = "${it.data.firstName} ${it.data.lastName}"
                     updateTotalBalance()
                 }
             }
@@ -90,8 +85,8 @@ class WalletFragment : Fragment() {
     }
 
     private fun updateTotalBalance() {
-        val fiat = (model.myData.value as? UiState.Success)?.data?.balance ?: 0.0
-        val token = (model.tokenBalance.value as? UiState.Success)?.data ?: 0.0
+        val fiat = (model.myData.value as? UiState.Success)?.data?.balance?.somBalance ?: 0.0
+        val token = (model.myData.value as? UiState.Success)?.data?.balance?.esomBalance ?: 0.0
 
         val total = fiat + token
         binding.totalBalanceText.text = "${total.format(2)} Сом"

@@ -70,19 +70,8 @@ class TransferFragment : Fragment() {
                     return@setOnClickListener
                 }
 
-                val allUsers = (model.allUsers.value as? UiState.Success)?.data ?: emptyList()
-
-                val user = allUsers.firstOrNull {
-                    it.phone == phone.filter { it in "+0123456789" }
-                }
-
-                if (user == null) {
-                    binding.root.showErrorSnackbar("Пользователь с таким номером не найден")
-                    return@setOnClickListener
-                }
-
                 if (model.transferRes.value !is UiState.Loading) {
-                    model.transferToUser(sum, user.address)
+                    model.transferToUser(sum, phone.filter { it in "0123456789" })
                 }
             }
         }

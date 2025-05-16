@@ -1,7 +1,5 @@
 package com.esom.bank.screens.main.di
 
-import com.esom.bank.screens.main.data.BlockchainCloudDataSource
-import com.esom.bank.screens.main.data.BlockchainCloudDataSourceImpl
 import com.esom.bank.screens.main.data.MainCloudDataSource
 import com.esom.bank.screens.main.data.MainCloudDataSourceImpl
 import com.esom.bank.screens.main.data.MainRepository
@@ -20,13 +18,7 @@ abstract class MainModule {
     ): MainCloudDataSource
 
     @Binds
-    abstract fun bindBlockchainCloudDataSource(
-        blockchainCloudDataSourceImpl: BlockchainCloudDataSourceImpl
-    ): BlockchainCloudDataSource
-
-    @Binds
     abstract fun bindMainRepository(
         mainRepositoryImpl: MainRepositoryImpl
     ): MainRepository
-
 }

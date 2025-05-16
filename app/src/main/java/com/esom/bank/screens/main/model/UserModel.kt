@@ -8,23 +8,23 @@ import kotlinx.parcelize.Parcelize
 @Keep
 @Parcelize
 data class UserModel(
-    val id: Int,
-    val address: String,
-    val balance: Double,
+    val id: Int = 0,
+    val balance: BalanceModel,
+    val firstName: String,
+    val middleName: String,
+    val lastName: String,
     val email: String,
-    val mnemonic: String,
-    val name: String,
     val phone: String,
-    val privateKey: String
+    val platformFee: Double
 ) : Parcelable
 
 fun UserDto.toModel() = UserModel(
     id = id,
-    address = address,
-    balance = balance,
+    balance = balance.toModel(),
+    firstName = firstName,
+    middleName = middleName,
+    lastName = lastName,
     email = email,
-    mnemonic = mnemonic,
-    name = name,
     phone = phone,
-    privateKey = privateKey
+    platformFee = platformFee
 )

@@ -1,29 +1,27 @@
-package com.esom.bank.screens.receive
+package com.esom.bank.screens.auth
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
+import androidx.fragment.app.viewModels
+import com.esom.bank.NavGraphDirections
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
-import com.esom.bank.common.utils.views.showSuccessSnackbar
-import com.esom.bank.databinding.FragmentReceiveBinding
+import com.esom.bank.databinding.FragmentAuthBinding
+import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
-import com.esom.bank.screens.settigns.SettingsFragment.Companion.formatPhone
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ReceiveFragment : Fragment() {
-    private lateinit var binding: FragmentReceiveBinding
+class AuthFragment : Fragment() {
+    private lateinit var binding: FragmentAuthBinding
 
     private val model: MainViewModel by activityViewModels()
 
@@ -31,7 +29,7 @@ class ReceiveFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentReceiveBinding.inflate(inflater, container, false)
+        binding = FragmentAuthBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -45,33 +43,34 @@ class ReceiveFragment : Fragment() {
             insets
         }
 
-        binding.backBtn.setOnClickListener {
-            findNavController().popBackStack()
+        binding.loginInput.setOnClickListener {
+            model.authenticate(
+                binding.loginInput.editText!!.text.toString(),
+                binding.passwordInput.editText!!.text.toString(),
+            )
         }
 
         model.myData.observe(viewLifecycleOwner) {
             when (it) {
-                is UiState.Loading -> {}
+                is UiState.Loading -> {
+                    binding.logInText.isVisible = false
+                    binding.indicator.isVisible = true
+                }
 
                 is UiState.Error -> {
                     binding.root.showErrorSnackbar(it.message)
+                    binding.logInText.isVisible = true
+                    binding.indicator.isVisible = false
                 }
 
                 is UiState.Success -> {
-                    binding.phoneText.text = it.data.phone.formatPhone()
+                    binding.logInText.isVisible = true
+                    binding.indicator.isVisible = false
+
+                    findParentNavController().popBackStack()
+                    findParentNavController().navigate(NavGraphDirections.startMainFragment())
                 }
             }
-        }
-
-        binding.copyPhoneBtn.setOnClickListener {
-            val phone =
-                (model.myData.value as? UiState.Success)?.data?.phone ?: return@setOnClickListener
-            val clipboard: ClipboardManager =
-                requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText(phone, phone)
-            clipboard.setPrimaryClip(clip)
-
-            binding.root.showSuccessSnackbar("Номер телефона скопирован")
         }
     }
 }

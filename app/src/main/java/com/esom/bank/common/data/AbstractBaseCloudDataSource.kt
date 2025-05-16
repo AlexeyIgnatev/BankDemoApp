@@ -3,6 +3,7 @@ package com.esom.bank.common.data
 import com.esom.bank.R
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.model.ErrorResponse
+import com.esom.bank.retrofit.exception.NotLoggedInException
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -33,6 +34,9 @@ abstract class AbstractBaseCloudDataSource {
                     )
                 )
             }
+        } catch (e: NotLoggedInException) {
+            e.printStackTrace()
+            emit(ApiResponse.Error(R.string.logged_out))
         } catch (e: HttpException) {
             e.printStackTrace()
             emit(ApiResponse.Error(R.string.server_error))

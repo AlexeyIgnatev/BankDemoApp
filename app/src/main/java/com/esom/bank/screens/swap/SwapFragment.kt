@@ -122,7 +122,8 @@ class SwapFragment : Fragment() {
                 binding.root.showErrorSnackbar("Введите сумму для обмена")
             } else if (fromAmount != null && toAmount != null) {
                 if (args.direction == 0) {
-                    val somBalance = (model.myData.value as? UiState.Success)?.data?.balance ?: 0.0
+                    val somBalance =
+                        (model.myData.value as? UiState.Success)?.data?.balance?.somBalance ?: 0.0
                     if (fromAmount <= somBalance) {
                         if (model.swapRes.value !is UiState.Loading) {
                             model.transferFromFiat(fromAmount)
@@ -131,7 +132,8 @@ class SwapFragment : Fragment() {
                         binding.root.showErrorSnackbar("Недостаточно Сом на балансе")
                     }
                 } else {
-                    val tokenBalance = (model.tokenBalance.value as? UiState.Success)?.data ?: 0.0
+                    val tokenBalance =
+                        (model.myData.value as? UiState.Success)?.data?.balance?.esomBalance ?: 0.0
                     if (fromAmount <= tokenBalance) {
                         if (model.swapRes.value !is UiState.Loading) {
                             model.transferToFiat(fromAmount)
@@ -144,11 +146,12 @@ class SwapFragment : Fragment() {
         }
 
         model.swapRes.observe(viewLifecycleOwner) {
-            when(it) {
+            when (it) {
                 is UiState.Loading -> {}
                 is UiState.Error -> {
                     binding.root.showErrorSnackbar(it.message)
                 }
+
                 is UiState.Success -> {
                     binding.root.showSuccessSnackbar("Обмен совершён")
                     findNavController().popBackStack()
@@ -158,22 +161,29 @@ class SwapFragment : Fragment() {
     }
 
     private fun updateAmounts(fromAmount: Double?, toAmount: Double?) {
+        val platformFee =
+            (model.myData.value as? UiState.Success)?.data?.platformFee ?: 0.0
+
         if (fromAmount == null && toAmount == null) {
             binding.somInput.setTextProgrammatically("")
             binding.esomInput.setTextProgrammatically("")
         } else if (fromAmount != null) {
-            val newToAmount = fromAmount * 0.97
+            val newToAmount = fromAmount * (1 - platformFee)
             val newSomText = fromAmount.format(2)
-            if (newSomText != binding.somInput.text.toString() && !binding.somInput.text.toString().endsWith(".")) {
+            if (newSomText != binding.somInput.text.toString() && !binding.somInput.text.toString()
+                    .endsWith(".")
+            ) {
                 binding.somInput.setTextProgrammatically(fromAmount.format(2))
                 binding.somInput.setSelection(fromAmount.format(2).length)
             }
             binding.esomInput.setTextProgrammatically(newToAmount.format(2))
             binding.esomInput.setSelection(newToAmount.format(2).length)
         } else if (toAmount != null) {
-            val newFromAmount = toAmount / 0.97
+            val newFromAmount = toAmount / (1 - platformFee)
             val newEsomTExt = toAmount.format(2)
-            if (newEsomTExt != binding.esomInput.text.toString() && !binding.esomInput.text.toString().endsWith(".")) {
+            if (newEsomTExt != binding.esomInput.text.toString() && !binding.esomInput.text.toString()
+                    .endsWith(".")
+            ) {
                 binding.esomInput.setTextProgrammatically(toAmount.format(2))
                 binding.esomInput.setSelection(toAmount.format(2).length)
             }

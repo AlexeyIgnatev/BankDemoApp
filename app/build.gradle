@@ -20,9 +20,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        buildConfigField "String", "RPC_URL", "\"http://116.203.181.216:8545\""
-        buildConfigField "String", "TOKEN_ADDRESS", "\"0x3B72bed884B366ECe576f88b61b83812C3d0eaf0\""
-        buildConfigField "int", "USER_ID", "1"
+        buildConfigField "String", "BACKEND_URL", "\"http://192.168.254.121:8000/\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

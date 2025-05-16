@@ -1,15 +1,23 @@
 package com.esom.bank.screens.main.dto
 
-import androidx.annotation.Keep
+import com.google.gson.annotations.SerializedName
 
-@Keep
+
 data class UserDto(
+    @SerializedName("customer_id")
     val id: Int = 0,
-    val address: String = "",
-    val balance: Double = 0.0,
-    val email: String = "",
-    val mnemonic: String = "",
-    val name: String = "",
-    val phone: String = "",
-    val privateKey: String = ""
+    @SerializedName("balance")
+    val balance: BalanceDto,
+    @SerializedName("first_name")
+    val firstName: String,
+    @SerializedName("middle_name")
+    val middleName: String,
+    @SerializedName("last_name")
+    val lastName: String,
+    @SerializedName("email")
+    val email: String,
+    @SerializedName("phone")
+    val phone: String,
+    @SerializedName("platform_fee")
+    val platformFee: Double
 )

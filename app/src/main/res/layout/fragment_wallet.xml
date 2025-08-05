@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_16dp"
         android:fontFamily="@font/semi_bold"
-        android:text=""
+        tools:text="Иванов Иван Иванович"
         android:textColor="@color/title"
         android:textSize="@dimen/_20sp"
         app:layout_constraintEnd_toEndOf="parent"

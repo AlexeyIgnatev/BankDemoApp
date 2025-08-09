@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/_10dp"
+    tools:ignore="MissingConstraints">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/notification_main_background"
+        android:padding="@dimen/_16dp"
+        android:elevation="@dimen/_12dp"
+        android:outlineAmbientShadowColor="#CC9E9E9E"
+        android:outlineSpotShadowColor="#CC9E9E9E"
+        app:layout_constraintTop_toTopOf="parent">
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Уведомление о графике работы"
+            android:textSize="@dimen/_16sp"
+            android:fontFamily="@font/mont_semibold"
+            android:letterSpacing="-0.01"
+            android:textColor="#535353"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+        <ImageView
+            android:visibility="gone"
+            android:id="@+id/icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/arrow_bottom_gray"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:visibility="gone"
+        android:id="@+id/opinion_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="@dimen/_5dp"
+        android:layout_marginTop="-7dp"
+        android:background="@drawable/notification_opinion_background"
+        app:layout_constraintTop_toBottomOf="@id/main_layout"
+        android:padding="@dimen/_16dp"
+        android:outlineAmbientShadowColor="#CCDEDEDE"
+        android:outlineSpotShadowColor="#CCDEDEDE">
+        <TextView
+            android:id="@+id/opinion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях. "
+            android:textColor="#535353"
+            android:textSize="@dimen/_14sp"
+            android:letterSpacing="-0.01"
+            android:fontFamily="@font/mont_regular"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

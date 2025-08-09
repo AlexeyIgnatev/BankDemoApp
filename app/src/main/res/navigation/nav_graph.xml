@@ -74,7 +74,7 @@
         app:popEnterAnim="@anim/fade_in"
         app:popExitAnim="@anim/fade_out"
         app:popUpTo="@id/nav_graph"
-        app:popUpToInclusive="true"/>
+        app:popUpToInclusive="true" />
 
     <fragment
         android:id="@+id/authFragment"
@@ -82,4 +82,87 @@
         android:label="fragment_auth"
         tools:layout="@layout/fragment_auth" />
 
+    <fragment
+        android:id="@+id/registrationFragment"
+        android:name="com.esom.bank.screens.registration.RegistrationFragment"
+        tools:layout="@layout/fragment_registration" />
+    <action
+        android:id="@+id/startRegistrationFragment"
+        app:destination="@id/registrationFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
+        android:id="@+id/smsFragment"
+        android:name="com.esom.bank.screens.sms.SmsFragment"
+        tools:layout="@layout/fragment_sms" />
+    <action
+        android:id="@+id/startSmsFragment"
+        app:destination="@id/smsFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
+        android:id="@+id/pinCreateFragment"
+        android:name="com.esom.bank.screens.pinCreate.PinCreateFragment"
+        tools:layout="@layout/fragment_pin_create" />
+    <action
+        android:id="@+id/startPinCreateFragment"
+        app:destination="@id/pinCreateFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
+        android:id="@+id/logInFragment"
+        android:name="com.esom.bank.screens.login.LogInFragment"
+        tools:layout="@layout/fragment_log_in"/>
+    <action
+        android:id="@+id/startLogInFragment"
+        app:destination="@id/logInFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"/>
+
+    <fragment
+        android:id="@+id/bioFragment"
+        android:name="com.esom.bank.screens.bio.BioFragment"
+        tools:layout="@layout/fragment_bio"/>
+    <action
+        android:id="@+id/startBioFragment"
+        app:destination="@id/bioFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"/>
+
+    <fragment
+        android:id="@+id/splashLogInFragment"
+        android:name="com.esom.bank.screens.splashLogIn.SplashLogInFragment"
+        tools:layout="@layout/fragment_splash_log_in"/>
+    <action
+        android:id="@+id/startSplashLogInFragment"
+        app:destination="@id/splashLogInFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"/>
+
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.esom.bank.screens.notification.NotificationFragment"
+        tools:layout="@layout/fragment_notification"/>
+    <action
+        android:id="@+id/startNotificationFragment"
+        app:destination="@id/notificationFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"/>
 </navigation>

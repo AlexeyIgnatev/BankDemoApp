@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0EEEE"
+    tools:ignore="MissingConstraints"
+    tools:context=".screens.bio.BioFragment">
+
+    <TextView
+        android:id="@+id/log_in_bio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/bio_log_in"
+        android:textColor="#1D1D1B"
+        android:textSize="@dimen/_22sp"
+        android:fontFamily="@font/mont_semibold"
+        android:letterSpacing="-0.01"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="@dimen/_84dp"/>
+    <ImageView
+        android:id="@+id/bio_icon"
+        android:layout_width="@dimen/_70dp"
+        android:layout_height="@dimen/_70dp"
+        android:src="@drawable/bio_icon"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/log_in_bio"
+        android:layout_marginTop="@dimen/_132dp"/>
+    <TextView
+        android:id="@+id/use_bio_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/use_bio_for_log_in"
+        android:textColor="#1D1D1B"
+        android:textSize="@dimen/_22sp"
+        android:fontFamily="@font/mont_semibold"
+        android:letterSpacing="-0.01"
+        app:layout_constraintTop_toBottomOf="@id/bio_icon"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/_22dp"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/use_bio_opinion"
+        android:textSize="@dimen/_11sp"
+        android:gravity="center"
+        android:fontFamily="@font/mont_semibold"
+        android:textColor="#B2B2B2"
+        app:layout_constraintTop_toBottomOf="@id/use_bio_title"
+        android:layout_marginTop="@dimen/_6dp"/>
+
+    <TextView
+        android:id="@+id/only_password_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="@dimen/_11dp"
+        android:text="@string/use_only_password"
+        android:gravity="center"
+        android:textColor="#E62324"
+        android:textSize="@dimen/_16sp"
+        android:fontFamily="@font/mont_medium"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="@dimen/_73dp"/>
+    <ImageView
+        android:layout_width="@dimen/_0dp"
+        android:layout_height="@dimen/_0dp"
+        android:scaleX="1.65"
+        android:scaleY="1.6"
+        android:src="@drawable/button_background"
+        app:layout_constraintBottom_toBottomOf="@id/log_in_btn"
+        app:layout_constraintEnd_toEndOf="@id/log_in_btn"
+        app:layout_constraintStart_toStartOf="@id/log_in_btn"
+        app:layout_constraintTop_toTopOf="@id/log_in_btn" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/log_in_btn"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_40dp"
+        android:layout_marginHorizontal="@dimen/_22dp"
+        android:layout_marginBottom="@dimen/_10dp"
+        app:cardBackgroundColor="#E62324"
+        app:cardCornerRadius="@dimen/_12dp"
+        app:cardElevation="@dimen/_0dp"
+        app:layout_constraintBottom_toTopOf="@id/only_password_title"
+        app:strokeWidth="@dimen/_0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/log_in_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/mont_semibold"
+                android:text="@string/use_bio"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_18sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:visibility="gone"
+                app:indicatorColor="@color/white"
+                app:indicatorSize="@dimen/_38dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:trackThickness="@dimen/_5dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

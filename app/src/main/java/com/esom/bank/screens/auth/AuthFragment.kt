@@ -42,11 +42,15 @@ class AuthFragment : Fragment() {
             insets
         }
 
+        binding.regBtn.setOnClickListener {
+            findNavController().navigate(NavGraphDirections.startRegistrationFragment())
+        }
+
         binding.logInBtn.setOnClickListener {
             if (model.myData.value !is UiState.Loading) {
                 model.authenticate(
-                    binding.loginInput.editText!!.text.toString(),
-                    binding.passwordInput.editText!!.text.toString(),
+                    binding.phoneInput.text.toString(),
+                    binding.passwordInput.text.toString(),
                 )
             }
         }

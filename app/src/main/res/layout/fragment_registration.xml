@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0EEEE"
+    tools:context=".screens.registration.RegistrationFragment"
+    tools:ignore="MissingConstraints">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/back_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_10dp"
+        android:padding="@dimen/_10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/back_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/arrow_left"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/back_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_4dp"
+            android:fontFamily="@font/mont_bold"
+            android:text="@string/back"
+            android:textColor="#E62324"
+            android:textSize="@dimen/_14sp"
+            app:layout_constraintBottom_toBottomOf="@id/back_icon"
+            app:layout_constraintStart_toEndOf="@id/back_icon"
+            app:layout_constraintTop_toTopOf="@id/back_icon" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageButton
+        android:id="@+id/back_btn"
+        android:layout_width="@dimen/_0dp"
+        android:layout_height="@dimen/_0dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintBottom_toBottomOf="@id/back_layout"
+        app:layout_constraintEnd_toEndOf="@id/back_layout"
+        app:layout_constraintStart_toStartOf="@id/back_layout"
+        app:layout_constraintTop_toTopOf="@id/back_layout" />
+
+    <TextView
+        android:id="@+id/phone_hint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_10dp"
+        android:layout_marginTop="@dimen/_30dp"
+        android:fontFamily="@font/mont_semibold"
+        android:letterSpacing="-0.01"
+        android:text="@string/enter_phone"
+        android:textColor="#1D1D1B"
+        android:textSize="@dimen/_22sp"
+        app:layout_constraintStart_toStartOf="@id/back_layout"
+        app:layout_constraintTop_toBottomOf="@id/back_layout" />
+
+    <TextView
+        android:id="@+id/privacy_policy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_10dp"
+        android:layout_marginTop="@dimen/_5dp"
+        android:fontFamily="@font/mont_semibold"
+        android:text="@string/privacy_policy_confirmed"
+        android:textColor="#B2B2B2"
+        android:textSize="@dimen/_12sp"
+        app:layout_constraintStart_toStartOf="@id/back_layout"
+        app:layout_constraintTop_toBottomOf="@id/phone_hint" />
+
+    <TextView
+        android:id="@+id/phone_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_20dp"
+        android:layout_marginTop="@dimen/_144dp"
+        android:layout_marginBottom="@dimen/_5dp"
+        android:fontFamily="@font/mont_semibold"
+        android:text="@string/phone_hint"
+        android:textColor="#B2B2B2"
+        android:textSize="@dimen/_16sp"
+        app:layout_constraintBottom_toTopOf="@id/phone_input"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/phone_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_17dp"
+        android:layout_marginBottom="@dimen/_44dp"
+        android:fontFamily="@font/mont_medium"
+        android:hint="@string/phone_registration_hint"
+        android:imeOptions="actionDone"
+        android:inputType="number"
+        android:maxLines="1"
+        android:textColor="@color/black"
+        android:textColorHint="#B2B2B2"
+        android:textSize="@dimen/_18sp"
+        app:layout_constraintBottom_toTopOf="@id/next_btn" />
+
+    <ImageView
+        android:id="@+id/next_btn_shadow"
+        android:layout_width="@dimen/_0dp"
+        android:layout_height="@dimen/_0dp"
+        android:scaleX="1.65"
+        android:scaleY="1.6"
+        android:src="@drawable/button_background"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/next_btn"
+        app:layout_constraintEnd_toEndOf="@id/next_btn"
+        app:layout_constraintStart_toStartOf="@id/next_btn"
+        app:layout_constraintTop_toTopOf="@id/next_btn" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/next_btn"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_40dp"
+        android:layout_marginHorizontal="@dimen/_22dp"
+        android:layout_marginBottom="@dimen/_20dp"
+        android:clickable="false"
+        app:cardBackgroundColor="#B2B2B2"
+        app:cardCornerRadius="@dimen/_12dp"
+        app:cardElevation="@dimen/_0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:strokeWidth="@dimen/_0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/next_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/mont_semibold"
+                android:text="@string/next"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_18sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true"
+                android:visibility="gone"
+                app:indicatorColor="@color/white"
+                app:indicatorSize="@dimen/_38dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:trackThickness="@dimen/_5dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

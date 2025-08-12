@@ -92,4 +92,15 @@
     <string name="support_title">Здравствуйте, Асан! \nКак мы можем Вам помочь?</string>
     <string name="send_message">Отправить сообщение</string>
     <string name="profile">Профиль</string>
+    <string name="user_fio">ФИО пользователя</string>
+    <string name="number_phone">Номер телефона</string>
+    <string name="email">E-mail</string>
+    <string name="help">Помощь</string>
+    <string name="tech_help">Техподдержка</string>
+    <string name="personal_call">Персональный менеджер звонок</string>
+    <string name="settings">Настройки</string>
+    <string name="language">Язык</string>
+    <string name="push_notifications">Push уведомления</string>
+    <string name="safety">Безопасность</string>
+    <string name="change_pass">Сменить пароль</string>
 </resources>

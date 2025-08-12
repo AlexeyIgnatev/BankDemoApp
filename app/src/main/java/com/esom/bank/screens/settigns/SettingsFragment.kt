@@ -11,11 +11,14 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import com.esom.bank.NavGraphDirections
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentSettingsBinding
+import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import ru.tinkoff.decoro.Mask
@@ -56,21 +59,14 @@ class SettingsFragment : Fragment() {
                 }
 
                 is UiState.Success -> {
-                    binding.phoneText.text =
+                    binding.phone.text =
                         "${it.data.firstName} ${it.data.middleName} ${it.data.lastName}\n${it.data.phone.formatPhone()}\n${it.data.email}"
                 }
             }
         }
 
-        binding.copyPhoneBtn.setOnClickListener {
-            val phone =
-                (model.myData.value as? UiState.Success)?.data?.phone ?: return@setOnClickListener
-            val clipboard: ClipboardManager =
-                requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText(phone, phone)
-            clipboard.setPrimaryClip(clip)
-
-            binding.root.showSuccessSnackbar("Номер телефона скопирован")
+        binding.helpBtn.setOnClickListener {
+            findParentNavController().navigate(NavGraphDirections.startChatFragment())
         }
     }
 

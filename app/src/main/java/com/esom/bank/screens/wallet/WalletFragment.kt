@@ -120,9 +120,20 @@ class WalletFragment : Fragment() {
         binding.transactions.adapter = transactionAdapter
         transactionAdapter.submitList(transactionsSom)
 
-        val adapter = CardAdapter(requireContext())
+        val adapter = CardAdapter(requireContext(), {
+            findParentNavController().navigate(NavGraphDirections.startSwapFragment())
+        }, {
+            findParentNavController().navigate(NavGraphDirections.startReceiveFragment())
+        })
         val pageMarginPx = resources.getDimension(R.dimen._3dp).toInt()
         val offsetPx = resources.getDimension(R.dimen._32dp).toInt()
+
+        binding.title.setOnClickListener {
+            findNavController().navigate(MainNavGraphDirections.startSettingsFragment())
+        }
+        binding.historyBtn.setOnClickListener {
+            findNavController().navigate(MainNavGraphDirections.startHistoryFragment())
+        }
 
         binding.pager.apply {
             clipToPadding = false

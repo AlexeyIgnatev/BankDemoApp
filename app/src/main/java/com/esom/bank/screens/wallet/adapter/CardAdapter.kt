@@ -9,11 +9,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.R
 import com.esom.bank.databinding.CardPageBinding
 
-class CardAdapter(private val context: Context) :
+class CardAdapter(private val context: Context,
+                  private val onSwapClick: () -> Unit,
+                  private val onReceiveClick: () -> Unit) :
     ListAdapter<Card, CardAdapter.CardViewHolder>(CardDiffCallback()) {
     inner class CardViewHolder(private val binding: CardPageBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Card) {
+            binding.convertBtn.setOnClickListener {
+                onSwapClick()
+            }
+            binding.acceptBtn.setOnClickListener {
+                onReceiveClick()
+            }
             when (item.type) {
                 TypeOfCard.CARD -> {
                     binding.somIcon.setImageResource(R.drawable.som_icon)

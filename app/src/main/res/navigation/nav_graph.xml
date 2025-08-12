@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/authFragment">
+    app:startDestination="@id/transferFragment">
 
     <action
         android:id="@+id/startMainFragment"
@@ -154,13 +154,61 @@
         app:popEnterAnim="@anim/fade_in"
         app:popExitAnim="@anim/fade_out"/>
 
-    <fragment
-        android:id="@+id/notificationFragment"
-        android:name="com.esom.bank.screens.notification.NotificationFragment"
-        tools:layout="@layout/fragment_notification"/>
+    <dialog
+        android:id="@+id/chooseDateFragment"
+        android:name="com.esom.bank.screens.history.dialog.ChooseDateFragment"
+        tools:layout="@layout/fragment_choose_date"/>
     <action
-        android:id="@+id/startNotificationFragment"
-        app:destination="@id/notificationFragment"
+        android:id="@+id/startChooseDateFragment"
+        app:destination="@id/chooseDateFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <dialog
+        android:id="@+id/successTransferFragment"
+        android:name="com.esom.bank.screens.transfer.dialog.SuccessTransferFragment"
+        tools:layout="@layout/fragment_success_transfer"/>
+    <action
+        android:id="@+id/startSuccessTransferFragment"
+        app:destination="@id/successTransferFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"/>
+
+    <dialog
+        android:id="@+id/choosePeriodFragment"
+        android:name="com.esom.bank.screens.history.dialog.ChoosePeriodFragment"
+        tools:layout="@layout/fragment_choose_period"/>
+    <action
+        android:id="@+id/startChoosePeriodFragment"
+        app:destination="@id/choosePeriodFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"/>
+
+    <dialog
+        android:id="@+id/chooseActiveFragment"
+        android:name="com.esom.bank.screens.history.dialog.ChooseActiveFragment"
+        tools:layout="@layout/fragment_choose_active"/>
+    <action
+        android:id="@+id/startChooseActiveFragment"
+        app:destination="@id/chooseActiveFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"/>
+
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.esom.bank.screens.chat.ChatFragment"
+        tools:layout="@layout/fragment_chat"/>
+    <action
+        android:id="@+id/startChatFragment"
+        app:destination="@id/chatFragment"
         app:enterAnim="@anim/fade_in"
         app:exitAnim="@anim/fade_out"
         app:popEnterAnim="@anim/fade_in"

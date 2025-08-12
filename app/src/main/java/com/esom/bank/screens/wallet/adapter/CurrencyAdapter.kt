@@ -1,17 +1,52 @@
 package com.esom.bank.screens.wallet.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.esom.bank.R
 import com.esom.bank.databinding.ItemCurrencyBinding
 
-class CurrencyAdapter: ListAdapter<Currency, CurrencyAdapter.CurrencyViewHolder>(CurrencyDiffCallback()) {
+class CurrencyAdapter(private val context: Context): ListAdapter<Currency, CurrencyAdapter.CurrencyViewHolder>(CurrencyDiffCallback()) {
 
     inner class CurrencyViewHolder(private val binding: ItemCurrencyBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Currency) {
+                when(item.type) {
+                    TypeOfCurrency.FIAT -> {
+                        binding.icon.setImageResource(R.drawable.som_icon)
+                        binding.title.text = context.getString(R.string.kgs)
+                        binding.currencyName.text = context.getString(R.string.fiat_som)
+                    }
+                    TypeOfCurrency.DIGITAL -> {
+                        binding.icon.setImageResource(R.drawable.digital_icon)
+                        binding.title.text = context.getString(R.string.digital_wallet)
+                        binding.currencyName.text = context.getString(R.string.som)
+                    }
+                    TypeOfCurrency.USDT -> {
+                        binding.icon.setImageResource(R.drawable.usdt_icon)
+                        binding.title.visibility = View.GONE
+                        binding.currencyName.visibility = View.GONE
+                        binding.currency.text = context.getString(R.string.usdt)
+                    }
+                    TypeOfCurrency.BITCOIN -> {
+                        binding.icon.setImageResource(R.drawable.bitcoin_icon)
+                        binding.title.visibility = View.GONE
+                        binding.currencyName.visibility = View.GONE
+                        binding.currency.text = context.getString(R.string.bitcoin)
+                    }
+                    TypeOfCurrency.ETH -> {
+                        binding.icon.setImageResource(R.drawable.eth_icon)
+                        binding.title.visibility = View.GONE
+                        binding.currencyName.visibility = View.GONE
+                        binding.currency.text = context.getString(R.string.ethereum)
+                    }
+                }
 
+            binding.upCost.text = item.up
+            binding.downCost.text = item.down
         }
     }
 
@@ -21,7 +56,7 @@ class CurrencyAdapter: ListAdapter<Currency, CurrencyAdapter.CurrencyViewHolder>
     }
 
     override fun onBindViewHolder(holder: CurrencyViewHolder, position: Int) {
-        TODO("Not yet implemented")
+        holder.bind(getItem(position))
     }
 }
 

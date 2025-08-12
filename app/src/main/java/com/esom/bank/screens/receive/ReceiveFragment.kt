@@ -58,12 +58,12 @@ class ReceiveFragment : Fragment() {
                 }
 
                 is UiState.Success -> {
-                    binding.phoneText.text = it.data.phone.formatPhone()
+                    binding.contact.text = it.data.phone.formatPhone()
                 }
             }
         }
 
-        binding.copyPhoneBtn.setOnClickListener {
+        binding.copyBtn.setOnClickListener {
             val phone =
                 (model.myData.value as? UiState.Success)?.data?.phone ?: return@setOnClickListener
             val clipboard: ClipboardManager =

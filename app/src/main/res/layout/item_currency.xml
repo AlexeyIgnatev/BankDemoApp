@@ -40,6 +40,19 @@
         app:layout_constraintStart_toStartOf="@id/title"
         android:layout_marginTop="@dimen/_2dp"/>
 
+    <TextView
+        android:id="@+id/currency"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/mont_semibold"
+        android:textSize="@dimen/_11sp"
+        android:letterSpacing="-0.01"
+        android:textColor="#535353"
+        android:layout_marginStart="@dimen/_8dp"
+        app:layout_constraintStart_toEndOf="@id/icon"
+        app:layout_constraintTop_toTopOf="@id/icon"
+        app:layout_constraintBottom_toBottomOf="@id/icon"/>
+
     <ImageView
         android:id="@+id/green_icon"
         android:layout_width="@dimen/_16dp"

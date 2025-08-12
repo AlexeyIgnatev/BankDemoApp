@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,10 +12,13 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
+import com.esom.bank.MainNavGraphDirections
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
+import com.esom.bank.common.utils.format
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentWalletBinding
@@ -22,7 +26,15 @@ import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.wallet.adapter.Card
 import com.esom.bank.screens.wallet.adapter.CardAdapter
+import com.esom.bank.screens.wallet.adapter.Currency
+import com.esom.bank.screens.wallet.adapter.CurrencyAdapter
+import com.esom.bank.screens.wallet.adapter.News
+import com.esom.bank.screens.wallet.adapter.NewsAdapter
+import com.esom.bank.screens.wallet.adapter.Transaction
+import com.esom.bank.screens.wallet.adapter.TransactionAdapter
 import com.esom.bank.screens.wallet.adapter.TypeOfCard
+import com.esom.bank.screens.wallet.adapter.TypeOfCurrency
+import com.esom.bank.screens.wallet.adapter.TypeOfTransaction
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.abs
 
@@ -49,8 +61,66 @@ class WalletFragment : Fragment() {
             )
             insets
         }
-        val adapter = CardAdapter(requireContext())
+        val newsAdapter = NewsAdapter()
+        val news = listOf(
+            News(R.drawable.new_1),
+            News(R.drawable.new_2),
+            News(R.drawable.new_3),
+            News(R.drawable.new_4),
+            News(R.drawable.new_5)
+        )
+        binding.news.adapter = newsAdapter
+        newsAdapter.submitList(news)
+        val currencyAdapter = CurrencyAdapter(requireContext())
+        binding.currencies.adapter = currencyAdapter
+        val currencies = listOf(
+            Currency(TypeOfCurrency.FIAT, "123 456 000, 78", "123 456 000, 77"),
+            Currency(TypeOfCurrency.DIGITAL, "123 456 000, 78", "123 456 000, 77"),
+            Currency(TypeOfCurrency.USDT, "123 456 000, 78", "123 456 000, 77"),
+            Currency(TypeOfCurrency.BITCOIN, "123 456 000, 78", "123 456 000, 77"),
+            Currency(TypeOfCurrency.ETH, "123 456 000, 78", "123 456 000, 77"),
+        )
+        currencyAdapter.submitList(currencies)
+        var transactionAdapter = TransactionAdapter(requireContext())
+        val transactionsSom = listOf(
+            Transaction(TypeOfTransaction.SOM, "", 1231),
+            Transaction(TypeOfTransaction.SOM, "", -1231),
+            Transaction(TypeOfTransaction.SOM, "", 222),
+            Transaction(TypeOfTransaction.SOM, "", -1212),
+            Transaction(TypeOfTransaction.SOM, "", 9999),
+        )
+        val transactionsDigit = listOf(
+            Transaction(TypeOfTransaction.DIGITAL, "", 1231),
+            Transaction(TypeOfTransaction.DIGITAL, "", -1231),
+            Transaction(TypeOfTransaction.DIGITAL, "", 222),
+            Transaction(TypeOfTransaction.DIGITAL, "", -1212),
+            Transaction(TypeOfTransaction.DIGITAL, "", 9999),
+        )
+        val transactionsUSDT = listOf(
+            Transaction(TypeOfTransaction.USDT, "", 1231),
+            Transaction(TypeOfTransaction.USDT, "", -1231),
+            Transaction(TypeOfTransaction.USDT, "", 222),
+            Transaction(TypeOfTransaction.USDT, "", -1212),
+            Transaction(TypeOfTransaction.USDT, "", 9999),
+        )
+        val transactionsBitcoin = listOf(
+            Transaction(TypeOfTransaction.BITCOIN, "", 1231),
+            Transaction(TypeOfTransaction.BITCOIN, "", -1231),
+            Transaction(TypeOfTransaction.BITCOIN, "", 222),
+            Transaction(TypeOfTransaction.BITCOIN, "", -1212),
+            Transaction(TypeOfTransaction.BITCOIN, "", 9999),
+        )
+        val transactionsEth = listOf(
+            Transaction(TypeOfTransaction.ETH, "", 1231),
+            Transaction(TypeOfTransaction.ETH, "", -1231),
+            Transaction(TypeOfTransaction.ETH, "", 222),
+            Transaction(TypeOfTransaction.ETH, "", -1212),
+            Transaction(TypeOfTransaction.ETH, "", 9999),
+        )
+        binding.transactions.adapter = transactionAdapter
+        transactionAdapter.submitList(transactionsSom)
 
+        val adapter = CardAdapter(requireContext())
         val pageMarginPx = resources.getDimension(R.dimen._3dp).toInt()
         val offsetPx = resources.getDimension(R.dimen._32dp).toInt()
 
@@ -121,20 +191,46 @@ class WalletFragment : Fragment() {
 
         binding.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                when (position) {
+                val realPosition = when (position) {
+                    0 -> cards.size - 1
+                    infiniteList.size - 1 -> 0
+                    else -> position - 1
+                }
+
+                when (realPosition) {
                     0 -> {
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            binding.pager.setCurrentItem(cards.size, false)
-                        }, 150)
-                    }
-                    infiniteList.size - 1 -> {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(1, false)
                         }, 150)
+                        updateTransactions(transactionsSom, transactionAdapter)
+                        Log.e("currency", "SOM")
+                    }
+                    1 -> {
+                        updateTransactions(transactionsUSDT, transactionAdapter)
+                        Log.e("currency", "USDT")
+                    }
+                    2 -> {
+                        updateTransactions(transactionsBitcoin, transactionAdapter)
+                        Log.e("currency", "BITCOIN")
+                    }
+                    3 -> {
+                        updateTransactions(transactionsEth, transactionAdapter)
+                        Log.e("currency", "ETHEREUM")
+                    }
+                    4 -> {
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            binding.pager.setCurrentItem(cards.size, false)
+                        }, 150)
+                        updateTransactions(transactionsDigit, transactionAdapter)
+                        Log.e("currency", "DIGIT")
                     }
                 }
             }
         })
+
+        binding.notificationBtn.setOnClickListener {
+            findNavController().navigate(MainNavGraphDirections.startNotificationFragment())
+        }
 
 //        binding.somToEsomBtn.setOnClickListener {
 //            findParentNavController().navigate(NavGraphDirections.startSwapFragment(0))
@@ -175,12 +271,16 @@ class WalletFragment : Fragment() {
             }
         }
     }
+    private fun updateTransactions(transactions: List<Transaction>, transactionAdapter: TransactionAdapter) {
+        transactionAdapter.submitList(transactions)
+        binding.transactions.adapter = transactionAdapter
+    }
 
     private fun updateTotalBalance() {
         val fiat = (model.myData.value as? UiState.Success)?.data?.balance?.somBalance ?: 0.0
         val token = (model.myData.value as? UiState.Success)?.data?.balance?.esomBalance ?: 0.0
 
         val total = fiat + token
-        //binding.totalBalanceText.text = "${total.format(2)} Сом"
+        binding.totalWaste.text = "${total.format(2)} Сом"
     }
 }

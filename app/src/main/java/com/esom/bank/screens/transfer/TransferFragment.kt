@@ -28,6 +28,9 @@ class TransferFragment : Fragment() {
     private lateinit var binding: FragmentTransferBinding
 
     private val model: MainViewModel by activityViewModels()
+    private var isPanelShown = false
+    private var isPeoplePanelShown = false
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,17 +54,41 @@ class TransferFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        val mask = MaskImpl.createTerminated(PHONE_NUMBER)
-        val watcher: FormatWatcher = MaskFormatWatcher(mask)
-        watcher.installOn(binding.receiverInput)
+        binding.currentCurrencyLayout.setOnClickListener {
+            if (isPanelShown) {
+                slideOut(binding.typeCurrencyLayout)
+                binding.backgroundConversationLayout.visibility = View.GONE
+            } else {
+                binding.typeCurrencyLayout.visibility = View.VISIBLE
+                slideIn(binding.typeCurrencyLayout)
+                binding.backgroundConversationLayout.visibility = View.VISIBLE
+            }
+            isPanelShown = !isPanelShown
+        }
+
+        binding.peopleLayout.setOnClickListener {
+            if(isPeoplePanelShown) {
+                it.elevation = 0f
+                slideOut(binding.peopleCurrencyLayout)
+            } else {
+                it.elevation = 15f
+                binding.peopleCurrencyLayout.visibility = View.VISIBLE
+                slideIn(binding.peopleCurrencyLayout)
+            }
+            isPeoplePanelShown = !isPeoplePanelShown
+        }
+
+//        val mask = MaskImpl.createTerminated(PHONE_NUMBER)
+//        val watcher: FormatWatcher = MaskFormatWatcher(mask)
+//        watcher.installOn(binding.receiverInput)
 
         binding.sendBtn.setOnClickListener {
             if (model.transferRes.value is UiState.Loading) {
                 return@setOnClickListener
             }
 
-            val sum = binding.somInput.text.toString().toDoubleOrNull()
-            val phone = binding.receiverInput.text.toString()
+            val sum = binding.sumInput.text.toString().toDoubleOrNull()
+            val phone = "+996 (555) 000-000"
 
             if (sum == null) {
                 binding.root.showErrorSnackbar("Введите сумму для перевода")
@@ -103,5 +130,30 @@ class TransferFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun slideIn(view: View) {
+        view.alpha = 0f
+        view.visibility = View.VISIBLE
+
+        view.post {
+            view.translationY = -view.height.toFloat()
+            view.animate()
+                .translationY(0f)
+                .alpha(1f)
+                .setDuration(450)
+                .start()
+        }
+    }
+
+    private fun slideOut(view: View) {
+        view.animate()
+            .translationY(-view.height.toFloat())
+            .alpha(0f)
+            .setDuration(450)
+            .withEndAction {
+                view.visibility = View.GONE
+            }
+            .start()
     }
 }

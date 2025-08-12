@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F3F3F3"
+    tools:context=".screens.history.HistoryFragment"
+    tools:ignore="MissingConstraints">
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/search_input"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_36dp"
+        android:layout_marginHorizontal="@dimen/_20dp"
+        android:layout_marginTop="@dimen/_18dp"
+        android:background="@drawable/currency_background"
+        android:fontFamily="@font/mont_semibold"
+        android:hint="@string/search"
+        android:paddingStart="@dimen/_49dp"
+        android:textColor="#1D1D1B"
+        android:textColorHint="#B2B2B2"
+        android:textSize="@dimen/_11sp"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_18dp"
+        android:src="@drawable/search_icon"
+        app:layout_constraintBottom_toBottomOf="@id/search_input"
+        app:layout_constraintStart_toStartOf="@id/search_input"
+        app:layout_constraintTop_toTopOf="@id/search_input" />
+
+    <HorizontalScrollView
+        android:id="@+id/categories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/search_input">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/data_period_layout"
+                android:layout_width="@dimen/_101dp"
+                android:layout_height="@dimen/_31dp"
+                android:layout_marginStart="@dimen/_20dp"
+                android:background="@drawable/data_period_background"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <ImageButton
+                    android:id="@+id/data_period_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+                <TextView
+                    android:id="@+id/title_month"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_18dp"
+                    android:fontFamily="@font/mont_semibold"
+                    android:text="Декабрь"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_11sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_9dp"
+                    android:src="@drawable/small_white_arrow"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/title_month"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/active_layout"
+                android:layout_width="@dimen/_96dp"
+                android:layout_height="@dimen/_31dp"
+                android:layout_marginStart="@dimen/_5dp"
+                android:background="@drawable/gray_period_background"
+                app:layout_constraintStart_toEndOf="@id/data_period_layout">
+
+                <ImageButton
+                    android:id="@+id/active_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+                <TextView
+                    android:id="@+id/active"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_18dp"
+                    android:fontFamily="@font/mont_semibold"
+                    android:text="@string/actives"
+                    android:textColor="#1D1D1B"
+                    android:textSize="@dimen/_11sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_9dp"
+                    android:src="@drawable/small_black_arrow"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/active"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/period_layout"
+                android:layout_width="@dimen/_104dp"
+                android:layout_height="@dimen/_31dp"
+                android:layout_marginStart="@dimen/_5dp"
+                android:background="@drawable/gray_period_background"
+                app:layout_constraintStart_toEndOf="@id/active_layout">
+
+                <ImageButton
+                    android:id="@+id/period_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+                <TextView
+                    android:id="@+id/period_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_18dp"
+                    android:fontFamily="@font/mont_semibold"
+                    android:text="3 месяца"
+                    android:textColor="#1D1D1B"
+                    android:textSize="@dimen/_11sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_9dp"
+                    android:src="@drawable/small_black_arrow"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/period_title"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/non_transaction_layout"
+                android:layout_width="@dimen/_124dp"
+                android:layout_height="@dimen/_31dp"
+                android:layout_marginStart="@dimen/_5dp"
+                android:background="@drawable/gray_period_background"
+                app:layout_constraintStart_toEndOf="@id/period_layout">
+
+                <ImageButton
+                    android:id="@+id/non_transaction_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+                <TextView
+                    android:id="@+id/non_transaction_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_18dp"
+                    android:fontFamily="@font/mont_semibold"
+                    android:text="@string/without_transactions"
+                    android:textColor="#1D1D1B"
+                    android:textSize="@dimen/_11sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/_9dp"
+                    android:src="@drawable/small_black_arrow"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/non_transaction_title"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </HorizontalScrollView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/expences_layout"
+        android:layout_width="@dimen/_171dp"
+        android:layout_height="@dimen/_77dp"
+        android:layout_marginTop="@dimen/_21dp"
+        android:background="@drawable/wastes_background"
+        android:paddingHorizontal="@dimen/_16dp"
+        android:paddingVertical="@dimen/_8dp"
+        app:layout_constraintEnd_toStartOf="@id/income_layout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/categories">
+
+        <TextView
+            android:id="@+id/expences_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/mont_semibold"
+            android:text="Расходы в декабре"
+            android:textColor="#B2B2B2"
+            android:textSize="@dimen/_11sp" />
+
+        <TextView
+            android:id="@+id/expences"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/mont_bold"
+            android:text="99 123 456$"
+            android:textColor="#1D1D1B"
+            android:textSize="@dimen/_18sp"
+            app:layout_constraintTop_toBottomOf="@id/expences_title" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10dp"
+            android:src="@drawable/expenses"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/income_layout"
+        android:layout_width="@dimen/_171dp"
+        android:layout_height="@dimen/_77dp"
+        android:layout_marginTop="@dimen/_21dp"
+        android:background="@drawable/wastes_background"
+        android:paddingHorizontal="@dimen/_16dp"
+        android:paddingVertical="@dimen/_8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/expences_layout"
+        app:layout_constraintTop_toBottomOf="@id/categories">
+
+        <TextView
+            android:id="@+id/income_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/mont_semibold"
+            android:text="Доходы в декабре"
+            android:textColor="#B2B2B2"
+            android:textSize="@dimen/_11sp" />
+
+        <TextView
+            android:id="@+id/income"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/mont_bold"
+            android:text="99 123 456$"
+            android:textColor="#1D1D1B"
+            android:textSize="@dimen/_18sp"
+            app:layout_constraintTop_toBottomOf="@id/income_title" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10dp"
+            android:src="@drawable/incomes"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/history"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_0dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/income_layout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="@dimen/_10dp"
+        android:layout_marginHorizontal="@dimen/_20dp"
+        android:layout_marginBottom="@dimen/_30dp"
+        tools:listitem="@layout/item_history"
+        tools:itemCount="1"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

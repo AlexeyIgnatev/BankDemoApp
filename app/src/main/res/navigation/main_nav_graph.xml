@@ -3,7 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_nav_graph"
-    app:startDestination="@id/walletFragment">
+    app:startDestination="@id/historyFragment">
+
+    <fragment
+        android:id="@+id/historyFragment"
+        android:name="com.esom.bank.screens.history.HistoryFragment"
+        tools:layout="@layout/fragment_history"/>
+    <action
+        android:id="@+id/startHistoryFragment"
+        app:destination="@id/historyFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"/>
 
     <action
         android:id="@+id/startWalletFragment"
@@ -18,6 +30,18 @@
         android:name="com.esom.bank.screens.wallet.WalletFragment"
         android:label="fragment_wallet"
         tools:layout="@layout/fragment_wallet" />
+
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.esom.bank.screens.notification.NotificationFragment"
+        tools:layout="@layout/fragment_notification"/>
+    <action
+        android:id="@+id/startNotificationFragment"
+        app:destination="@id/notificationFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"/>
 
     <action
         android:id="@+id/startActionsFragment"

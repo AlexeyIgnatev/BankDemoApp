@@ -60,7 +60,8 @@ class CardAdapter(private val context: Context) :
     }
 
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val realPosition = position % currentList.size
+        holder.bind(getItem(realPosition))
     }
 
 }

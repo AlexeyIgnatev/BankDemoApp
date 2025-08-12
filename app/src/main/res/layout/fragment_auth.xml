@@ -94,7 +94,7 @@
     <ImageView
         android:layout_width="@dimen/_0dp"
         android:layout_height="@dimen/_0dp"
-        android:scaleX="1.65"
+        android:scaleX="1.5"
         android:scaleY="1.6"
         android:src="@drawable/button_background"
         app:layout_constraintBottom_toBottomOf="@id/log_in_btn"

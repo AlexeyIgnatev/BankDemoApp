@@ -124,6 +124,8 @@ class WalletFragment : Fragment() {
             findParentNavController().navigate(NavGraphDirections.startSwapFragment())
         }, {
             findParentNavController().navigate(NavGraphDirections.startReceiveFragment())
+        }, {
+            findParentNavController().navigate(NavGraphDirections.startTransferFragment())
         })
         val pageMarginPx = resources.getDimension(R.dimen._3dp).toInt()
         val offsetPx = resources.getDimension(R.dimen._32dp).toInt()
@@ -131,6 +133,7 @@ class WalletFragment : Fragment() {
         binding.title.setOnClickListener {
             findNavController().navigate(MainNavGraphDirections.startSettingsFragment())
         }
+
         binding.historyBtn.setOnClickListener {
             findNavController().navigate(MainNavGraphDirections.startHistoryFragment())
         }

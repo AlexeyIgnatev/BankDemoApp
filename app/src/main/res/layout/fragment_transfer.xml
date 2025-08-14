@@ -247,7 +247,7 @@
                 android:textColorHint="#1D1D1B"
                 android:letterSpacing="-0.01"
                 android:textSize="@dimen/_18sp"
-                android:text="0с"
+                android:text="0"
                 android:fontFamily="@font/mont_semibold"
                 app:layout_constraintTop_toBottomOf="@id/sum_title"
                 android:layout_marginHorizontal="@dimen/_20dp"/>
@@ -893,8 +893,8 @@
             <ImageView
                 android:layout_width="@dimen/_0dp"
                 android:layout_height="@dimen/_0dp"
-                android:scaleX="1.5"
-                android:scaleY="1.6"
+                android:scaleX="1.6"
+                android:scaleY="1.55"
                 android:src="@drawable/button_background"
                 app:layout_constraintBottom_toBottomOf="@id/send_btn"
                 app:layout_constraintEnd_toEndOf="@id/send_btn"

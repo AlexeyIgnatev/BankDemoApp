@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
@@ -22,6 +23,7 @@ import com.esom.bank.common.utils.views.setTextProgrammatically
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentSwapBinding
+import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -126,15 +128,15 @@ class SwapFragment : Fragment() {
                 }
 
                 is UiState.Error -> {
-                    binding.root.showErrorSnackbar(it.message)
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
+                    findNavController().navigate(NavGraphDirections.startFailTransferFragment(it.message))
                 }
 
                 is UiState.Success -> {
-                    binding.root.showSuccessSnackbar("Обмен совершён")
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
+                    findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
                     findNavController().popBackStack()
                 }
             }

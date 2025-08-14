@@ -53,11 +53,17 @@
         android:layout_marginStart="2dp"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/transfer_layout"
         android:layout_width="@dimen/_64dp"
         android:layout_height="@dimen/_20dp"
         android:background="@drawable/card_number_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+        <ImageButton
+            android:id="@+id/transfer_btn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -10,11 +10,13 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.esom.bank.NavGraphDirections
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentTransferBinding
+import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.settigns.SettingsFragment.Companion.PHONE_NUMBER
 import dagger.hilt.android.AndroidEntryPoint
@@ -117,15 +119,15 @@ class TransferFragment : Fragment() {
                 }
 
                 is UiState.Error -> {
-                    binding.root.showErrorSnackbar(it.message)
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
+                    findNavController().navigate(NavGraphDirections.startFailTransferFragment(it.message))
                 }
 
                 is UiState.Success -> {
-                    binding.root.showSuccessSnackbar("Перевод совершён")
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
+                    findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
                     findNavController().popBackStack()
                 }
             }

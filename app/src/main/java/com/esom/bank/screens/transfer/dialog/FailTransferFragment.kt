@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
+import androidx.navigation.fragment.navArgs
 import com.esom.bank.R
 import com.esom.bank.databinding.FragmentFailTransferBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,7 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class FailTransferFragment : DialogFragment() {
     private lateinit var binding: FragmentFailTransferBinding
-
+    private val args: FailTransferFragmentArgs by navArgs()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -46,5 +47,7 @@ class FailTransferFragment : DialogFragment() {
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             window.attributes = lp
         }
+
+        binding.opinion.text = args.error
     }
 }

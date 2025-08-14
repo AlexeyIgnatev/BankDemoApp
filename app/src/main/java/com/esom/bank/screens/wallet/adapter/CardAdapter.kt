@@ -12,7 +12,8 @@ import com.esom.bank.databinding.CardPageBinding
 
 class CardAdapter(private val context: Context,
                   private val onSwapClick: () -> Unit,
-                  private val onReceiveClick: () -> Unit) :
+                  private val onReceiveClick: () -> Unit,
+                  private val onTransferClick: () -> Unit) :
     ListAdapter<Card, CardAdapter.CardViewHolder>(CardDiffCallback()) {
     inner class CardViewHolder(private val binding: CardPageBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -22,6 +23,9 @@ class CardAdapter(private val context: Context,
             }
             binding.acceptBtn.setOnClickListener {
                 onReceiveClick()
+            }
+            binding.transferBtn.setOnClickListener {
+                onTransferClick()
             }
             when (item.type) {
                 TypeOfCard.CARD -> {

@@ -179,6 +179,22 @@
         app:popExitAnim="@anim/fade_out"/>
 
     <dialog
+        android:id="@+id/failTransferFragment"
+        android:name="com.esom.bank.screens.transfer.dialog.FailTransferFragment"
+        tools:layout="@layout/fragment_fail_transfer">
+        <argument
+            android:name="error"
+            app:argType="string"/>
+    </dialog>
+    <action
+        android:id="@+id/startFailTransferFragment"
+        app:destination="@id/failTransferFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out"/>
+
+    <dialog
         android:id="@+id/choosePeriodFragment"
         android:name="com.esom.bank.screens.history.dialog.ChoosePeriodFragment"
         tools:layout="@layout/fragment_choose_period"/>

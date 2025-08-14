@@ -244,14 +244,17 @@
         <ImageButton
             android:visibility="gone"
             android:id="@+id/bio_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/_54dp"
+            android:layout_height="@dimen/_54dp"
+            android:scaleType="centerCrop"
+            android:scaleY="1.5"
+            android:scaleX="1.5"
             android:layout_marginTop="@dimen/_30dp"
             android:padding="@dimen/_12dp"
             android:background="@android:color/transparent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/pinc_dig9_btn"
-            app:srcCompat="@drawable/pin_bio_con" />
+            app:srcCompat="@drawable/pin_bio_icon" />
 
         <TextView
             android:id="@+id/pinc_dig0_btn"

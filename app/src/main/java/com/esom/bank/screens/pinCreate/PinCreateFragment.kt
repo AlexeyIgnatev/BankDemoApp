@@ -40,6 +40,10 @@ class PinCreateFragment : Fragment() {
             insets
         }
 
+        binding.backBtn.setOnClickListener {
+            findNavController().popBackStack()
+        }
+
         binding.pincDig0Btn.setOnClickListener { onDigitClicked("0") }
         binding.pincDig1Btn.setOnClickListener { onDigitClicked("1") }
         binding.pincDig2Btn.setOnClickListener { onDigitClicked("2") }
@@ -80,8 +84,16 @@ class PinCreateFragment : Fragment() {
         }
 
         if (pinCode.length == maxPinLength) {
-            if (binding.pinHint.text != getString(R.string.repeat_password))
+            if (binding.pinHint.text != getString(R.string.repeat_password)) {
                 binding.pinHint.text = getString(R.string.repeat_password)
+                pinCode = ""
+                val pinNotChooseBgRepeat =
+                    ContextCompat.getDrawable(requireContext(), R.drawable.pin_not_choose_background)
+                val viewsRepeat = listOf(binding.one, binding.two, binding.three, binding.four)
+                viewsRepeat.forEachIndexed { index, view ->
+                    view.background = if (index < pinCode.length) pinChooseBg else pinNotChooseBgRepeat
+                }
+            }
             else {
                 findNavController().navigate(NavGraphDirections.startLogInFragment())
             }

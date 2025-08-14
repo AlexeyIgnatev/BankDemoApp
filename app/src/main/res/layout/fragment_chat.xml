@@ -64,6 +64,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
     <ImageView
+        android:visibility="gone"
         android:id="@+id/icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -73,6 +74,7 @@
         app:layout_constraintTop_toBottomOf="@id/title"
         android:layout_marginTop="@dimen/_60dp"/>
     <TextView
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/support_title"
@@ -89,6 +91,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/_0dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/item_message_sender"
         android:layout_marginTop="@dimen/_20dp"
         android:layout_marginBottom="@dimen/_11dp"
         android:layout_marginHorizontal="@dimen/_20dp"

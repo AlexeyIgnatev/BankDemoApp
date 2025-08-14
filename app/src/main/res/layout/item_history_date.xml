@@ -28,7 +28,19 @@
         android:textSize="@dimen/_16sp"
         android:textColor="#B2B2B2"
         android:letterSpacing="-0.01"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/som_icon"
         app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginEnd="@dimen/_2dp"/>
+    <ImageView
+        android:id="@+id/som_icon"
+        android:layout_width="@dimen/_7dp"
+        android:layout_height="@dimen/_10dp"
+        app:tint="#B2B2B2"
+        android:src="@drawable/som_title_icon"
+        app:layout_constraintTop_toTopOf="@id/sum"
+        app:layout_constraintBottom_toBottomOf="@id/sum"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/_3dp"
         android:layout_marginEnd="@dimen/_10dp"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

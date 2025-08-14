@@ -10,7 +10,9 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.esom.bank.BuildConfig
 import com.esom.bank.NavGraphDirections
+import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
@@ -41,6 +43,7 @@ class AuthFragment : Fragment() {
             )
             insets
         }
+        binding.version.text = getString(R.string.version_title, BuildConfig.VERSION_NAME)
 
         binding.regBtn.setOnClickListener {
             findNavController().navigate(NavGraphDirections.startRegistrationFragment())

@@ -31,6 +31,8 @@ class SwapFragment : Fragment() {
 
     private val args: SwapFragmentArgs by navArgs()
     private val model: MainViewModel by activityViewModels()
+    private var isPanelShown = false
+    private var isPeoplePanelShown = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,155 +56,135 @@ class SwapFragment : Fragment() {
             findNavController().popBackStack()
         }
 
+        binding.currentCurrencyLayout.setOnClickListener {
+            if (isPanelShown) {
+                slideOut(binding.typeCurrencyLayout)
+                binding.backgroundConversationLayout.visibility = View.GONE
+            } else {
+                binding.typeCurrencyLayout.visibility = View.VISIBLE
+                slideIn(binding.typeCurrencyLayout)
+                binding.backgroundConversationLayout.visibility = View.VISIBLE
+            }
+            isPanelShown = !isPanelShown
+        }
 
-//        binding.somInput.setOnUserTextChangeListener {
-//            updateAmounts(it.toDoubleOrNull(), null)
-//        }
-//        binding.esomInput.setOnUserTextChangeListener {
-//            updateAmounts(null, it.toDoubleOrNull())
-//        }
-//
-//        if (args.direction == 0) {
-//            binding.somLogoCard.setCardBackgroundColor(
-//                ContextCompat.getColor(
-//                    requireContext(), R.color.green
-//                )
-//            )
-//            binding.somImage.setColorFilter(
-//                ContextCompat.getColor(requireContext(), R.color.black),
-//                PorterDuff.Mode.SRC_IN
-//            )
-//            binding.somSuffix.text = "Сом"
-//            binding.somCurrencyName.text = "Фиатный\nСом"
-//
-//            binding.esomLogoCard.setCardBackgroundColor(
-//                ContextCompat.getColor(
-//                    requireContext(), R.color.blue
-//                )
-//            )
-//            binding.esomImage.setColorFilter(
-//                ContextCompat.getColor(
-//                    requireContext(),
-//                    R.color.white
-//                ), PorterDuff.Mode.SRC_IN
-//            )
-//            binding.esomSuffix.text = "ЕСом"
-//            binding.esomCurrencyName.text = "Електро\nСом"
-//        } else {
-//            binding.esomLogoCard.setCardBackgroundColor(
-//                ContextCompat.getColor(
-//                    requireContext(), R.color.green
-//                )
-//            )
-//            binding.esomImage.setColorFilter(
-//                ContextCompat.getColor(
-//                    requireContext(),
-//                    R.color.black
-//                ), PorterDuff.Mode.SRC_IN
-//            )
-//            binding.esomSuffix.text = "Сом"
-//            binding.esomCurrencyName.text = "Фиатный\nСом"
-//
-//            binding.somLogoCard.setCardBackgroundColor(
-//                ContextCompat.getColor(
-//                    requireContext(), R.color.blue
-//                )
-//            )
-//            binding.somImage.setColorFilter(
-//                ContextCompat.getColor(requireContext(), R.color.white),
-//                PorterDuff.Mode.SRC_IN
-//            )
-//            binding.somSuffix.text = "ЕСом"
-//            binding.somCurrencyName.text = "Електро\nСом"
-//        }
-//
-//        binding.swapBtn.setOnClickListener {
-//            if (model.swapRes.value is UiState.Loading) {
-//                return@setOnClickListener
-//            }
-//
-//            val fromAmount = binding.somInput.text.toString().toDoubleOrNull()
-//            val toAmount = binding.esomInput.text.toString().toDoubleOrNull()
-//
-//            if (fromAmount == null && toAmount == null) {
-//                binding.root.showErrorSnackbar("Введите сумму для обмена")
-//            } else if (fromAmount != null && toAmount != null) {
-//                if (args.direction == 0) {
-//                    val somBalance =
-//                        (model.myData.value as? UiState.Success)?.data?.balance?.somBalance ?: 0.0
-//                    if (fromAmount <= somBalance) {
-//                        if (model.swapRes.value !is UiState.Loading) {
-//                            model.transferFromFiat(fromAmount)
-//                        }
-//                    } else {
-//                        binding.root.showErrorSnackbar("Недостаточно Сом на балансе")
-//                    }
-//                } else {
-//                    val tokenBalance =
-//                        (model.myData.value as? UiState.Success)?.data?.balance?.esomBalance ?: 0.0
-//                    if (fromAmount <= tokenBalance) {
-//                        if (model.swapRes.value !is UiState.Loading) {
-//                            model.transferToFiat(fromAmount)
-//                        }
-//                    } else {
-//                        binding.root.showErrorSnackbar("Недостаточно ЕСом на балансе")
-//                    }
-//                }
-//            }
-//        }
-//
-//        model.swapRes.observe(viewLifecycleOwner) {
-//            when (it) {
-//                is UiState.Loading -> {
-//                    binding.swapText.isVisible = false
-//                    binding.indicator.isVisible = true
-//                }
-//
-//                is UiState.Error -> {
-//                    binding.root.showErrorSnackbar(it.message)
-//                    binding.swapText.isVisible = true
-//                    binding.indicator.isVisible = false
-//                }
-//
-//                is UiState.Success -> {
-//                    binding.root.showSuccessSnackbar("Обмен совершён")
-//                    binding.swapText.isVisible = true
-//                    binding.indicator.isVisible = false
-//                    findNavController().popBackStack()
-//                }
-//            }
-//        }
+        binding.peopleLayout.setOnClickListener {
+            if(isPeoplePanelShown) {
+                it.elevation = 0f
+                slideOut(binding.peopleCurrencyLayout)
+            } else {
+                it.elevation = 20f
+                binding.peopleCurrencyLayout.visibility = View.VISIBLE
+                slideIn(binding.peopleCurrencyLayout)
+            }
+            isPeoplePanelShown = !isPeoplePanelShown
+        }
+
+        binding.sumInput.setOnUserTextChangeListener {
+            updateAmounts(it.toDoubleOrNull(), null)
+        }
+
+        binding.sendBtn.setOnClickListener {
+            if (model.swapRes.value is UiState.Loading) {
+                return@setOnClickListener
+            }
+
+            val fromAmount = binding.sumInput.text.toString().toDoubleOrNull()
+
+            if (fromAmount == null) {
+                binding.root.showErrorSnackbar("Введите сумму для обмена")
+            } else {
+                if (args.direction == 0) {
+                    val somBalance =
+                        (model.myData.value as? UiState.Success)?.data?.balance?.somBalance ?: 0.0
+                    if (fromAmount <= somBalance) {
+                        if (model.swapRes.value !is UiState.Loading) {
+                            model.transferFromFiat(fromAmount)
+                        }
+                    } else {
+                        binding.root.showErrorSnackbar("Недостаточно Сом на балансе")
+                    }
+                } else {
+                    val tokenBalance =
+                        (model.myData.value as? UiState.Success)?.data?.balance?.esomBalance ?: 0.0
+                    if (fromAmount <= tokenBalance) {
+                        if (model.swapRes.value !is UiState.Loading) {
+                            model.transferToFiat(fromAmount)
+                        }
+                    } else {
+                        binding.root.showErrorSnackbar("Недостаточно ЕСом на балансе")
+                    }
+                }
+            }
+        }
+
+        model.swapRes.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> {
+                    binding.sendText.isVisible = false
+                    binding.indicator.isVisible = true
+                }
+
+                is UiState.Error -> {
+                    binding.root.showErrorSnackbar(it.message)
+                    binding.sendText.isVisible = true
+                    binding.indicator.isVisible = false
+                }
+
+                is UiState.Success -> {
+                    binding.root.showSuccessSnackbar("Обмен совершён")
+                    binding.sendText.isVisible = true
+                    binding.indicator.isVisible = false
+                    findNavController().popBackStack()
+                }
+            }
+        }
     }
-//
-//    private fun updateAmounts(fromAmount: Double?, toAmount: Double?) {
-//        val platformFee =
-//            (model.myData.value as? UiState.Success)?.data?.platformFee ?: 0.0
-//
-//        if (fromAmount == null && toAmount == null) {
-//            binding.somInput.setTextProgrammatically("")
-//            binding.esomInput.setTextProgrammatically("")
-//        } else if (fromAmount != null) {
-//            val newToAmount = fromAmount * (1 - platformFee)
-//            val newSomText = fromAmount.format(2)
-//            if (newSomText != binding.somInput.text.toString() && !binding.somInput.text.toString()
-//                    .endsWith(".")
-//            ) {
-//                binding.somInput.setTextProgrammatically(fromAmount.format(2))
-//                binding.somInput.setSelection(fromAmount.format(2).length)
-//            }
-//            binding.esomInput.setTextProgrammatically(newToAmount.format(2))
-//            binding.esomInput.setSelection(newToAmount.format(2).length)
-//        } else if (toAmount != null) {
-//            val newFromAmount = toAmount / (1 - platformFee)
-//            val newEsomTExt = toAmount.format(2)
-//            if (newEsomTExt != binding.esomInput.text.toString() && !binding.esomInput.text.toString()
-//                    .endsWith(".")
-//            ) {
-//                binding.esomInput.setTextProgrammatically(toAmount.format(2))
-//                binding.esomInput.setSelection(toAmount.format(2).length)
-//            }
-//            binding.somInput.setTextProgrammatically(newFromAmount.format(2))
-//            binding.somInput.setSelection(newFromAmount.format(2).length)
-//        }
-//    }
+
+    private fun updateAmounts(fromAmount: Double?, toAmount: Double?) {
+        val platformFee =
+            (model.myData.value as? UiState.Success)?.data?.platformFee ?: 0.0
+
+        if (fromAmount == null && toAmount == null) {
+            binding.sumInput.setTextProgrammatically("")
+        } else if (fromAmount != null) {
+            val newToAmount = fromAmount * (1 - platformFee)
+            val newSomText = fromAmount.format(2)
+            if (newSomText != binding.sumInput.text.toString() && !binding.sumInput.text.toString()
+                    .endsWith(".")
+            ) {
+                binding.sumInput.setTextProgrammatically(fromAmount.format(2))
+                binding.sumInput.setSelection(fromAmount.format(2).length)
+            }
+        } else if (toAmount != null) {
+            val newFromAmount = toAmount / (1 - platformFee)
+            binding.sumInput.setTextProgrammatically(newFromAmount.format(2))
+            binding.sumInput.setSelection(newFromAmount.format(2).length)
+        }
+    }
+
+    private fun slideIn(view: View) {
+        view.alpha = 0f
+        view.visibility = View.VISIBLE
+
+        view.post {
+            view.translationY = -view.height.toFloat()
+            view.animate()
+                .translationY(0f)
+                .alpha(1f)
+                .setDuration(450)
+                .start()
+        }
+    }
+
+    private fun slideOut(view: View) {
+        view.animate()
+            .translationY(-view.height.toFloat())
+            .alpha(0f)
+            .setDuration(450)
+            .withEndAction {
+                view.visibility = View.GONE
+            }
+            .start()
+    }
 }

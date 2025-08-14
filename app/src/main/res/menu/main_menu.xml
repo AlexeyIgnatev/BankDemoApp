@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/ic_wallet"
-        android:icon="@drawable/ic_tab_wallet"
-        android:title="Финансы"/>
+        android:icon="@drawable/choose_home_icon"
+        android:title="@string/main"/>
     <item
         android:id="@+id/ic_activity"
-        android:icon="@drawable/ic_tab_activity"
-        android:title="Действия"/>
+        android:icon="@drawable/history_icon"
+        android:title="@string/history"/>
     <item
         android:id="@+id/ic_settings"
-        android:icon="@drawable/ic_tab_settings"
-        android:title="Настройки"/>
+        android:icon="@drawable/profile_icon"
+        android:title="@string/profile_title"/>
 </menu>

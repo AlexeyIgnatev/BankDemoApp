@@ -40,7 +40,7 @@ class MainFragment : Fragment() {
         binding.bottomNavigationView.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.ic_wallet -> findMainNavController().navigate(MainNavGraphDirections.startWalletFragment())
-                R.id.ic_activity -> findMainNavController().navigate(MainNavGraphDirections.startActionsFragment())
+                R.id.ic_activity -> findMainNavController().navigate(MainNavGraphDirections.startHistoryFragment())
                 R.id.ic_settings -> findMainNavController().navigate(MainNavGraphDirections.startSettingsFragment())
             }
             true

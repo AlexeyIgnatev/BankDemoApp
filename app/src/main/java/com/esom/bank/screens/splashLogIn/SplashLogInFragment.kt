@@ -7,10 +7,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.esom.bank.BuildConfig
+import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.databinding.FragmentSplashLogInBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class SplashLogInFragment : Fragment() {
@@ -32,6 +38,12 @@ class SplashLogInFragment : Fragment() {
                 bottom = rect.bottom + insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
             )
             insets
+        }
+        binding.version.text = getString(R.string.version_title, BuildConfig.VERSION_NAME)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(2000)
+            findNavController().navigate(NavGraphDirections.startMainFragment())
         }
     }
 }

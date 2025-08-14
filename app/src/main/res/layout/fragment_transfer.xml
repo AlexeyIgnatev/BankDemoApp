@@ -12,6 +12,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/_30dp"
         android:fillViewport="true">
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -144,10 +145,21 @@
                     android:letterSpacing="-0.01"
                     android:textSize="@dimen/_23sp"
                     android:fontFamily="@font/mont_semibold"
-                    app:layout_constraintEnd_toStartOf="@id/arrow_icon"
+                    app:layout_constraintEnd_toStartOf="@id/som_icon"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    android:layout_marginEnd="@dimen/_15dp"/>
+                    android:layout_marginEnd="@dimen/_3dp"/>
+                <ImageView
+                    android:id="@+id/som_icon"
+                    android:layout_width="@dimen/_7dp"
+                    android:layout_height="@dimen/_10dp"
+                    app:tint="#1D1D1B"
+                    android:src="@drawable/som_title_icon"
+                    app:layout_constraintTop_toTopOf="@id/sum"
+                    app:layout_constraintBottom_toBottomOf="@id/sum"
+                    app:layout_constraintEnd_toStartOf="@id/arrow_icon"
+                    android:layout_marginTop="@dimen/_3dp"
+                    android:layout_marginEnd="@dimen/_10dp"/>
                 <ImageView
                     android:id="@+id/arrow_icon"
                     android:layout_width="@dimen/_18dp"
@@ -235,7 +247,7 @@
                 android:textColorHint="#1D1D1B"
                 android:letterSpacing="-0.01"
                 android:textSize="@dimen/_18sp"
-                android:text="0"
+                android:text="0с"
                 android:fontFamily="@font/mont_semibold"
                 app:layout_constraintTop_toBottomOf="@id/sum_title"
                 android:layout_marginHorizontal="@dimen/_20dp"/>
@@ -464,13 +476,24 @@
                 app:layout_constraintStart_toStartOf="@id/sum_input"
                 android:layout_marginTop="@dimen/_8dp">
                 <TextView
+                    android:id="@+id/som_50_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="50c"
+                    android:text="50"
                     android:textSize="@dimen/_14sp"
                     android:textColor="@color/white"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"/>
+                <ImageView
+                    android:layout_width="@dimen/_7dp"
+                    android:layout_height="@dimen/_10dp"
+                    app:tint="@color/white"
+                    android:src="@drawable/som_title_icon"
+                    app:layout_constraintTop_toTopOf="@id/som_50_title"
+                    app:layout_constraintBottom_toBottomOf="@id/som_50_title"
+                    app:layout_constraintStart_toEndOf="@id/som_50_title"
+                    android:layout_marginTop="@dimen/_3dp"
+                    android:layout_marginStart="1dp"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -485,13 +508,24 @@
                 android:layout_marginStart="@dimen/_5dp"
                 android:layout_marginTop="@dimen/_8dp">
                 <TextView
+                    android:id="@+id/som_100_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="100c"
+                    android:text="100"
                     android:textSize="@dimen/_14sp"
                     android:textColor="@color/white"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"/>
+                <ImageView
+                    android:layout_width="@dimen/_7dp"
+                    android:layout_height="@dimen/_10dp"
+                    app:tint="@color/white"
+                    android:src="@drawable/som_title_icon"
+                    app:layout_constraintTop_toTopOf="@id/som_100_title"
+                    app:layout_constraintBottom_toBottomOf="@id/som_100_title"
+                    app:layout_constraintStart_toEndOf="@id/som_100_title"
+                    android:layout_marginTop="@dimen/_3dp"
+                    android:layout_marginStart="1dp"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -506,13 +540,24 @@
                 android:layout_marginStart="@dimen/_5dp"
                 android:layout_marginTop="@dimen/_8dp">
                 <TextView
+                    android:id="@+id/som_1000_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1000c"
+                    android:text="1000"
                     android:textSize="@dimen/_14sp"
                     android:textColor="@color/white"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"/>
+                <ImageView
+                    android:layout_width="@dimen/_7dp"
+                    android:layout_height="@dimen/_10dp"
+                    app:tint="@color/white"
+                    android:src="@drawable/som_title_icon"
+                    app:layout_constraintTop_toTopOf="@id/som_1000_title"
+                    app:layout_constraintBottom_toBottomOf="@id/som_1000_title"
+                    app:layout_constraintStart_toEndOf="@id/som_1000_title"
+                    android:layout_marginTop="@dimen/_3dp"
+                    android:layout_marginStart="1dp"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -527,13 +572,24 @@
                 android:layout_marginStart="@dimen/_5dp"
                 android:layout_marginTop="@dimen/_8dp">
                 <TextView
+                    android:id="@+id/som_10000_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="10000c"
+                    android:text="10000"
                     android:textSize="@dimen/_14sp"
                     android:textColor="@color/white"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"/>
+                <ImageView
+                    android:layout_width="@dimen/_7dp"
+                    android:layout_height="@dimen/_10dp"
+                    app:tint="@color/white"
+                    android:src="@drawable/som_title_icon"
+                    app:layout_constraintTop_toTopOf="@id/som_10000_title"
+                    app:layout_constraintBottom_toBottomOf="@id/som_10000_title"
+                    app:layout_constraintStart_toEndOf="@id/som_10000_title"
+                    android:layout_marginTop="@dimen/_3dp"
+                    android:layout_marginStart="1dp"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -575,15 +631,26 @@
                     android:letterSpacing="-0.01"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginEnd="@dimen/_20dp"
+                    android:layout_marginEnd="@dimen/_35dp"
                     android:layout_marginTop="@dimen/_5dp"/>
+                <ImageView
+                    android:layout_width="@dimen/_7dp"
+                    android:layout_height="@dimen/_10dp"
+                    app:tint="#1D1D1B"
+                    android:src="@drawable/som_title_icon"
+                    app:layout_constraintTop_toTopOf="@id/comission_value"
+                    app:layout_constraintBottom_toBottomOf="@id/comission_value"
+                    app:layout_constraintStart_toEndOf="@id/comission_value"
+                    android:layout_marginTop="@dimen/_3dp"
+                    android:layout_marginStart="1dp"/>
                 <View
                     android:id="@+id/comission_view"
                     android:layout_width="@dimen/_0dp"
                     android:layout_height="1dp"
                     android:background="#E62324"
+                    android:layout_marginEnd="@dimen/_16dp"
                     app:layout_constraintStart_toStartOf="@id/comission_title"
-                    app:layout_constraintEnd_toEndOf="@id/comission_value"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/comission_title"
                     android:layout_marginTop="@dimen/_14dp"/>
                 <TextView
@@ -595,10 +662,19 @@
                     android:fontFamily="@font/mont_medium"
                     android:textSize="@dimen/_27sp"
                     android:letterSpacing="-0.01"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/total_som_icon"
                     app:layout_constraintTop_toBottomOf="@id/comission_view"
-                    android:layout_marginEnd="@dimen/_20dp"
                     android:layout_marginTop="@dimen/_5dp"/>
+                <ImageView
+                    android:id="@+id/total_som_icon"
+                    android:layout_width="@dimen/_12dp"
+                    android:layout_height="@dimen/_16dp"
+                    app:tint="#E62324"
+                    android:src="@drawable/som_title_icon"
+                    app:layout_constraintTop_toTopOf="@id/total"
+                    app:layout_constraintBottom_toBottomOf="@id/total"
+                    app:layout_constraintEnd_toEndOf="@id/comission_view"
+                    android:layout_marginTop="@dimen/_3dp"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -830,11 +906,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_40dp"
                 android:layout_marginHorizontal="@dimen/_22dp"
-                android:layout_marginBottom="@dimen/_40dp"
+                android:layout_marginTop="@dimen/_20dp"
                 app:cardBackgroundColor="#E62324"
                 app:cardCornerRadius="@dimen/_12dp"
                 app:cardElevation="@dimen/_0dp"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/comission_layout"
                 app:strokeWidth="@dimen/_0dp">
 
                 <androidx.constraintlayout.widget.ConstraintLayout

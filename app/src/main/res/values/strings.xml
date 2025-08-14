@@ -103,4 +103,12 @@
     <string name="push_notifications">Push уведомления</string>
     <string name="safety">Безопасность</string>
     <string name="change_pass">Сменить пароль</string>
+    <string name="main">Главная</string>
+    <string name="history">История</string>
+    <string name="profile_title">Профиль</string>
+    <string name="finance">Финансы</string>
+    <string name="finance_opinion">Выгрузка фин.отчета на почту</string>
+    <string name="etc_title">Прочее</string>
+    <string name="about_app">О приложении</string>
+    <string name="privacy_policy">Пользовательское соглашение</string>
 </resources>

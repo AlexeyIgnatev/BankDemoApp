@@ -35,7 +35,7 @@
         android:id="@+id/version"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_24dp"
+        android:layout_marginBottom="@dimen/_8dp"
         android:fontFamily="@font/mont_semibold"
         android:gravity="center"
         android:text="@string/version_title"

@@ -40,9 +40,11 @@ class TransactionAdapter(private val context: Context): ListAdapter<Transaction,
             }
 
             if(item.sum > 0) {
+                binding.somIcon.setColorFilter(Color.parseColor("#38C72E"))
                 binding.sum.setTextColor(Color.parseColor("#38C72E"))
                 binding.sum.text = "+" + item.sum
             } else {
+                binding.somIcon.setColorFilter(Color.parseColor("#1D1D1B"))
                 binding.sum.setTextColor(Color.parseColor("#1D1D1B"))
                 binding.sum.text = item.sum.toString()
             }

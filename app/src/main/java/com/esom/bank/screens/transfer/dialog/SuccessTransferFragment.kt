@@ -35,7 +35,7 @@ class SuccessTransferFragment : DialogFragment() {
 
             val paddingInPixels = (16 * displayMetrics.density).toInt()
 
-            val heightInPixels = Resources.getSystem().getDimensionPixelSize(R.dimen._250dp)
+            val heightInPixels = requireContext().resources.getDimensionPixelSize(R.dimen._250dp)
 
             val lp = WindowManager.LayoutParams().apply {
                 copyFrom(window.attributes)

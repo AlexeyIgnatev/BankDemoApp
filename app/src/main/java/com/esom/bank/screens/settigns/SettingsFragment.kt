@@ -51,6 +51,14 @@ class SettingsFragment : Fragment() {
             insets
         }
 
+        binding.financeBtn.setOnClickListener {
+            findParentNavController().navigate(NavGraphDirections.startChooseDateFragment())
+        }
+
+        binding.changePassBtn.setOnClickListener {
+            findParentNavController().navigate(NavGraphDirections.startPinCreateFragment())
+        }
+
         model.myData.observe(viewLifecycleOwner) {
             when (it) {
                 is UiState.Loading -> {}

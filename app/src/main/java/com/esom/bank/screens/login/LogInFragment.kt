@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.navigation.fragment.findNavController
+import com.esom.bank.BuildConfig
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
@@ -42,6 +43,7 @@ class LogInFragment : Fragment() {
             )
             insets
         }
+        binding.versionTitle.text = getString(R.string.version_title, BuildConfig.VERSION_NAME)
         if(localDataSource.isBio()) binding.bioBtn.visibility = View.VISIBLE
         binding.authBtn.setOnClickListener {
             findNavController().navigate(NavGraphDirections.startAuthFragment())

@@ -183,11 +183,11 @@ class WalletFragment : Fragment() {
             }
         }
         val cards = listOf(
-            Card(TypeOfCard.CARD, "333 333\u20C0", "*998"),
+            Card(TypeOfCard.CARD, "333 333", "*998"),
             Card(TypeOfCard.USDT, "444 444", "*1w6"),
             Card(TypeOfCard.BITCOIN, "111 111", "*w77"),
             Card(TypeOfCard.ETH, "555 555", "*w56"),
-            Card(TypeOfCard.DIGITAL, "666 666\u20C0", "*998"),
+            Card(TypeOfCard.DIGITAL, "666 666", "*998"),
         )
 
         val infiniteList = mutableListOf<Card>().apply {
@@ -242,22 +242,6 @@ class WalletFragment : Fragment() {
         binding.notificationBtn.setOnClickListener {
             findNavController().navigate(MainNavGraphDirections.startNotificationFragment())
         }
-
-//        binding.somToEsomBtn.setOnClickListener {
-//            findParentNavController().navigate(NavGraphDirections.startSwapFragment(0))
-//        }
-//
-//        binding.esomToSomBtn.setOnClickListener {
-//            findParentNavController().navigate(NavGraphDirections.startSwapFragment(1))
-//        }
-//
-//        binding.sendEsomCard.setOnClickListener {
-//            findParentNavController().navigate(NavGraphDirections.startTransferFragment())
-//        }
-//
-//        binding.receiveEsomCard.setOnClickListener {
-//            findParentNavController().navigate(NavGraphDirections.startReceiveFragment())
-//        }
 
         model.updateUserData()
         model.myData.observe(viewLifecycleOwner) {

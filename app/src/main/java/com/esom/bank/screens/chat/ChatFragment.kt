@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.navigation.fragment.findNavController
 import com.esom.bank.R
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.databinding.FragmentChatBinding
@@ -31,17 +32,14 @@ class ChatFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.root.doOnApplyWindowInsets { view, insets, rect ->
             view.updatePadding(
-                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
-            )
-            insets
-        }
-
-        binding.messageLayout.doOnApplyWindowInsets { view, insets, rect ->
-            view.updatePadding(
+                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top,
                 bottom = rect.bottom + if(insets.getInsets(WindowInsetsCompat.Type.ime()).bottom > 0) insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
                 else insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
             )
             insets
+        }
+        binding.backBtn.setOnClickListener {
+            findNavController().popBackStack()
         }
         binding.messages.adapter = adapter
         val messages = listOf(

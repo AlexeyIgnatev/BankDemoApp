@@ -2,6 +2,7 @@ package com.esom.bank.screens.wallet.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -28,6 +29,7 @@ class CardAdapter(private val context: Context,
                     binding.somTitle.text = context.getString(R.string.som)
                     binding.somCount.text = item.sum
                     binding.cardNumberIcon.setImageResource(R.drawable.icon_sum_som)
+                    binding.somIconMonth.visibility = View.VISIBLE
                 }
 
                 TypeOfCard.USDT -> {
@@ -35,6 +37,7 @@ class CardAdapter(private val context: Context,
                     binding.somTitle.text = context.getString(R.string.usdt)
                     binding.somCount.text = item.sum
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
+                    binding.somIconMonth.visibility = View.GONE
                 }
 
                 TypeOfCard.BITCOIN -> {
@@ -42,6 +45,7 @@ class CardAdapter(private val context: Context,
                     binding.somTitle.text = context.getString(R.string.bitcoin)
                     binding.somCount.text = item.sum
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
+                    binding.somIconMonth.visibility = View.GONE
                 }
 
                 TypeOfCard.ETH -> {
@@ -49,6 +53,7 @@ class CardAdapter(private val context: Context,
                     binding.somTitle.text = context.getString(R.string.ethereum)
                     binding.somCount.text = item.sum
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
+                    binding.somIconMonth.visibility = View.GONE
                 }
 
                 TypeOfCard.DIGITAL -> {
@@ -56,6 +61,7 @@ class CardAdapter(private val context: Context,
                     binding.somTitle.text = context.getString(R.string.digital)
                     binding.somCount.text = item.sum
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
+                    binding.somIconMonth.visibility = View.VISIBLE
                 }
             }
         }

@@ -32,7 +32,7 @@
         android:id="@+id/som_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="333 333$"
+        android:text="333 333"
         android:textColor="#1D1D1B"
         android:letterSpacing="-0.01"
         android:textSize="@dimen/_22sp"
@@ -40,6 +40,17 @@
         android:layout_marginTop="-4dp"
         app:layout_constraintTop_toBottomOf="@id/som_title"
         app:layout_constraintStart_toStartOf="@id/som_title"/>
+    <ImageView
+        android:id="@+id/som_icon_month"
+        android:layout_width="@dimen/_10dp"
+        android:layout_height="@dimen/_14dp"
+        app:tint="#1D1D1B"
+        android:src="@drawable/som_title_icon"
+        app:layout_constraintTop_toTopOf="@id/som_count"
+        app:layout_constraintBottom_toBottomOf="@id/som_count"
+        app:layout_constraintStart_toEndOf="@id/som_count"
+        android:layout_marginTop="@dimen/_3dp"
+        android:layout_marginStart="2dp"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="@dimen/_64dp"

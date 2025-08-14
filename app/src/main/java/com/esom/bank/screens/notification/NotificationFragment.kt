@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.navigation.fragment.findNavController
 import com.esom.bank.R
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.databinding.FragmentNotificationBinding
@@ -32,10 +33,12 @@ class NotificationFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.root.doOnApplyWindowInsets { view, insets, rect ->
             view.updatePadding(
-                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top,
-                bottom = rect.bottom + insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
             )
             insets
+        }
+        binding.backBtn.setOnClickListener {
+            findNavController().popBackStack()
         }
         val notifications = listOf(
             NotificationAdapter.NotificationItem.Date("Сегодня"),

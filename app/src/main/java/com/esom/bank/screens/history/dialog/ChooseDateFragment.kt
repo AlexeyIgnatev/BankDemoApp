@@ -84,17 +84,21 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         val daysInMonth = generateDaysForMonth(calendar)
         val isCurrentMonth = calendar.get(Calendar.MONTH) == currentMonth &&
                 calendar.get(Calendar.YEAR) == currentYear
+
         adapter = CalendarAdapter(
             requireContext(),
-            if (isCurrentMonth) currentDay else "",
+            currentDay, // День без ведущего нуля (например, "5")
             isCurrentMonth = isCurrentMonth,
-        ) { day ->
-            if(selectedDate == 0) {
-                binding.startDate.text = formatDate(day)
-                startDate = formatDate(day)
-            } else {
-                binding.endDate.text = formatDate(day)
-                endDate = formatDate(day)
+        ) { fullDate -> // fullDate в формате "yyyy-MM-dd"
+            if (fullDate.isNotEmpty()) {
+                val formattedDate = formatDateToDDMMYYYY(fullDate) // Преобразуем в "dd.MM.yyyy"
+                if(selectedDate == 0) {
+                    binding.startDate.text = formattedDate
+                    startDate = formattedDate
+                } else {
+                    binding.endDate.text = formattedDate
+                    endDate = formattedDate
+                }
             }
         }
 
@@ -103,14 +107,14 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         adapter.submitList(daysInMonth)
     }
 
-    private fun formatDate(dateString: String): String {
+    private fun formatDateToDDMMYYYY(dateString: String): String {
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val outputFormat = SimpleDateFormat("dd.MM.yy", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()) // Изменили на гггг
             val date = inputFormat.parse(dateString)
             outputFormat.format(date)
         } catch (e: Exception) {
-            dateString
+            dateString // Возвращаем оригинальную строку в случае ошибки
         }
     }
 
@@ -123,6 +127,8 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
 
     private fun generateDaysForMonth(calendar: Calendar): List<String> {
         val days = mutableListOf<String>()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH) + 1 // Calendar.MONTH начинается с 0
 
         val firstDayOfMonth = calendar.clone() as Calendar
         firstDayOfMonth.set(Calendar.DAY_OF_MONTH, 1)
@@ -130,8 +136,15 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         val firstDayOfWeek = (firstDayOfMonth.get(Calendar.DAY_OF_WEEK) + 5) % 7
         val totalDaysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
 
+        // Пустые строки для выравнивания
         repeat(firstDayOfWeek) { days.add("") }
-        for (day in 1..totalDaysInMonth) { days.add(day.toString()) }
+
+        // Формируем полные даты в формате "yyyy-MM-dd"
+        for (day in 1..totalDaysInMonth) {
+            val formattedDay = day.toString().padStart(2, '0')
+            val formattedMonth = month.toString().padStart(2, '0')
+            days.add("$year-$formattedMonth-$formattedDay")
+        }
 
         return days
     }

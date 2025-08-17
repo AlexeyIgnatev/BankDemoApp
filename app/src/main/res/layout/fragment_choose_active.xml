@@ -19,7 +19,7 @@
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/choose_period"
+            android:text="@string/choose_active"
             android:textColor="#1D1D1B"
             android:fontFamily="@font/mont_bold"
             android:textSize="@dimen/_16sp"

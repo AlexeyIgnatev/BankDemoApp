@@ -7,7 +7,7 @@ data class TransferDto(
     @SerializedName("amount")
     val amount: Double,
     @SerializedName("phone_number")
-    val phoneNumber: String,
+    val phoneNumber: String? = null,
     @SerializedName("address")
     val address: String? = null,
     @SerializedName("currency")

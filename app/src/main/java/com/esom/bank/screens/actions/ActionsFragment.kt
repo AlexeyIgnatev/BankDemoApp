@@ -48,7 +48,7 @@ class ActionsFragment : Fragment() {
         }
 
         binding.receiveCard.setOnClickListener {
-            findParentNavController().navigate(NavGraphDirections.startReceiveFragment())
+            //findParentNavController().navigate(NavGraphDirections.startReceiveFragment())
         }
     }
 }

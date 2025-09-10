@@ -45,7 +45,6 @@ class WalletFragment : Fragment() {
     private lateinit var binding: FragmentWalletBinding
 
     private val model: MainViewModel by activityViewModels()
-    private var currentCurrency = CurrencyEnum.SOM
     private var cards: List<Card> = emptyList()
     private var infiniteList: List<Card> = emptyList()
 
@@ -120,9 +119,15 @@ class WalletFragment : Fragment() {
         transactionAdapter.submitList(transactionsSom)
 
         val adapter = CardAdapter(requireContext(), { currency ->
-            findParentNavController().navigate(NavGraphDirections.startSwapFragment(if(currency == CurrencyEnum.ESOM) 1 else 0))
-        }, {
-            findParentNavController().navigate(NavGraphDirections.startReceiveFragment())
+            findParentNavController().navigate(NavGraphDirections.startSwapFragment(if (currency == CurrencyEnum.ESOM) 1 else 0))
+        }, { currency ->
+            val address =
+                (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currency }?.address
+            findParentNavController().navigate(
+                NavGraphDirections.startReceiveFragment(
+                    address ?: "", currency
+                )
+            )
         }, {
             findParentNavController().navigate(NavGraphDirections.startTransferFragment())
         })
@@ -206,18 +211,22 @@ class WalletFragment : Fragment() {
                         updateTransactions(transactionsSom, transactionAdapter)
                         Log.e("currency", "SOM")
                     }
+
                     1 -> {
                         updateTransactions(transactionsUSDT, transactionAdapter)
                         Log.e("currency", "USDT")
                     }
+
                     2 -> {
                         updateTransactions(transactionsBitcoin, transactionAdapter)
                         Log.e("currency", "BITCOIN")
                     }
+
                     3 -> {
                         updateTransactions(transactionsEth, transactionAdapter)
                         Log.e("currency", "ETHEREUM")
                     }
+
                     4 -> {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(cards.size, false)
@@ -251,7 +260,7 @@ class WalletFragment : Fragment() {
                     binding.title.text = "${it.data.firstName} ${it.data.lastName}"
                     updateCards(it.data.wallets)
                     updateCurrencies(it.data.wallets)
-                    updateTotalBalance()
+                    updateTotalBalance(it.data.wallets)
                 }
             }
         }
@@ -260,11 +269,35 @@ class WalletFragment : Fragment() {
     private fun updateCards(wallets: List<WalletModel>) {
         cards = wallets.map { wallet ->
             when (wallet.currency) {
-                CurrencyEnum.SOM -> Card(TypeOfCard.CARD, wallet.balance.format(2), "*${wallet.address.takeLast(4)}")
-                CurrencyEnum.ESOM -> Card(TypeOfCard.DIGITAL, wallet.balance.format(2), "*${wallet.address.takeLast(4)}")
-                CurrencyEnum.USDT_TRC20 -> Card(TypeOfCard.USDT, wallet.balance.format(2), "*${wallet.address.takeLast(4)}")
-                CurrencyEnum.BTC -> Card(TypeOfCard.BITCOIN, wallet.balance.format(2), "*${wallet.address.takeLast(4)}")
-                CurrencyEnum.ETH -> Card(TypeOfCard.ETH, wallet.balance.format(2), "*${wallet.address.takeLast(4)}")
+                CurrencyEnum.SOM -> Card(
+                    TypeOfCard.CARD, wallet.balance.format(2), "*${
+                        (model.myData.value as? UiState.Success)?.data?.phone?.takeLast(3)
+                    }"
+                )
+
+                CurrencyEnum.ESOM -> Card(
+                    TypeOfCard.DIGITAL,
+                    wallet.balance.format(2),
+                    "*${wallet.address.takeLast(3)}"
+                )
+
+                CurrencyEnum.USDT_TRC20 -> Card(
+                    TypeOfCard.USDT,
+                    wallet.balance.format(2),
+                    "*${wallet.address.takeLast(3)}"
+                )
+
+                CurrencyEnum.BTC -> Card(
+                    TypeOfCard.BITCOIN,
+                    wallet.balance.format(2),
+                    "*${wallet.address.takeLast(3)}"
+                )
+
+                CurrencyEnum.ETH -> Card(
+                    TypeOfCard.ETH,
+                    wallet.balance.format(2),
+                    "*${wallet.address.takeLast(3)}"
+                )
             }
         }
 
@@ -281,26 +314,59 @@ class WalletFragment : Fragment() {
     private fun updateCurrencies(wallets: List<WalletModel>) {
         val currencies = wallets.map { wallet ->
             when (wallet.currency) {
-                CurrencyEnum.SOM -> Currency(TypeOfCurrency.FIAT, wallet.buyRate.format(2), wallet.sellRate.format(2))
-                CurrencyEnum.ESOM -> Currency(TypeOfCurrency.DIGITAL, wallet.buyRate.format(2), wallet.sellRate.format(2))
-                CurrencyEnum.USDT_TRC20 -> Currency(TypeOfCurrency.USDT, wallet.buyRate.format(2), wallet.sellRate.format(2))
-                CurrencyEnum.BTC -> Currency(TypeOfCurrency.BITCOIN, wallet.buyRate.format(2), wallet.sellRate.format(2))
-                CurrencyEnum.ETH -> Currency(TypeOfCurrency.ETH, wallet.buyRate.format(2), wallet.sellRate.format(2))
+                CurrencyEnum.SOM -> Currency(
+                    TypeOfCurrency.FIAT,
+                    wallet.buyRate.format(2),
+                    wallet.sellRate.format(2)
+                )
+
+                CurrencyEnum.ESOM -> Currency(
+                    TypeOfCurrency.DIGITAL,
+                    wallet.buyRate.format(2),
+                    wallet.sellRate.format(2)
+                )
+
+                CurrencyEnum.USDT_TRC20 -> Currency(
+                    TypeOfCurrency.USDT,
+                    wallet.buyRate.format(2),
+                    wallet.sellRate.format(2)
+                )
+
+                CurrencyEnum.BTC -> Currency(
+                    TypeOfCurrency.BITCOIN,
+                    wallet.buyRate.format(2),
+                    wallet.sellRate.format(2)
+                )
+
+                CurrencyEnum.ETH -> Currency(
+                    TypeOfCurrency.ETH,
+                    wallet.buyRate.format(2),
+                    wallet.sellRate.format(2)
+                )
             }
         }
 
         (binding.currencies.adapter as? CurrencyAdapter)?.submitList(currencies)
     }
 
-    private fun updateTransactions(transactions: List<Transaction>, transactionAdapter: TransactionAdapter) {
-        transactionAdapter.submitList(transactions)
-        binding.transactions.adapter = transactionAdapter
+    private fun updateTotalBalance(wallets: List<WalletModel>) {
+        binding.monthWaste.text = "0"
+
+        var totalBalanceInSoms = 0.0
+
+        wallets.forEach { wallet ->
+            val balanceInSoms = wallet.balance * wallet.buyRate
+            totalBalanceInSoms += balanceInSoms
+        }
+
+        binding.totalWaste.text = totalBalanceInSoms.format(2)
     }
 
-    private fun updateTotalBalance() {
-        val total = (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currentCurrency }?.balance
-        if (total != null) {
-            binding.totalWaste.text = "${total.format(2)}"
-        }
+    private fun updateTransactions(
+        transactions: List<Transaction>,
+        transactionAdapter: TransactionAdapter
+    ) {
+        transactionAdapter.submitList(transactions)
+        binding.transactions.adapter = transactionAdapter
     }
 }

@@ -1,6 +1,9 @@
 package com.esom.bank.screens.transfer
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,15 +30,10 @@ class TransferFragment : Fragment() {
     private lateinit var binding: FragmentTransferBinding
     private val model: MainViewModel by activityViewModels()
     private var isPanelShown = false
-    private var isPeoplePanelShown = false
-
+    private var phoneMaskWatcher: TextWatcher? = null
     private var currentFromCurrency: CurrencyEnum = CurrencyEnum.ESOM
-    private var currentToCurrency: CurrencyEnum = CurrencyEnum.SOM
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentTransferBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -49,235 +47,192 @@ class TransferFragment : Fragment() {
             )
             insets
         }
-
         initCurrencyIcons()
-
         updateWalletBalances()
-
-        binding.sum50Layout.setOnClickListener {
-            binding.sumInput.setText("50")
-            updateCommissionAndTotal("50")
-        }
-        binding.sum100Layout.setOnClickListener {
-            binding.sumInput.setText("100")
-            updateCommissionAndTotal("100")
-        }
-        binding.sum1000Layout.setOnClickListener {
-            binding.sumInput.setText("1000")
-            updateCommissionAndTotal("1000")
-        }
-        binding.sum10000Layout.setOnClickListener {
-            binding.sumInput.setText("10000")
-            updateCommissionAndTotal("10000")
-        }
-
-        binding.sumInput.setOnUserTextChangeListener { text ->
-            updateCommissionAndTotal(text.toString())
-        }
-
-        binding.backBtn.setOnClickListener {
-            findNavController().popBackStack()
-        }
-
+        setupQuickAmounts()
+        binding.sumInput.setOnUserTextChangeListener { text -> updateCommissionAndTotal(text.toString()) }
+        binding.backBtn.setOnClickListener { findNavController().popBackStack() }
         binding.currentCurrencyLayout.setOnClickListener {
             if (isPanelShown) {
-                binding.peopleLayout.isClickable = true
                 slideOut(binding.typeCurrencyLayout)
                 binding.backgroundConversationLayout.visibility = View.GONE
             } else {
-                binding.peopleLayout.isClickable = false
                 binding.typeCurrencyLayout.visibility = View.VISIBLE
                 slideIn(binding.typeCurrencyLayout)
                 binding.backgroundConversationLayout.visibility = View.VISIBLE
             }
             isPanelShown = !isPanelShown
         }
-
-        binding.peopleLayout.setOnClickListener {
-            if(isPeoplePanelShown) {
-                binding.currentCurrencyLayout.isClickable = true
-                it.elevation = 0f
-                slideOut(binding.peopleCurrencyLayout)
-            } else {
-                binding.currentCurrencyLayout.isClickable = false
-                it.elevation = 15f
-                binding.peopleCurrencyLayout.visibility = View.VISIBLE
-                slideIn(binding.peopleCurrencyLayout)
-            }
-            isPeoplePanelShown = !isPeoplePanelShown
-        }
-
-        binding.firstUsdtBtn.setOnClickListener {
-            toggleCurrency(true, CurrencyEnum.USDT_TRC20)
-        }
-
-        binding.firstBitcoinBtn.setOnClickListener {
-            toggleCurrency(true, CurrencyEnum.BTC)
-        }
-
-        binding.firstEthBtn.setOnClickListener {
-            toggleCurrency(true, CurrencyEnum.ETH)
-        }
-
-        binding.firstDigitalBtn.setOnClickListener {
-            toggleCurrency(true, CurrencyEnum.ESOM)
-        }
-
-        binding.secondUsdtBtn.setOnClickListener {
-            toggleCurrency(false, CurrencyEnum.USDT_TRC20)
-        }
-
-        binding.secondBitcoinBtn.setOnClickListener {
-            toggleCurrency(false, CurrencyEnum.BTC)
-        }
-
-        binding.secondEthBtn.setOnClickListener {
-            toggleCurrency(false, CurrencyEnum.ETH)
-        }
-
-        binding.secondDigitalBtn.setOnClickListener {
-            toggleCurrency(false, CurrencyEnum.SOM)
-        }
-
-        binding.sendBtn.setOnClickListener {
-            handleTransferButtonClick()
-        }
-
-        model.myData.observe(viewLifecycleOwner) { uiState ->
-            when (uiState) {
-                is UiState.Success -> {
-                    updateWalletBalances()
-                    updateCommissionAndTotal(binding.sumInput.text.toString())
-                }
-                else -> {}
+        binding.firstUsdtBtn.setOnClickListener { toggleCurrency(CurrencyEnum.USDT_TRC20) }
+        binding.firstBitcoinBtn.setOnClickListener { toggleCurrency(CurrencyEnum.BTC) }
+        binding.firstEthBtn.setOnClickListener { toggleCurrency(CurrencyEnum.ETH) }
+        binding.firstDigitalBtn.setOnClickListener { toggleCurrency(CurrencyEnum.ESOM) }
+        binding.firstSomBtn.setOnClickListener { toggleCurrency(CurrencyEnum.SOM) }
+        binding.sendBtn.setOnClickListener { handleTransferButtonClick() }
+        model.myData.observe(viewLifecycleOwner) {
+            if (it is UiState.Success) {
+                updateWalletBalances()
+                updateCommissionAndTotal(binding.sumInput.text.toString())
             }
         }
-
         model.transferRes.observe(viewLifecycleOwner) {
             when (it) {
                 is UiState.Loading -> {
                     binding.sendText.isVisible = false
                     binding.indicator.isVisible = true
                 }
-
                 is UiState.Error -> {
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
                     findNavController().navigate(NavGraphDirections.startFailTransferFragment(it.message))
                 }
-
                 is UiState.Success -> {
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
                     findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
                     findNavController().popBackStack()
                 }
+                else -> {}
+            }
+        }
+    }
+
+    private fun setupQuickAmounts() {
+        listOf(
+            binding.sum50Layout to "50",
+            binding.sum100Layout to "100",
+            binding.sum1000Layout to "1000",
+            binding.sum10000Layout to "10000"
+        ).forEach { (layout, value) ->
+            layout.setOnClickListener {
+                binding.sumInput.setText(value)
+                updateCommissionAndTotal(value)
             }
         }
     }
 
     private fun initCurrencyIcons() {
-        binding.fiatIcon.setImageResource(R.drawable.salam_icon)
-        binding.fiatTitle.text = getString(R.string.digital)
-        binding.icon.setImageResource(R.drawable.salam_icon)
-        binding.currencyTitle.text = getString(R.string.digital)
-        binding.somIcon.visibility = View.GONE
-
-        binding.peopleFiatIcon.setImageResource(R.drawable.som_icon)
-        binding.peopleFiatTitle.text = getString(R.string.som)
-        binding.peopleIcon.setImageResource(R.drawable.som_icon)
-        binding.peopleTitle.text = getString(R.string.som)
-
+        setCurrencyUI(CurrencyEnum.ESOM, R.drawable.salam_icon, getString(R.string.digital), showSomIcons = false)
         currentFromCurrency = CurrencyEnum.ESOM
-        currentToCurrency = CurrencyEnum.SOM
     }
 
-    private fun toggleCurrency(isFromCurrency: Boolean, currency: CurrencyEnum) {
-        if (isFromCurrency) {
-            currentFromCurrency = currency
-            updateCurrencyIcon(true, currency)
-        } else {
-            currentToCurrency = currency
-            updateCurrencyIcon(false, currency)
-        }
+    private fun toggleCurrency(currency: CurrencyEnum) {
+        currentFromCurrency = currency
+        updateCurrencyIcon(currency)
         updateWalletBalances()
         updateCommissionAndTotal(binding.sumInput.text.toString())
+        binding.contact.hint = if (currency in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)) {
+            "Введите номер телефона"
+        } else {
+            "Введите адрес кошелька"
+        }
+        if (currency == CurrencyEnum.SOM) {
+            applyPhoneMask()
+        } else {
+            phoneMaskWatcher?.let { binding.contact.removeTextChangedListener(it) }
+            phoneMaskWatcher = null
+            binding.contact.setText("")
+            binding.contact.inputType = InputType.TYPE_CLASS_TEXT
+            binding.contact.filters = arrayOf()
+        }
     }
 
-    private fun updateCurrencyIcon(isFromCurrency: Boolean, currency: CurrencyEnum) {
-        val iconView = if (isFromCurrency) binding.icon else binding.peopleIcon
-        val titleView = if (isFromCurrency) binding.currencyTitle else binding.peopleTitle
-
+    private fun updateCurrencyIcon(currency: CurrencyEnum) {
         when (currency) {
-            CurrencyEnum.SOM -> {
-                iconView.setImageResource(R.drawable.som_icon)
-                titleView.text = getString(R.string.som)
-                binding.somIcon.visibility = View.VISIBLE
-            }
-            CurrencyEnum.ESOM -> {
-                iconView.setImageResource(R.drawable.salam_icon)
-                titleView.text = getString(R.string.digital)
-                binding.somIcon.visibility = View.GONE
-            }
-            CurrencyEnum.BTC -> {
-                iconView.setImageResource(R.drawable.bitcoin_icon)
-                titleView.text = getString(R.string.bitcoin)
-                binding.somIcon.visibility = View.GONE
-            }
-            CurrencyEnum.ETH -> {
-                iconView.setImageResource(R.drawable.eth_icon)
-                titleView.text = getString(R.string.ethereum)
-                binding.somIcon.visibility = View.GONE
-            }
-            CurrencyEnum.USDT_TRC20 -> {
-                iconView.setImageResource(R.drawable.usdt_icon)
-                titleView.text = getString(R.string.usdt)
-                binding.somIcon.visibility = View.GONE
-            }
+            CurrencyEnum.SOM -> setCurrencyUI(currency, R.drawable.som_icon, getString(R.string.som), true)
+            CurrencyEnum.ESOM -> setCurrencyUI(currency, R.drawable.salam_icon, getString(R.string.digital), false)
+            CurrencyEnum.BTC -> setCurrencyUI(currency, R.drawable.bitcoin_icon, getString(R.string.bitcoin), false)
+            CurrencyEnum.ETH -> setCurrencyUI(currency, R.drawable.eth_icon, getString(R.string.ethereum), false)
+            CurrencyEnum.USDT_TRC20 -> setCurrencyUI(currency, R.drawable.usdt_icon, getString(R.string.usdt), false)
         }
+    }
+
+    private fun setCurrencyUI(currency: CurrencyEnum, iconRes: Int, title: String, showSomIcons: Boolean) {
+        binding.icon.setImageResource(iconRes)
+        binding.currencyTitle.text = title
+        binding.peopleIcon.setImageResource(iconRes)
+        binding.peopleTitle.text = title
+        binding.somIcon.visibility = if (showSomIcons) View.VISIBLE else View.GONE
+        binding.totalSomIcon.visibility = if (showSomIcons) View.VISIBLE else View.GONE
     }
 
     private fun updateWalletBalances() {
         val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return
+        val phone = (model.myData.value as? UiState.Success)?.data?.phone
 
-        val usdtBalance = wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }?.balance?.format(2) ?: "0.0"
-        val btcBalance = wallets.find { it.currency == CurrencyEnum.BTC }?.balance?.format(2) ?: "0.0"
-        val ethBalance = wallets.find { it.currency == CurrencyEnum.ETH }?.balance?.format(2) ?: "0.0"
-        val esomBalance = wallets.find { it.currency == CurrencyEnum.ESOM }?.balance?.format(2) ?: "0.0"
+        fun getSuffix(currency: CurrencyEnum, walletAddress: String?): String {
+            return when (currency) {
+                CurrencyEnum.SOM -> phone?.takeLast(3)?.let { "*$it" } ?: ""
+                else -> walletAddress?.takeLast(3)?.let { "*$it" } ?: ""
+            }
+        }
 
-        binding.sum1.text = usdtBalance
-        binding.sum2.text = btcBalance
-        binding.sum3.text = ethBalance
-        binding.sum4.text = esomBalance
+        val walletUSDT = wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }
+        val walletBTC = wallets.find { it.currency == CurrencyEnum.BTC }
+        val walletETH = wallets.find { it.currency == CurrencyEnum.ETH }
+        val walletESOM = wallets.find { it.currency == CurrencyEnum.ESOM }
+        val walletSOM = wallets.find { it.currency == CurrencyEnum.SOM }
 
-        val currentBalance = wallets.find { it.currency == currentFromCurrency }?.balance?.format(2) ?: "0.0"
-        binding.sum.text = currentBalance
+        binding.usdt.text = getSuffix(CurrencyEnum.USDT_TRC20, walletUSDT?.address)
+        binding.bitcoin.text = getSuffix(CurrencyEnum.BTC, walletBTC?.address)
+        binding.eth.text = getSuffix(CurrencyEnum.ETH, walletETH?.address)
+        binding.fiat.text = getSuffix(CurrencyEnum.ESOM, walletESOM?.address)
+        binding.som.text = getSuffix(CurrencyEnum.SOM, walletSOM?.address)
+
+        val currentWallet = wallets.find { it.currency == currentFromCurrency }
+        binding.sum.text = currentWallet?.balance?.format(2) ?: "0.00"
+
+        binding.currencyTitle.text = getCurrencyName(currentFromCurrency)
+        binding.currency.text = getSuffix(currentFromCurrency, currentWallet?.address)
+        binding.peopleTitle.text = getCurrencyName(currentFromCurrency)
     }
+
 
     private fun updateCommissionAndTotal(amountText: String) {
         val platformFee = (model.myData.value as? UiState.Success)?.data?.platformFee ?: 0.0
         val amount = amountText.toDoubleOrNull() ?: 0.0
-
         val commission = amount * platformFee
         val totalAmount = amount - commission
-
         binding.comissionValue.text = commission.format(2)
         binding.total.text = totalAmount.format(2)
     }
 
-    private fun handleTransferButtonClick() {
-        if (model.transferRes.value is UiState.Loading) {
-            return
+    private fun applyPhoneMask() {
+        val editText = binding.contact
+        editText.setText("")
+        editText.inputType = InputType.TYPE_CLASS_PHONE
+        phoneMaskWatcher?.let { editText.removeTextChangedListener(it) }
+        val watcher = object : TextWatcher {
+            private var isEditing = false
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (isEditing) return
+                isEditing = true
+                val digits = s.toString().filter { it.isDigit() }
+                val builder = StringBuilder()
+                if (digits.isNotEmpty()) builder.append("+996 ")
+                if (digits.length >= 3) builder.append("(").append(digits.substring(3, minOf(6, digits.length))).append(") ")
+                if (digits.length >= 6) builder.append(digits.substring(6, minOf(9, digits.length)))
+                editText.removeTextChangedListener(this)
+                editText.setText(builder.toString())
+                editText.text?.let { editText.setSelection(it.length) }
+                editText.addTextChangedListener(this)
+                isEditing = false
+            }
         }
+        editText.addTextChangedListener(watcher)
+        phoneMaskWatcher = watcher
+    }
 
+    private fun handleTransferButtonClick() {
+        if (model.transferRes.value is UiState.Loading) return
         val sum = binding.sumInput.text.toString().toDoubleOrNull()
         val contactInfo = binding.contact.text.toString().trim()
-
         if (sum == null) {
             binding.root.showErrorSnackbar("Введите сумму для перевода")
             return
         }
-
         when (currentFromCurrency) {
             CurrencyEnum.SOM, CurrencyEnum.ESOM -> {
                 if (contactInfo.isEmpty() || contactInfo.filter { it.isDigit() }.length < 10) {
@@ -296,11 +251,7 @@ class TransferFragment : Fragment() {
                 }
             }
         }
-
-        val walletBalance = (model.myData.value as? UiState.Success)?.data?.wallets
-            ?.find { it.currency == currentFromCurrency }
-            ?.balance ?: 0.0
-
+        val walletBalance = (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currentFromCurrency }?.balance ?: 0.0
         if (sum > walletBalance) {
             val currencyName = when (currentFromCurrency) {
                 CurrencyEnum.SOM -> "Сом"
@@ -312,46 +263,32 @@ class TransferFragment : Fragment() {
             binding.root.showErrorSnackbar("Недостаточно $currencyName на балансе")
             return
         }
-
-        val phone = if (currentFromCurrency in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)) {
-            contactInfo.filter { it.isDigit() }
-        } else {
-            ""
-        }
-
-        val address = if (currentFromCurrency !in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)) {
-            contactInfo
-        } else {
-            null
-        }
-
+        val phone = if (currentFromCurrency in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)) contactInfo.filter { it.isDigit() } else ""
+        val address = if (currentFromCurrency !in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)) contactInfo else null
         if (model.transferRes.value !is UiState.Loading) {
             model.transferToUser(sum, phone, address, currentFromCurrency)
         }
+    }
+    private fun getCurrencyName(currency: CurrencyEnum): String = when (currency) {
+        CurrencyEnum.SOM -> "Сом"
+        CurrencyEnum.ESOM -> "Салам"
+        CurrencyEnum.USDT_TRC20 -> "USDT"
+        CurrencyEnum.BTC -> "BTC"
+        CurrencyEnum.ETH -> "ETH"
     }
 
     private fun slideIn(view: View) {
         view.alpha = 0f
         view.visibility = View.VISIBLE
-
         view.post {
             view.translationY = -view.height.toFloat()
-            view.animate()
-                .translationY(0f)
-                .alpha(1f)
-                .setDuration(450)
-                .start()
+            view.animate().translationY(0f).alpha(1f).setDuration(450).start()
         }
     }
 
     private fun slideOut(view: View) {
-        view.animate()
-            .translationY(-view.height.toFloat())
-            .alpha(0f)
-            .setDuration(450)
-            .withEndAction {
-                view.visibility = View.GONE
-            }
-            .start()
+        view.animate().translationY(-view.height.toFloat()).alpha(0f).setDuration(450).withEndAction {
+            view.visibility = View.GONE
+        }.start()
     }
 }

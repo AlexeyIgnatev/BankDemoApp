@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
@@ -14,6 +15,7 @@ import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.databinding.FragmentHistoryBinding
 import com.esom.bank.screens.history.adapter.HistoryAdapter
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
+import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.wallet.adapter.Transaction
 import com.esom.bank.screens.wallet.adapter.TypeOfTransaction
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,7 +23,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class HistoryFragment : Fragment() {
     private lateinit var binding: FragmentHistoryBinding
-
+    private val model: MainViewModel by activityViewModels()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -38,6 +40,8 @@ class HistoryFragment : Fragment() {
             )
             insets
         }
+
+        //model.history()
 
         val adapter = HistoryAdapter(requireContext())
         binding.history.adapter = adapter

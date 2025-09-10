@@ -1,5 +1,6 @@
 package com.esom.bank.screens.receive
 
+import QRCodeGenerator
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -12,18 +13,21 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentReceiveBinding
 import com.esom.bank.screens.main.MainViewModel
+import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.settigns.SettingsFragment.Companion.formatPhone
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ReceiveFragment : Fragment() {
     private lateinit var binding: FragmentReceiveBinding
+    private val args: ReceiveFragmentArgs by navArgs()
 
     private val model: MainViewModel by activityViewModels()
 
@@ -44,6 +48,15 @@ class ReceiveFragment : Fragment() {
             )
             insets
         }
+        if(args.currency != CurrencyEnum.SOM) {
+            binding.contact.text = args.contact
+            val qrBitmap = QRCodeGenerator.generateCryptoQRCodeWithScheme(
+                address = "TQ6d3mF5eW8rY9uP1hG7kZ2xV4bN8sJ6Lq",
+                currency = CurrencyEnum.USDT_TRC20
+            )
+            binding.qrIcon.setImageBitmap(qrBitmap)
+        }
+
 
         binding.backBtn.setOnClickListener {
             findNavController().popBackStack()

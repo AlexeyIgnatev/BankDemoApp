@@ -64,7 +64,14 @@
         android:id="@+id/receiveFragment"
         android:name="com.esom.bank.screens.receive.ReceiveFragment"
         android:label="fragment_receive"
-        tools:layout="@layout/fragment_receive" />
+        tools:layout="@layout/fragment_receive">
+        <argument
+            android:name="contact"
+            app:argType="string"/>
+        <argument
+            android:name="currency"
+            app:argType="com.esom.bank.screens.main.enums.CurrencyEnum"/>
+    </fragment>
 
     <action
         android:id="@+id/startAuthFragment"

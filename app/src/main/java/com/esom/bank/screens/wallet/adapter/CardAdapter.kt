@@ -13,7 +13,7 @@ import com.esom.bank.screens.main.enums.CurrencyEnum
 
 class CardAdapter(private val context: Context,
                   private val onSwapClick: (CurrencyEnum) -> Unit,
-                  private val onReceiveClick: () -> Unit,
+                  private val onReceiveClick: (CurrencyEnum) -> Unit,
                   private val onTransferClick: () -> Unit) :
     ListAdapter<Card, CardAdapter.CardViewHolder>(CardDiffCallback()) {
     inner class CardViewHolder(private val binding: CardPageBinding) :
@@ -30,11 +30,19 @@ class CardAdapter(private val context: Context,
                 onSwapClick(currencyType)
             }
             binding.acceptBtn.setOnClickListener {
-                onReceiveClick()
+                val currencyType = when (item.type) {
+                    TypeOfCard.CARD -> CurrencyEnum.SOM
+                    TypeOfCard.DIGITAL -> CurrencyEnum.ESOM
+                    TypeOfCard.USDT -> CurrencyEnum.USDT_TRC20
+                    TypeOfCard.BITCOIN -> CurrencyEnum.BTC
+                    TypeOfCard.ETH -> CurrencyEnum.ETH
+                }
+                onReceiveClick(currencyType)
             }
             binding.transferBtn.setOnClickListener {
                 onTransferClick()
             }
+            binding.number.text = item.number
             when (item.type) {
                 TypeOfCard.CARD -> {
                     binding.somIcon.setImageResource(R.drawable.som_icon)

@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.SingleLiveEvent
+import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.main.data.MainRepository
+import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.UserModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -25,6 +27,9 @@ class MainViewModel @Inject constructor(
 
     private val _transferRes = SingleLiveEvent<UiState<Unit>>()
     val transferRes: LiveData<UiState<Unit>> = _transferRes
+
+    private val _history = SingleLiveEvent<UiState<List<TransactionModel>>>()
+    val history: LiveData<UiState<List<TransactionModel>>> = _history
 
     fun isAuthenticated() = mainRepository.isAuthenticated()
 
@@ -55,10 +60,21 @@ class MainViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun transferToUser(amount: Double, address: String) {
+    fun transferToUser(amount: Double, phone: String, address: String?, currencyEnum: CurrencyEnum) {
         _transferRes.value = UiState.Loading()
-        mainRepository.transferToUser(amount, address).onEach {
+        mainRepository.transferToUser(amount, phone, address, currencyEnum).onEach {
             _transferRes.value = it
+        }.launchIn(viewModelScope)
+    }
+
+    fun history(currencyEnum: CurrencyEnum?,
+                fromTime: Long,
+                toTime: Long,
+                take: Int,
+                skip: Int) {
+        _history.value = UiState.Loading()
+        mainRepository.history(currencyEnum, fromTime, toTime, take, skip).onEach {
+            _history.value = it
         }.launchIn(viewModelScope)
     }
 }

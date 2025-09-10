@@ -41,8 +41,8 @@
     <string name="usdt">USDT TRC20</string>
     <string name="bitcoin">Bitcoin</string>
     <string name="ethereum">Ethereum</string>
-    <string name="digital">Цифровой актив</string>
-    <string name="digital_wallet">Цифровой счет</string>
+    <string name="digital">Салам</string>
+    <string name="digital_wallet">Салам</string>
     <string name="convert_esom">Конвертировать ЕСом</string>
     <string name="accept_esom">Принять ЕСом</string>
     <string name="rate_currency">Курс валют</string>
@@ -51,7 +51,7 @@
     <string name="last_trans">Последние транзакции</string>
     <string name="etc">Ещё</string>
     <string name="convert_som">Конвертация в сом</string>
-    <string name="convert_digital">Конвертация в цифровой</string>
+    <string name="convert_digital">Конвертация в салам</string>
     <string name="convert_eth">Конвертация в Ethereum</string>
     <string name="convert_bitcoin">Конвертация в Bitcoin</string>
     <string name="convert_usdt">Конвертация в USDT TRC20</string>
@@ -112,4 +112,8 @@
     <string name="about_app">О приложении</string>
     <string name="privacy_policy">Пользовательское соглашение</string>
     <string name="choose_active">Выбрать актив</string>
+    <string name="send">Отправить</string>
+    <string name="get">Получить</string>
+    <string name="convert_to_som">Конвертировать в СОМ</string>
+    <string name="convert_to_salam">Конвертировать в САЛАМ</string>
 </resources>

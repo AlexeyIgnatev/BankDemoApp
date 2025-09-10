@@ -12,9 +12,9 @@ import com.esom.bank.R
 import com.esom.bank.databinding.CalendarItemBinding
 class CalendarAdapter(
     private val context: Context,
-    private val currentDay: String, // День в формате "d" (без ведущего нуля)
+    private val currentDay: String,
     private val isCurrentMonth: Boolean,
-    private val onDayClicked: (String) -> Unit // Теперь принимает полную дату "yyyy-MM-dd"
+    private val onDayClicked: (String) -> Unit
 ) : ListAdapter<String, CalendarAdapter.DayViewHolder>(DayDiffCallback()) {
 
     companion object {
@@ -26,12 +26,11 @@ class CalendarAdapter(
         private val context: Context
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
-            fullDate: String, // Полная дата в формате "yyyy-MM-dd" или пустая строка
+            fullDate: String,
             position: Int,
             isSelected: Boolean,
             onItemClick: (Int) -> Unit
         ) {
-            // Отображаем только день (последнюю часть даты)
             val dayToShow = if (fullDate.isEmpty()) ""
             else fullDate.substring(fullDate.lastIndexOf("-") + 1)
 
@@ -51,9 +50,9 @@ class CalendarAdapter(
             else Color.parseColor("#1D1D1B"))
 
             binding.root.setOnClickListener {
-                if (fullDate.isNotEmpty()) { // Игнорируем клик по пустым ячейкам
+                if (fullDate.isNotEmpty()) {
                     onItemClick(position)
-                    onDayClicked(fullDate) // Передаем полную дату
+                    onDayClicked(fullDate)
                 }
             }
         }
@@ -66,7 +65,6 @@ class CalendarAdapter(
 
     override fun onBindViewHolder(holder: DayViewHolder, position: Int) {
         val fullDate = getItem(position)
-        // Проверяем, является ли это текущим днем (сравниваем только день)
         val isCurrentDay = isCurrentMonth &&
                 fullDate.isNotEmpty() &&
                 fullDate.substring(fullDate.lastIndexOf("-") + 1) == currentDay

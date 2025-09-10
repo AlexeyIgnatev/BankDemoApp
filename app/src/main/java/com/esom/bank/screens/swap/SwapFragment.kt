@@ -25,6 +25,7 @@ import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentSwapBinding
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
+import com.esom.bank.screens.main.enums.CurrencyEnum
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -35,6 +36,9 @@ class SwapFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
     private var isPanelShown = false
     private var isPeoplePanelShown = false
+
+    private var currentFromCurrency: CurrencyEnum = CurrencyEnum.ESOM
+    private var currentToCurrency: CurrencyEnum = CurrencyEnum.SOM
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,6 +58,24 @@ class SwapFragment : Fragment() {
             insets
         }
 
+        initInitialIcons()
+        binding.sum50Layout.setOnClickListener {
+            binding.sumInput.setText("50")
+        }
+        binding.sum100Layout.setOnClickListener {
+            binding.sumInput.setText("100")
+        }
+        binding.sum1000Layout.setOnClickListener {
+            binding.sumInput.setText("1000")
+        }
+        binding.sum10000Layout.setOnClickListener {
+            binding.sumInput.setText("10000")
+        }
+        val somBalance = (model.myData.value as? UiState.Success)?.data?.wallets
+            ?.find { it.currency == CurrencyEnum.SOM }
+            ?.balance ?: 0.0
+
+        binding.sum.text = somBalance.toString()
         binding.backBtn.setOnClickListener {
             findNavController().popBackStack()
         }
@@ -86,378 +108,20 @@ class SwapFragment : Fragment() {
             isPeoplePanelShown = !isPeoplePanelShown
         }
 
-        binding.firstUsdtBtn.setOnClickListener {
-            val centerIcon = binding.icon.drawable.constantState
-            val usdtIcon = binding.usdtIcon.drawable.constantState
-            val somIcon = resources.getDrawable(R.drawable.som_icon).constantState
-
-            if (usdtIcon == somIcon) {
-                binding.usdtIcon.setImageResource(R.drawable.usdt_icon)
-                binding.usdtTitle.text = getString(R.string.usdt)
-
-                when (binding.currencyTitle.text.toString()) {
-                    getString(R.string.bitcoin) -> {
-                        binding.bitcoinIcon.setImageResource(R.drawable.som_icon)
-                        binding.bitcoinTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.ethereum) -> {
-                        binding.ethIcon.setImageResource(R.drawable.som_icon)
-                        binding.ethTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.digital) -> {
-                        binding.fiatIcon.setImageResource(R.drawable.som_icon)
-                        binding.fiatTitle.text = getString(R.string.som)
-                    }
-                    else -> {
-                        binding.icon.setImageResource(R.drawable.som_icon)
-                        binding.currencyTitle.text = getString(R.string.som)
-                    }
-                }
-
-                binding.icon.setImageResource(R.drawable.usdt_icon)
-                binding.currencyTitle.text = getString(R.string.usdt)
-            } else {
-                val tempIcon = binding.icon.drawable
-                val tempTitle = binding.currencyTitle.text.toString()
-
-                binding.icon.setImageDrawable(binding.usdtIcon.drawable)
-                binding.currencyTitle.text = binding.usdtTitle.text.toString()
-
-                binding.usdtIcon.setImageDrawable(tempIcon)
-                binding.usdtTitle.text = tempTitle
-            }
-        }
-
-        binding.firstBitcoinBtn.setOnClickListener {
-            val centerIcon = binding.icon.drawable.constantState
-            val bitcoinIcon = binding.bitcoinIcon.drawable.constantState
-            val somIcon = resources.getDrawable(R.drawable.som_icon).constantState
-
-            if (bitcoinIcon == somIcon) {
-                binding.bitcoinIcon.setImageResource(R.drawable.bitcoin_icon)
-                binding.bitcoinTitle.text = getString(R.string.bitcoin)
-
-                when (binding.currencyTitle.text.toString()) {
-                    getString(R.string.usdt) -> {
-                        binding.usdtIcon.setImageResource(R.drawable.som_icon)
-                        binding.usdtTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.ethereum) -> {
-                        binding.ethIcon.setImageResource(R.drawable.som_icon)
-                        binding.ethTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.digital) -> {
-                        binding.fiatIcon.setImageResource(R.drawable.som_icon)
-                        binding.fiatTitle.text = getString(R.string.som)
-                    }
-                    else -> {
-                        binding.icon.setImageResource(R.drawable.som_icon)
-                        binding.currencyTitle.text = getString(R.string.som)
-                    }
-                }
-
-                binding.icon.setImageResource(R.drawable.bitcoin_icon)
-                binding.currencyTitle.text = getString(R.string.bitcoin)
-            } else {
-                val tempIcon = binding.icon.drawable
-                val tempTitle = binding.currencyTitle.text.toString()
-
-                binding.icon.setImageDrawable(binding.bitcoinIcon.drawable)
-                binding.currencyTitle.text = binding.bitcoinTitle.text.toString()
-
-                binding.bitcoinIcon.setImageDrawable(tempIcon)
-                binding.bitcoinTitle.text = tempTitle
-            }
-        }
-
-        binding.firstEthBtn.setOnClickListener {
-            val centerIcon = binding.icon.drawable.constantState
-            val ethIcon = binding.ethIcon.drawable.constantState
-            val somIcon = resources.getDrawable(R.drawable.som_icon).constantState
-
-            if (ethIcon == somIcon) {
-                binding.ethIcon.setImageResource(R.drawable.eth_icon)
-                binding.ethTitle.text = getString(R.string.ethereum)
-
-                when (binding.currencyTitle.text.toString()) {
-                    getString(R.string.usdt) -> {
-                        binding.usdtIcon.setImageResource(R.drawable.som_icon)
-                        binding.usdtTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.bitcoin) -> {
-                        binding.bitcoinIcon.setImageResource(R.drawable.som_icon)
-                        binding.bitcoinTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.digital) -> {
-                        binding.fiatIcon.setImageResource(R.drawable.som_icon)
-                        binding.fiatTitle.text = getString(R.string.som)
-                    }
-                    else -> {
-                        binding.icon.setImageResource(R.drawable.som_icon)
-                        binding.currencyTitle.text = getString(R.string.som)
-                    }
-                }
-
-                binding.icon.setImageResource(R.drawable.eth_icon)
-                binding.currencyTitle.text = getString(R.string.ethereum)
-            } else {
-                val tempIcon = binding.icon.drawable
-                val tempTitle = binding.currencyTitle.text.toString()
-
-                binding.icon.setImageDrawable(binding.ethIcon.drawable)
-                binding.currencyTitle.text = binding.ethTitle.text.toString()
-
-                binding.ethIcon.setImageDrawable(tempIcon)
-                binding.ethTitle.text = tempTitle
-            }
-        }
-
         binding.firstDigitalBtn.setOnClickListener {
-            val centerIcon = binding.icon.drawable.constantState
-            val fiatIcon = binding.fiatIcon.drawable.constantState
-            val somIcon = resources.getDrawable(R.drawable.som_icon).constantState
-
-            if (fiatIcon == somIcon) {
-                binding.fiatIcon.setImageResource(R.drawable.digital_icon)
-                binding.fiatTitle.text = getString(R.string.digital)
-
-                when (binding.currencyTitle.text.toString()) {
-                    getString(R.string.usdt) -> {
-                        binding.usdtIcon.setImageResource(R.drawable.som_icon)
-                        binding.usdtTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.bitcoin) -> {
-                        binding.bitcoinIcon.setImageResource(R.drawable.som_icon)
-                        binding.bitcoinTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.ethereum) -> {
-                        binding.ethIcon.setImageResource(R.drawable.som_icon)
-                        binding.ethTitle.text = getString(R.string.som)
-                    }
-                    else -> {
-                        binding.icon.setImageResource(R.drawable.som_icon)
-                        binding.currencyTitle.text = getString(R.string.som)
-                    }
-                }
-
-                binding.icon.setImageResource(R.drawable.digital_icon)
-                binding.currencyTitle.text = getString(R.string.digital)
-            } else {
-                val tempIcon = binding.icon.drawable
-                val tempTitle = binding.currencyTitle.text.toString()
-
-                binding.icon.setImageDrawable(binding.fiatIcon.drawable)
-                binding.currencyTitle.text = binding.fiatTitle.text.toString()
-
-                binding.fiatIcon.setImageDrawable(tempIcon)
-                binding.fiatTitle.text = tempTitle
-            }
-        }
-
-
-        binding.secondUsdtBtn.setOnClickListener {
-            val centerIcon = binding.icon.drawable.constantState
-            val usdtIcon = binding.peopleUsdtIcon.drawable.constantState
-            val somIcon = resources.getDrawable(R.drawable.som_icon).constantState
-
-            if (usdtIcon == somIcon) {
-                binding.peopleUsdtIcon.setImageResource(R.drawable.usdt_icon)
-                binding.peopleUsdtTitle.text = getString(R.string.usdt)
-
-                when (binding.peopleTitle.text.toString()) {
-                    getString(R.string.bitcoin) -> {
-                        binding.peopleBitcoinIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleBitcoinTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.ethereum) -> {
-                        binding.peopleEthIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleEthTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.digital) -> {
-                        binding.peopleFiatIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleFiatTitle.text = getString(R.string.som)
-                    }
-                    else -> {
-                        binding.peopleIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleTitle.text = getString(R.string.som)
-                    }
-                }
-
-                binding.peopleIcon.setImageResource(R.drawable.usdt_icon)
-                binding.peopleTitle.text = getString(R.string.usdt)
-            } else {
-                val tempIcon = binding.peopleIcon.drawable
-                val tempTitle = binding.peopleTitle.text.toString()
-
-                binding.peopleIcon.setImageDrawable(binding.peopleUsdtIcon.drawable)
-                binding.peopleTitle.text = binding.peopleUsdtTitle.text.toString()
-
-                binding.peopleUsdtIcon.setImageDrawable(tempIcon)
-                binding.peopleUsdtTitle.text = tempTitle
-            }
-        }
-
-        binding.secondBitcoinBtn.setOnClickListener {
-            val centerIcon = binding.peopleIcon.drawable.constantState
-            val bitcoinIcon = binding.peopleBitcoinIcon.drawable.constantState
-            val somIcon = resources.getDrawable(R.drawable.som_icon).constantState
-
-            if (bitcoinIcon == somIcon) {
-                binding.peopleBitcoinIcon.setImageResource(R.drawable.bitcoin_icon)
-                binding.peopleBitcoinTitle.text = getString(R.string.bitcoin)
-
-                when (binding.currencyTitle.text.toString()) {
-                    getString(R.string.usdt) -> {
-                        binding.peopleUsdtIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleUsdtTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.ethereum) -> {
-                        binding.peopleEthIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleEthTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.digital) -> {
-                        binding.peopleFiatIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleFiatTitle.text = getString(R.string.som)
-                    }
-                    else -> {
-                        binding.peopleIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleTitle.text = getString(R.string.som)
-                    }
-                }
-
-                binding.peopleIcon.setImageResource(R.drawable.bitcoin_icon)
-                binding.peopleTitle.text = getString(R.string.bitcoin)
-            } else {
-                val tempIcon = binding.peopleIcon.drawable
-                val tempTitle = binding.peopleTitle.text.toString()
-
-                binding.peopleIcon.setImageDrawable(binding.peopleBitcoinIcon.drawable)
-                binding.peopleTitle.text = binding.peopleBitcoinTitle.text.toString()
-
-                binding.peopleBitcoinIcon.setImageDrawable(tempIcon)
-                binding.peopleBitcoinTitle.text = tempTitle
-            }
-        }
-
-        binding.secondEthBtn.setOnClickListener {
-            val centerIcon = binding.peopleIcon.drawable.constantState
-            val ethIcon = binding.peopleEthIcon.drawable.constantState
-            val somIcon = resources.getDrawable(R.drawable.som_icon).constantState
-
-            if (ethIcon == somIcon) {
-                binding.peopleEthIcon.setImageResource(R.drawable.eth_icon)
-                binding.peopleEthTitle.text = getString(R.string.ethereum)
-
-                when (binding.peopleTitle.text.toString()) {
-                    getString(R.string.usdt) -> {
-                        binding.peopleUsdtIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleUsdtTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.bitcoin) -> {
-                        binding.peopleBitcoinIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleBitcoinTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.digital) -> {
-                        binding.peopleFiatIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleFiatTitle.text = getString(R.string.som)
-                    }
-                    else -> {
-                        binding.peopleIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleTitle.text = getString(R.string.som)
-                    }
-                }
-
-                binding.peopleIcon.setImageResource(R.drawable.eth_icon)
-                binding.peopleTitle.text = getString(R.string.ethereum)
-            } else {
-                val tempIcon = binding.peopleIcon.drawable
-                val tempTitle = binding.peopleTitle.text.toString()
-
-                binding.peopleIcon.setImageDrawable(binding.peopleEthIcon.drawable)
-                binding.peopleTitle.text = binding.peopleEthTitle.text.toString()
-
-                binding.peopleEthIcon.setImageDrawable(tempIcon)
-                binding.peopleEthTitle.text = tempTitle
-            }
+            toggleCurrency(true)
         }
 
         binding.secondDigitalBtn.setOnClickListener {
-            val centerIcon = binding.peopleIcon.drawable.constantState
-            val fiatIcon = binding.peopleFiatIcon.drawable.constantState
-            val somIcon = resources.getDrawable(R.drawable.som_icon).constantState
-
-            if (fiatIcon == somIcon) {
-                binding.peopleFiatIcon.setImageResource(R.drawable.digital_icon)
-                binding.peopleFiatTitle.text = getString(R.string.digital)
-
-                when (binding.peopleTitle.text.toString()) {
-                    getString(R.string.usdt) -> {
-                        binding.peopleUsdtIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleUsdtTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.bitcoin) -> {
-                        binding.peopleBitcoinIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleBitcoinTitle.text = getString(R.string.som)
-                    }
-                    getString(R.string.ethereum) -> {
-                        binding.peopleEthIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleEthTitle.text = getString(R.string.som)
-                    }
-                    else -> {
-                        binding.peopleIcon.setImageResource(R.drawable.som_icon)
-                        binding.peopleTitle.text = getString(R.string.som)
-                    }
-                }
-
-                binding.peopleIcon.setImageResource(R.drawable.digital_icon)
-                binding.peopleTitle.text = getString(R.string.digital)
-            } else {
-                val tempIcon = binding.peopleIcon.drawable
-                val tempTitle = binding.peopleTitle.text.toString()
-
-                binding.peopleIcon.setImageDrawable(binding.peopleFiatIcon.drawable)
-                binding.peopleTitle.text = binding.peopleFiatTitle.text.toString()
-
-                binding.peopleFiatIcon.setImageDrawable(tempIcon)
-                binding.peopleFiatTitle.text = tempTitle
-            }
+            toggleCurrency(false)
         }
+
         binding.sumInput.setOnUserTextChangeListener {
             updateAmounts(it.toDoubleOrNull(), null)
         }
 
         binding.sendBtn.setOnClickListener {
-            if (model.swapRes.value is UiState.Loading) {
-                return@setOnClickListener
-            }
-
-            val fromAmount = binding.sumInput.text.toString().toDoubleOrNull()
-
-            if (fromAmount == null) {
-                binding.root.showErrorSnackbar("Введите сумму для обмена")
-            } else {
-                if (args.direction == 0) {
-                    val somBalance =
-                        (model.myData.value as? UiState.Success)?.data?.balance?.somBalance ?: 0.0
-                    if (fromAmount <= somBalance) {
-                        if (model.swapRes.value !is UiState.Loading) {
-                            model.transferFromFiat(fromAmount)
-                        }
-                    } else {
-                        binding.root.showErrorSnackbar("Недостаточно Сом на балансе")
-                    }
-                } else {
-                    val tokenBalance =
-                        (model.myData.value as? UiState.Success)?.data?.balance?.esomBalance ?: 0.0
-                    if (fromAmount <= tokenBalance) {
-                        if (model.swapRes.value !is UiState.Loading) {
-                            model.transferToFiat(fromAmount)
-                        }
-                    } else {
-                        binding.root.showErrorSnackbar("Недостаточно ЕСом на балансе")
-                    }
-                }
-            }
+            handleConvertButtonClick()
         }
 
         model.swapRes.observe(viewLifecycleOwner) {
@@ -479,6 +143,104 @@ class SwapFragment : Fragment() {
                     findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
                     findNavController().popBackStack()
                 }
+            }
+        }
+    }
+
+    private fun initInitialIcons() {
+        if(args.direction == 0) {
+            binding.fiatIcon.setImageResource(R.drawable.salam_icon)
+            binding.fiatTitle.text = getString(R.string.digital)
+            binding.icon.setImageResource(R.drawable.som_icon)
+            binding.currencyTitle.text = getString(R.string.som)
+            currentFromCurrency = CurrencyEnum.SOM
+
+            binding.peopleFiatIcon.setImageResource(R.drawable.som_icon)
+            binding.peopleFiatTitle.text = getString(R.string.som)
+            binding.peopleIcon.setImageResource(R.drawable.salam_icon)
+            binding.peopleTitle.text = getString(R.string.digital)
+            currentToCurrency = CurrencyEnum.ESOM
+        } else {
+            binding.somIcon.visibility = View.GONE
+            binding.fiatIcon.setImageResource(R.drawable.som_icon)
+            binding.fiatTitle.text = getString(R.string.som)
+            binding.icon.setImageResource(R.drawable.salam_icon)
+            binding.currencyTitle.text = getString(R.string.digital)
+            currentFromCurrency = CurrencyEnum.ESOM
+
+            binding.peopleFiatIcon.setImageResource(R.drawable.salam_icon)
+            binding.peopleFiatTitle.text = getString(R.string.digital)
+            binding.peopleIcon.setImageResource(R.drawable.som_icon)
+            binding.peopleTitle.text = getString(R.string.som)
+            currentToCurrency = CurrencyEnum.SOM
+        }
+    }
+
+    private fun toggleCurrency(isFirstButton: Boolean) {
+        if (isFirstButton) {
+            if (currentFromCurrency == CurrencyEnum.ESOM) {
+                binding.fiatIcon.setImageResource(R.drawable.salam_icon)
+                binding.fiatTitle.text = getString(R.string.digital)
+                binding.icon.setImageResource(R.drawable.som_icon)
+                binding.currencyTitle.text = getString(R.string.som)
+                currentFromCurrency = CurrencyEnum.SOM
+                binding.somIcon.visibility = View.VISIBLE
+            } else {
+                binding.fiatIcon.setImageResource(R.drawable.som_icon)
+                binding.fiatTitle.text = getString(R.string.som)
+                binding.icon.setImageResource(R.drawable.salam_icon)
+                binding.currencyTitle.text = getString(R.string.digital)
+                currentFromCurrency = CurrencyEnum.ESOM
+                binding.somIcon.visibility = View.GONE
+            }
+        } else {
+            if (currentToCurrency == CurrencyEnum.SOM) {
+                binding.peopleFiatIcon.setImageResource(R.drawable.salam_icon)
+                binding.peopleFiatTitle.text = getString(R.string.digital)
+                binding.peopleIcon.setImageResource(R.drawable.som_icon)
+                binding.peopleTitle.text = getString(R.string.som)
+                currentToCurrency = CurrencyEnum.ESOM
+            } else {
+                binding.peopleFiatIcon.setImageResource(R.drawable.som_icon)
+                binding.peopleFiatTitle.text = getString(R.string.som)
+                binding.peopleIcon.setImageResource(R.drawable.salam_icon)
+                binding.peopleTitle.text = getString(R.string.digital)
+                currentToCurrency = CurrencyEnum.SOM
+            }
+        }
+    }
+
+    private fun handleConvertButtonClick() {
+        if (model.swapRes.value is UiState.Loading) {
+            return
+        }
+
+        val fromAmount = binding.sumInput.text.toString().toDoubleOrNull()
+
+        if (fromAmount == null) {
+            binding.root.showErrorSnackbar("Введите сумму для обмена")
+            return
+        }
+
+        val walletBalance = (model.myData.value as? UiState.Success)?.data?.wallets
+            ?.find { it.currency == currentFromCurrency }
+            ?.balance ?: 0.0
+
+        if (fromAmount > walletBalance) {
+            val currencyName = if (currentFromCurrency == CurrencyEnum.SOM) "Сом" else "Салам"
+            binding.root.showErrorSnackbar("Недостаточно $currencyName на балансе")
+            return
+        }
+
+        when {
+            currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM -> {
+                model.transferFromFiat(fromAmount)
+            }
+            currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM -> {
+                model.transferToFiat(fromAmount)
+            }
+            else -> {
+                binding.root.showErrorSnackbar("Невозможно конвертировать между одинаковыми валютами")
             }
         }
     }

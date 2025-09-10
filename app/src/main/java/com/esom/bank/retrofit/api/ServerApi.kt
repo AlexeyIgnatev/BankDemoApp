@@ -1,5 +1,7 @@
 package com.esom.bank.retrofit.api
 
+import com.esom.bank.screens.history.dto.GetTransactionsDto
+import com.esom.bank.screens.history.dto.TransactionDto
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.SwapDto
 import com.esom.bank.screens.main.dto.TransferDto
@@ -27,4 +29,9 @@ interface ServerApi {
     suspend fun transfer(
         @Body transferDto: TransferDto
     ): Response<StatusDto>
+
+    @POST("payments/history")
+    suspend fun history(
+        @Body transactionsDto: GetTransactionsDto
+    ): Response<List<TransactionDto>>
 }

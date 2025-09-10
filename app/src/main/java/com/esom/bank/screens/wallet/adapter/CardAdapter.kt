@@ -9,9 +9,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.R
 import com.esom.bank.databinding.CardPageBinding
+import com.esom.bank.screens.main.enums.CurrencyEnum
 
 class CardAdapter(private val context: Context,
-                  private val onSwapClick: () -> Unit,
+                  private val onSwapClick: (CurrencyEnum) -> Unit,
                   private val onReceiveClick: () -> Unit,
                   private val onTransferClick: () -> Unit) :
     ListAdapter<Card, CardAdapter.CardViewHolder>(CardDiffCallback()) {
@@ -19,7 +20,14 @@ class CardAdapter(private val context: Context,
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: Card) {
             binding.convertBtn.setOnClickListener {
-                onSwapClick()
+                val currencyType = when (item.type) {
+                    TypeOfCard.CARD -> CurrencyEnum.SOM
+                    TypeOfCard.DIGITAL -> CurrencyEnum.ESOM
+                    TypeOfCard.USDT -> CurrencyEnum.USDT_TRC20
+                    TypeOfCard.BITCOIN -> CurrencyEnum.BTC
+                    TypeOfCard.ETH -> CurrencyEnum.ETH
+                }
+                onSwapClick(currencyType)
             }
             binding.acceptBtn.setOnClickListener {
                 onReceiveClick()
@@ -34,6 +42,7 @@ class CardAdapter(private val context: Context,
                     binding.somCount.text = item.sum
                     binding.cardNumberIcon.setImageResource(R.drawable.icon_sum_som)
                     binding.somIconMonth.visibility = View.VISIBLE
+                    binding.newConvertLayout.visibility = View.VISIBLE
                 }
 
                 TypeOfCard.USDT -> {
@@ -61,11 +70,13 @@ class CardAdapter(private val context: Context,
                 }
 
                 TypeOfCard.DIGITAL -> {
-                    binding.somIcon.setImageResource(R.drawable.digital_icon)
+                    binding.somIcon.setImageResource(R.drawable.salam_icon)
                     binding.somTitle.text = context.getString(R.string.digital)
                     binding.somCount.text = item.sum
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.VISIBLE
+                    binding.newConvertLayout.visibility = View.VISIBLE
+                    binding.convertTitle.text = context.getString(R.string.convert_to_salam)
                 }
             }
         }

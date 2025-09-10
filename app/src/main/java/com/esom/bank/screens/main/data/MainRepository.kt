@@ -4,6 +4,9 @@ import android.content.Context
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.model.UiState
 import com.esom.bank.screens.auth.data.AuthLocalDataSource
+import com.esom.bank.screens.history.model.TransactionModel
+import com.esom.bank.screens.history.model.toModel
+import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.UserModel
 import com.esom.bank.screens.main.model.toModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -28,8 +31,15 @@ interface MainRepository {
 
     fun transferToUser(
         amount: Double,
-        phone: String
+        phone: String,
+        address: String? = null,
+        currencyEnum: CurrencyEnum
     ): Flow<UiState<Unit>>
+
+    fun history(
+        currencyEnum: CurrencyEnum? = null, fromTime: Long, toTime: Long,
+        take: Int, skip: Int
+    ): Flow<UiState<List<TransactionModel>>>
 }
 
 class MainRepositoryImpl @Inject constructor(
@@ -77,10 +87,24 @@ class MainRepositoryImpl @Inject constructor(
             }
         }
 
-    override fun transferToUser(amount: Double, phone: String): Flow<UiState<Unit>> =
-        mainCloudDataSource.transfer(amount, phone).map { response ->
+    override fun transferToUser(amount: Double, phone: String, address: String?, currencyEnum: CurrencyEnum): Flow<UiState<Unit>> =
+        mainCloudDataSource.transfer(amount, phone, address, currencyEnum).map { response ->
             when (response) {
                 is ApiResponse.Success -> return@map UiState.Success(Unit)
+                is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
+            }
+        }
+
+    override fun history(
+        currencyEnum: CurrencyEnum?,
+        fromTime: Long,
+        toTime: Long,
+        take: Int,
+        skip: Int
+    ): Flow<UiState<List<TransactionModel>>> =
+        mainCloudDataSource.history(currencyEnum, fromTime, toTime, take, skip).map { response ->
+            when (response) {
+                is ApiResponse.Success -> return@map UiState.Success(response.data.toModel())
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
             }
         }

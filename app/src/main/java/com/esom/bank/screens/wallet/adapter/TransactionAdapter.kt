@@ -22,7 +22,7 @@ class TransactionAdapter(private val context: Context): ListAdapter<Transaction,
                     binding.title.text = context.getString(R.string.convert_som)
                 }
                 TypeOfTransaction.DIGITAL -> {
-                    binding.icon.setImageResource(R.drawable.digital_icon)
+                    binding.icon.setImageResource(R.drawable.salam_icon)
                     binding.title.text = context.getString(R.string.convert_digital)
                 }
                 TypeOfTransaction.USDT -> {

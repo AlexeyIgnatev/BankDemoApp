@@ -258,7 +258,6 @@ class TransferFragment : Fragment() {
         val platformFee = (model.myData.value as? UiState.Success)?.data?.platformFee ?: 0.0
         val amount = amountText.toDoubleOrNull() ?: 0.0
 
-        // Рассчитываем комиссию
         val commission = amount * platformFee
         val totalAmount = amount - commission
 

@@ -52,7 +52,7 @@ class AuthFragment : Fragment() {
         binding.logInBtn.setOnClickListener {
             if (model.myData.value !is UiState.Loading) {
                 model.authenticate(
-                    binding.phoneInput.text.toString(),
+                    binding.loginInput.text.toString(),
                     binding.passwordInput.text.toString(),
                 )
             }

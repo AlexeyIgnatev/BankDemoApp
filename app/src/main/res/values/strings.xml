@@ -116,4 +116,6 @@
     <string name="get">Получить</string>
     <string name="convert_to_som">Конвертировать в СОМ</string>
     <string name="convert_to_salam">Конвертировать в САЛАМ</string>
+    <string name="login_hint">Логин</string>
+    <string name="enter_login">Введите логин пользователя</string>
 </resources>

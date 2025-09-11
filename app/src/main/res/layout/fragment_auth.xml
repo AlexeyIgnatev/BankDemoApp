@@ -32,34 +32,34 @@
         app:layout_constraintTop_toBottomOf="@id/fcb_icon" />
 
     <TextView
-        android:id="@+id/phone_hint"
+        android:id="@+id/login_hint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_33dp"
         android:layout_marginTop="@dimen/_22dp"
         android:fontFamily="@font/mont_semibold"
-        android:text="@string/phone_hint"
+        android:text="@string/login_hint"
         android:textColor="#B2B2B2"
         android:textSize="@dimen/_16sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/title" />
 
     <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/phone_input"
+        android:id="@+id/login_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/_22dp"
         android:layout_marginTop="@dimen/_6dp"
         android:background="@drawable/phone_password_input_background"
         android:fontFamily="@font/mont_medium"
-        android:hint="@string/enter_phone"
+        android:hint="@string/enter_login"
         android:imeOptions="actionDone"
-        android:inputType="number"
+        android:inputType="text"
         android:maxLines="1"
         android:textColor="@color/black"
         android:textColorHint="#B2B2B2"
         android:textSize="@dimen/_18sp"
-        app:layout_constraintTop_toBottomOf="@id/phone_hint" />
+        app:layout_constraintTop_toBottomOf="@id/login_hint" />
 
     <TextView
         android:id="@+id/password_hint"
@@ -72,7 +72,7 @@
         android:textColor="#B2B2B2"
         android:textSize="@dimen/_16sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/phone_input" />
+        app:layout_constraintTop_toBottomOf="@id/login_input" />
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/password_input"

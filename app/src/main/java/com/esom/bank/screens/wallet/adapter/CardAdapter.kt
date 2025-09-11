@@ -1,5 +1,6 @@
 package com.esom.bank.screens.wallet.adapter
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -8,92 +9,74 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.R
+import com.esom.bank.common.model.UiState
+import com.esom.bank.common.utils.format
 import com.esom.bank.databinding.CardPageBinding
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.main.model.WalletModel
 
-class CardAdapter(private val context: Context,
-                  private val onSwapClick: (CurrencyEnum) -> Unit,
-                  private val onReceiveClick: (CurrencyEnum) -> Unit,
-                  private val onTransferClick: (CurrencyEnum) -> Unit) :
-    ListAdapter<Card, CardAdapter.CardViewHolder>(CardDiffCallback()) {
+class CardAdapter(
+    private val context: Context,
+    private val onSwapClick: (CurrencyEnum) -> Unit,
+    private val onReceiveClick: (CurrencyEnum) -> Unit,
+    private val onTransferClick: (CurrencyEnum) -> Unit
+) : ListAdapter<WalletModel, CardAdapter.CardViewHolder>(CardDiffCallback()) {
+
     inner class CardViewHolder(private val binding: CardPageBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Card) {
-            binding.convertBtn.setOnClickListener {
-                val currencyType = when (item.type) {
-                    TypeOfCard.CARD -> CurrencyEnum.SOM
-                    TypeOfCard.DIGITAL -> CurrencyEnum.ESOM
-                    TypeOfCard.USDT -> CurrencyEnum.USDT_TRC20
-                    TypeOfCard.BITCOIN -> CurrencyEnum.BTC
-                    TypeOfCard.ETH -> CurrencyEnum.ETH
-                }
-                onTransferClick(currencyType)
-            }
-            binding.acceptBtn.setOnClickListener {
-                val currencyType = when (item.type) {
-                    TypeOfCard.CARD -> CurrencyEnum.SOM
-                    TypeOfCard.DIGITAL -> CurrencyEnum.ESOM
-                    TypeOfCard.USDT -> CurrencyEnum.USDT_TRC20
-                    TypeOfCard.BITCOIN -> CurrencyEnum.BTC
-                    TypeOfCard.ETH -> CurrencyEnum.ETH
-                }
-                onReceiveClick(currencyType)
-            }
-            binding.newConvertBtn.setOnClickListener {
-                val currencyType = when (item.type) {
-                    TypeOfCard.CARD -> CurrencyEnum.SOM
-                    TypeOfCard.DIGITAL -> CurrencyEnum.ESOM
-                    TypeOfCard.USDT -> CurrencyEnum.USDT_TRC20
-                    TypeOfCard.BITCOIN -> CurrencyEnum.BTC
-                    TypeOfCard.ETH -> CurrencyEnum.ETH
-                }
-                onSwapClick(currencyType)
-            }
-            binding.number.text = item.number
-            when (item.type) {
-                TypeOfCard.CARD -> {
+
+        @SuppressLint("SetTextI18n")
+        fun bind(item: WalletModel) {
+            binding.convertBtn.setOnClickListener { onTransferClick(item.currency) }
+            binding.acceptBtn.setOnClickListener { onReceiveClick(item.currency) }
+            binding.newConvertBtn.setOnClickListener { onSwapClick(item.currency) }
+
+            when (item.currency) {
+                CurrencyEnum.SOM -> {
                     binding.somIcon.setImageResource(R.drawable.som_icon)
                     binding.somTitle.text = context.getString(R.string.som)
-                    binding.somCount.text = item.sum
+                    binding.somCount.text = item.balance.format(2)
                     binding.cardNumberIcon.setImageResource(R.drawable.icon_sum_som)
                     binding.somIconMonth.visibility = View.VISIBLE
                     binding.newConvertLayout.visibility = View.VISIBLE
                 }
 
-                TypeOfCard.USDT -> {
+                CurrencyEnum.USDT_TRC20 -> {
                     binding.somIcon.setImageResource(R.drawable.usdt_icon)
                     binding.somTitle.text = context.getString(R.string.usdt)
-                    binding.somCount.text = item.sum
+                    binding.somCount.text = item.balance.format(2)
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
                 }
 
-                TypeOfCard.BITCOIN -> {
+                CurrencyEnum.BTC -> {
                     binding.somIcon.setImageResource(R.drawable.bitcoin_icon)
                     binding.somTitle.text = context.getString(R.string.bitcoin)
-                    binding.somCount.text = item.sum
+                    binding.somCount.text = item.balance.format(2)
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
                 }
 
-                TypeOfCard.ETH -> {
+                CurrencyEnum.ETH -> {
                     binding.somIcon.setImageResource(R.drawable.eth_icon)
                     binding.somTitle.text = context.getString(R.string.ethereum)
-                    binding.somCount.text = item.sum
+                    binding.somCount.text = item.balance.format(2)
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
                 }
 
-                TypeOfCard.DIGITAL -> {
+                CurrencyEnum.ESOM -> {
                     binding.somIcon.setImageResource(R.drawable.salam_icon)
                     binding.somTitle.text = context.getString(R.string.digital)
-                    binding.somCount.text = item.sum
+                    binding.somCount.text = item.balance.format(2)
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
                     binding.newConvertLayout.visibility = View.VISIBLE
                     binding.convertTitle.text = context.getString(R.string.convert_to_salam)
                 }
             }
+
+            binding.number.text = "*${item.address.takeLast(3)}"
         }
     }
 
@@ -104,33 +87,16 @@ class CardAdapter(private val context: Context,
     }
 
     override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
-        val realPosition = position % currentList.size
-        holder.bind(getItem(realPosition))
+        holder.bind(getItem(position))
     }
 
-}
+    class CardDiffCallback : DiffUtil.ItemCallback<WalletModel>() {
+        override fun areItemsTheSame(oldItem: WalletModel, newItem: WalletModel): Boolean {
+            return oldItem.currency == newItem.currency && oldItem.address == newItem.address
+        }
 
-class CardDiffCallback : DiffUtil.ItemCallback<Card>() {
-    override fun areItemsTheSame(oldItem: Card, newItem: Card): Boolean {
-        return oldItem.number == newItem.number
+        override fun areContentsTheSame(oldItem: WalletModel, newItem: WalletModel): Boolean {
+            return oldItem == newItem
+        }
     }
-
-    override fun areContentsTheSame(oldItem: Card, newItem: Card): Boolean {
-        return oldItem == newItem
-    }
-
-}
-
-data class Card(
-    val type: TypeOfCard,
-    val sum: String,
-    val number: String
-)
-
-enum class TypeOfCard() {
-    CARD(),
-    USDT(),
-    BITCOIN(),
-    ETH(),
-    DIGITAL()
 }

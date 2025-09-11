@@ -93,7 +93,7 @@
         android:layout_width="@dimen/_165dp"
         android:layout_height="@dimen/_31dp"
         android:background="@drawable/convert_btn_background"
-        app:layout_constraintTop_toBottomOf="@id/som_icon"
+        app:layout_constraintTop_toBottomOf="@id/new_convert_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/accept_layout"
         android:layout_marginTop="@dimen/_22dp">
@@ -117,7 +117,7 @@
         android:layout_width="@dimen/_121dp"
         android:layout_height="@dimen/_31dp"
         android:background="@drawable/accept_btn_background"
-        app:layout_constraintTop_toBottomOf="@id/som_icon"
+        app:layout_constraintTop_toBottomOf="@id/new_convert_layout"
         app:layout_constraintStart_toEndOf="@id/convert_layout"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="@dimen/_22dp">
@@ -142,7 +142,7 @@
         android:layout_width="@dimen/_185dp"
         android:layout_height="@dimen/_31dp"
         android:background="@drawable/accept_btn_background"
-        app:layout_constraintTop_toBottomOf="@id/accept_layout"
+        app:layout_constraintTop_toBottomOf="@id/som_icon"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="@dimen/_22dp">

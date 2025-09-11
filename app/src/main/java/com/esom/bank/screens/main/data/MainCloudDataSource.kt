@@ -18,7 +18,7 @@ interface MainCloudDataSource {
     fun fiatToCrypto(amount: Double): Flow<ApiResponse<StatusDto>>
     fun cryptoToFiat(amount: Double): Flow<ApiResponse<StatusDto>>
     fun transfer(amount: Double, phone: String, address: String? = null, currencyEnum: CurrencyEnum): Flow<ApiResponse<StatusDto>>
-    fun history(currencyEnum: CurrencyEnum? = null, fromTime: Long, toTime: Long,
+    suspend fun history(currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
                 take: Int, skip: Int): Flow<ApiResponse<List<TransactionDto>>>
 }
 
@@ -43,8 +43,8 @@ class MainCloudDataSourceImpl @Inject constructor(
             serverApi.transfer(TransferDto(amount, phone, address, currencyEnum))
         }
 
-    override fun history(
-        currencyEnum: CurrencyEnum?,
+    override suspend fun history(
+        currencyEnum: List<CurrencyEnum>?,
         fromTime: Long,
         toTime: Long,
         take: Int,

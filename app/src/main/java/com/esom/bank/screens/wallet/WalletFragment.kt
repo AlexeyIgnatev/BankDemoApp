@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.esom.bank.MainNavGraphDirections
@@ -22,34 +23,35 @@ import com.esom.bank.common.utils.format
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentWalletBinding
+import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.WalletModel
-import com.esom.bank.screens.wallet.adapter.Card
 import com.esom.bank.screens.wallet.adapter.CardAdapter
 import com.esom.bank.screens.wallet.adapter.Currency
 import com.esom.bank.screens.wallet.adapter.CurrencyAdapter
 import com.esom.bank.screens.wallet.adapter.News
 import com.esom.bank.screens.wallet.adapter.NewsAdapter
-import com.esom.bank.screens.wallet.adapter.Transaction
 import com.esom.bank.screens.wallet.adapter.TransactionAdapter
-import com.esom.bank.screens.wallet.adapter.TypeOfCard
 import com.esom.bank.screens.wallet.adapter.TypeOfCurrency
-import com.esom.bank.screens.wallet.adapter.TypeOfTransaction
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import java.util.Date
+import java.util.Locale
 import kotlin.math.abs
 
 @AndroidEntryPoint
 class WalletFragment : Fragment() {
-    private lateinit var binding: FragmentWalletBinding
 
+    private lateinit var binding: FragmentWalletBinding
     private val model: MainViewModel by activityViewModels()
-    private var cards: List<Card> = emptyList()
-    private var infiniteList: List<Card> = emptyList()
+    private var cards: List<WalletModel> = emptyList()
+    private var infiniteList: List<WalletModel> = emptyList()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentWalletBinding.inflate(inflater, container, false)
@@ -59,12 +61,14 @@ class WalletFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         binding.root.doOnApplyWindowInsets { view, insets, rect ->
             view.updatePadding(
                 top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
             )
             insets
         }
+
         val newsAdapter = NewsAdapter()
         val news = listOf(
             News(R.drawable.new_1),
@@ -80,58 +84,46 @@ class WalletFragment : Fragment() {
         binding.currencies.adapter = currencyAdapter
 
         var transactionAdapter = TransactionAdapter(requireContext())
-        val transactionsSom = listOf(
-            Transaction(TypeOfTransaction.SOM, "", 1231),
-            Transaction(TypeOfTransaction.SOM, "", -1231),
-            Transaction(TypeOfTransaction.SOM, "", 222),
-            Transaction(TypeOfTransaction.SOM, "", -1212),
-            Transaction(TypeOfTransaction.SOM, "", 9999),
-        )
-        val transactionsDigit = listOf(
-            Transaction(TypeOfTransaction.DIGITAL, "", 1231),
-            Transaction(TypeOfTransaction.DIGITAL, "", -1231),
-            Transaction(TypeOfTransaction.DIGITAL, "", 222),
-            Transaction(TypeOfTransaction.DIGITAL, "", -1212),
-            Transaction(TypeOfTransaction.DIGITAL, "", 9999),
-        )
-        val transactionsUSDT = listOf(
-            Transaction(TypeOfTransaction.USDT, "", 1231),
-            Transaction(TypeOfTransaction.USDT, "", -1231),
-            Transaction(TypeOfTransaction.USDT, "", 222),
-            Transaction(TypeOfTransaction.USDT, "", -1212),
-            Transaction(TypeOfTransaction.USDT, "", 9999),
-        )
-        val transactionsBitcoin = listOf(
-            Transaction(TypeOfTransaction.BITCOIN, "", 1231),
-            Transaction(TypeOfTransaction.BITCOIN, "", -1231),
-            Transaction(TypeOfTransaction.BITCOIN, "", 222),
-            Transaction(TypeOfTransaction.BITCOIN, "", -1212),
-            Transaction(TypeOfTransaction.BITCOIN, "", 9999),
-        )
-        val transactionsEth = listOf(
-            Transaction(TypeOfTransaction.ETH, "", 1231),
-            Transaction(TypeOfTransaction.ETH, "", -1231),
-            Transaction(TypeOfTransaction.ETH, "", 222),
-            Transaction(TypeOfTransaction.ETH, "", -1212),
-            Transaction(TypeOfTransaction.ETH, "", 9999),
-        )
         binding.transactions.adapter = transactionAdapter
-        transactionAdapter.submitList(transactionsSom)
+        viewLifecycleOwner.lifecycleScope.launch {
+            model.latestTransactions(CurrencyEnum.SOM)
+        }
+        model.history.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> {}
+                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
+                is UiState.Success -> {
+                    transactionAdapter.submitList(it.data)
+                }
+            }
+        }
 
-        val adapter = CardAdapter(requireContext(), { currency ->
-            findParentNavController().navigate(NavGraphDirections.startSwapFragment(if (currency == CurrencyEnum.ESOM) 1 else 0))
-        }, { currency ->
-            val address =
-                (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currency }?.address
-            Log.e("address", address.toString())
-            findParentNavController().navigate(
-                NavGraphDirections.startReceiveFragment(
-                    address ?: "", currency
+        val adapter = CardAdapter(
+            requireContext(),
+            { currency ->
+                findParentNavController().navigate(
+                    NavGraphDirections.startSwapFragment(
+                        if (currency == CurrencyEnum.ESOM) 1 else 0
+                    )
                 )
-            )
-        }, {
-            findParentNavController().navigate(NavGraphDirections.startTransferFragment(it))
-        })
+            },
+            { currency ->
+                val address = (model.myData.value as? UiState.Success)
+                    ?.data?.wallets?.find { it.currency == currency }?.address
+                Log.e("address", address.toString())
+                findParentNavController().navigate(
+                    NavGraphDirections.startReceiveFragment(
+                        address ?: "", currency
+                    )
+                )
+            },
+            {
+                findParentNavController().navigate(
+                    NavGraphDirections.startTransferFragment(it)
+                )
+            }
+        )
+
         val pageMarginPx = resources.getDimension(R.dimen._3dp).toInt()
         val offsetPx = resources.getDimension(R.dimen._32dp).toInt()
 
@@ -147,7 +139,6 @@ class WalletFragment : Fragment() {
             clipToPadding = false
             clipChildren = false
             offscreenPageLimit = 2
-
             setPadding(offsetPx, 0, offsetPx, 0)
 
             setPageTransformer { page, position ->
@@ -209,51 +200,66 @@ class WalletFragment : Fragment() {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(1, false)
                         }, 150)
-                        binding.pager.layoutParams.height = resources.getDimensionPixelSize(R.dimen._189dp)
+                        binding.pager.layoutParams.height =
+                            resources.getDimensionPixelSize(R.dimen._189dp)
                         binding.pager.requestLayout()
-                        binding.infoLayout.layoutParams.height = resources.getDimensionPixelSize(R.dimen._559dp)
+                        binding.infoLayout.layoutParams.height =
+                            resources.getDimensionPixelSize(R.dimen._559dp)
                         binding.infoLayout.requestLayout()
-                        updateTransactions(transactionsSom, transactionAdapter)
-                        Log.e("currency", "SOM")
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            model.latestTransactions(CurrencyEnum.SOM)
+                        }
                     }
 
                     1 -> {
-                        binding.pager.layoutParams.height = resources.getDimensionPixelSize(R.dimen._159dp)
+                        binding.pager.layoutParams.height =
+                            resources.getDimensionPixelSize(R.dimen._159dp)
                         binding.pager.requestLayout()
-                        binding.infoLayout.layoutParams.height = resources.getDimensionPixelSize(R.dimen._529dp)
+                        binding.infoLayout.layoutParams.height =
+                            resources.getDimensionPixelSize(R.dimen._529dp)
                         binding.infoLayout.requestLayout()
-                        updateTransactions(transactionsUSDT, transactionAdapter)
-                        Log.e("currency", "USDT")
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            model.latestTransactions(CurrencyEnum.USDT_TRC20)
+                        }
                     }
 
                     2 -> {
-                        binding.pager.layoutParams.height = resources.getDimensionPixelSize(R.dimen._159dp)
+                        binding.pager.layoutParams.height =
+                            resources.getDimensionPixelSize(R.dimen._159dp)
                         binding.pager.requestLayout()
-                        binding.infoLayout.layoutParams.height = resources.getDimensionPixelSize(R.dimen._529dp)
+                        binding.infoLayout.layoutParams.height =
+                            resources.getDimensionPixelSize(R.dimen._529dp)
                         binding.infoLayout.requestLayout()
-                        updateTransactions(transactionsBitcoin, transactionAdapter)
-                        Log.e("currency", "BITCOIN")
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            model.latestTransactions(CurrencyEnum.BTC)
+                        }
                     }
 
                     3 -> {
-                        binding.pager.layoutParams.height = resources.getDimensionPixelSize(R.dimen._159dp)
+                        binding.pager.layoutParams.height =
+                            resources.getDimensionPixelSize(R.dimen._159dp)
                         binding.pager.requestLayout()
-                        binding.infoLayout.layoutParams.height = resources.getDimensionPixelSize(R.dimen._529dp)
+                        binding.infoLayout.layoutParams.height =
+                            resources.getDimensionPixelSize(R.dimen._529dp)
                         binding.infoLayout.requestLayout()
-                        updateTransactions(transactionsEth, transactionAdapter)
-                        Log.e("currency", "ETHEREUM")
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            model.latestTransactions(CurrencyEnum.ETH)
+                        }
                     }
 
                     4 -> {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(cards.size, false)
                         }, 150)
-                        binding.pager.layoutParams.height = resources.getDimensionPixelSize(R.dimen._189dp)
+                        binding.pager.layoutParams.height =
+                            resources.getDimensionPixelSize(R.dimen._189dp)
                         binding.pager.requestLayout()
-                        binding.infoLayout.layoutParams.height = resources.getDimensionPixelSize(R.dimen._559dp)
+                        binding.infoLayout.layoutParams.height =
+                            resources.getDimensionPixelSize(R.dimen._559dp)
                         binding.infoLayout.requestLayout()
-                        updateTransactions(transactionsDigit, transactionAdapter)
-                        Log.e("currency", "DIGIT")
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            model.latestTransactions(CurrencyEnum.ESOM)
+                        }
                     }
                 }
             }
@@ -262,14 +268,66 @@ class WalletFragment : Fragment() {
         binding.notificationBtn.setOnClickListener {
             findNavController().navigate(MainNavGraphDirections.startNotificationFragment())
         }
+        viewLifecycleOwner.lifecycleScope.launch {
+            model.monthTransactions()
+        }
+        model.month.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> {}
+                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
+                is UiState.Success -> {
+                    val calendarStart = java.util.Calendar.getInstance().apply {
+                        set(2025, java.util.Calendar.SEPTEMBER, 1, 0, 0, 0)
+                        set(java.util.Calendar.MILLISECOND, 0)
+                    }
+                    val calendarEnd = java.util.Calendar.getInstance().apply {
+                        set(2025, java.util.Calendar.SEPTEMBER, 30, 23, 59, 59)
+                        set(java.util.Calendar.MILLISECOND, 999)
+                    }
 
+                    val fromTimeMonth = calendarStart.timeInMillis
+                    val toTimeMonth = calendarEnd.timeInMillis
+
+                    val monthFormat = java.text.SimpleDateFormat("LLLL", Locale("ru"))
+                    val monthText = monthFormat.format(Date(fromTimeMonth))
+
+                    val monthInGenitive = when (monthText.lowercase(Locale.getDefault())) {
+                        "январь" -> "январе"
+                        "февраль" -> "феврале"
+                        "март" -> "марте"
+                        "апрель" -> "апреле"
+                        "май" -> "мае"
+                        "июнь" -> "июне"
+                        "июль" -> "июле"
+                        "август" -> "августе"
+                        "сентябрь" -> "сентябре"
+                        "октябрь" -> "октябре"
+                        "ноябрь" -> "ноябре"
+                        "декабрь" -> "декабре"
+                        else -> monthText
+                    }
+
+                    val monthTransactions = it.data.filter { tx ->
+                        val createdAtMillis = if (tx.createdAt < 1_000_000_000_000) tx.createdAt * 1000 else tx.createdAt
+                        createdAtMillis in fromTimeMonth..toTimeMonth
+                    }
+
+                    val expenseSum = monthTransactions
+                        .filter { it.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER }
+                        .sumOf { it.amount }
+                    binding.monthWasteTitle.text = "Расходы в $monthInGenitive"
+                    binding.monthWaste.text = expenseSum.toInt().toString()
+
+                }
+
+            }
+        }
         model.updateUserData()
         model.myData.observe(viewLifecycleOwner) {
             when (it) {
                 is UiState.Loading -> {}
                 is UiState.Error -> {
                     binding.root.showErrorSnackbar(it.message)
-
                     if (it.message == getString(R.string.logged_out)) {
                         findParentNavController().navigate(
                             NavGraphDirections.startAuthFragment()
@@ -288,41 +346,8 @@ class WalletFragment : Fragment() {
     }
 
     private fun updateCards(wallets: List<WalletModel>) {
-        cards = wallets.map { wallet ->
-            when (wallet.currency) {
-                CurrencyEnum.SOM -> Card(
-                    TypeOfCard.CARD, wallet.balance.format(2), "*${
-                        (model.myData.value as? UiState.Success)?.data?.phone?.takeLast(3)
-                    }"
-                )
-
-                CurrencyEnum.ESOM -> Card(
-                    TypeOfCard.DIGITAL,
-                    wallet.balance.format(2),
-                    "*${wallet.address.takeLast(3)}"
-                )
-
-                CurrencyEnum.USDT_TRC20 -> Card(
-                    TypeOfCard.USDT,
-                    wallet.balance.format(2),
-                    "*${wallet.address.takeLast(3)}"
-                )
-
-                CurrencyEnum.BTC -> Card(
-                    TypeOfCard.BITCOIN,
-                    wallet.balance.format(2),
-                    "*${wallet.address.takeLast(3)}"
-                )
-
-                CurrencyEnum.ETH -> Card(
-                    TypeOfCard.ETH,
-                    wallet.balance.format(2),
-                    "*${wallet.address.takeLast(3)}"
-                )
-            }
-        }
-
-        infiniteList = mutableListOf<Card>().apply {
+        cards = wallets
+        infiniteList = mutableListOf<WalletModel>().apply {
             add(cards.last())
             addAll(cards)
             add(cards.first())
@@ -333,7 +358,17 @@ class WalletFragment : Fragment() {
     }
 
     private fun updateCurrencies(wallets: List<WalletModel>) {
-        val currencies = wallets.map { wallet ->
+        val sortedWallets = wallets.sortedWith(compareBy {
+            when (it.currency) {
+                CurrencyEnum.SOM -> 0
+                CurrencyEnum.USDT_TRC20 -> 1
+                CurrencyEnum.BTC -> 2
+                CurrencyEnum.ETH -> 3
+                CurrencyEnum.ESOM -> 4
+            }
+        })
+
+        val currencies = sortedWallets.map { wallet ->
             when (wallet.currency) {
                 CurrencyEnum.SOM -> Currency(
                     TypeOfCurrency.FIAT,
@@ -371,23 +406,12 @@ class WalletFragment : Fragment() {
     }
 
     private fun updateTotalBalance(wallets: List<WalletModel>) {
-        binding.monthWaste.text = "0"
-
         var totalBalanceInSoms = 0.0
-
         wallets.forEach { wallet ->
             val balanceInSoms = wallet.balance * wallet.buyRate
             totalBalanceInSoms += balanceInSoms
         }
-
         binding.totalWaste.text = totalBalanceInSoms.format(2)
     }
 
-    private fun updateTransactions(
-        transactions: List<Transaction>,
-        transactionAdapter: TransactionAdapter
-    ) {
-        transactionAdapter.submitList(transactions)
-        binding.transactions.adapter = transactionAdapter
-    }
 }

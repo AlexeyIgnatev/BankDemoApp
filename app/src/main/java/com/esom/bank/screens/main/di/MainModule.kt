@@ -14,8 +14,9 @@ import dagger.hilt.components.SingletonComponent
 abstract class MainModule {
     @Binds
     abstract fun bindMainCloudDataSource(
-        mainCloudDataSourceImpl: MainCloudDataSourceImpl
+        mainCloudDataSourceMock: MainCloudDataSourceImpl
     ): MainCloudDataSource
+
 
     @Binds
     abstract fun bindMainRepository(

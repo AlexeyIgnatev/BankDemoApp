@@ -4,6 +4,7 @@ import android.content.Context
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.model.UiState
 import com.esom.bank.screens.auth.data.AuthLocalDataSource
+import com.esom.bank.screens.history.data.HistoryLocalDataSource
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.toModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
@@ -36,16 +37,26 @@ interface MainRepository {
         currencyEnum: CurrencyEnum
     ): Flow<UiState<Unit>>
 
-    fun history(
-        currencyEnum: CurrencyEnum? = null, fromTime: Long, toTime: Long,
+    suspend fun history(
+        currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
         take: Int, skip: Int
     ): Flow<UiState<List<TransactionModel>>>
+
+    fun getCurrency(): List<CurrencyEnum>
+    fun setCurrency(currency: List<CurrencyEnum>)
+
+    fun getFromTime(): Long
+    fun setFromTime(time: Long)
+
+    fun getToTime(): Long
+    fun setToTime(time: Long)
 }
 
 class MainRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val mainCloudDataSource: MainCloudDataSource,
-    private val authLocalDataSource: AuthLocalDataSource
+    private val authLocalDataSource: AuthLocalDataSource,
+    private val historyLocalDataSource: HistoryLocalDataSource
 ) : MainRepository {
     override fun isAuthenticated(): Boolean =
         authLocalDataSource.getLogin() != null && authLocalDataSource.getPassword() != null
@@ -87,7 +98,12 @@ class MainRepositoryImpl @Inject constructor(
             }
         }
 
-    override fun transferToUser(amount: Double, phone: String, address: String?, currencyEnum: CurrencyEnum): Flow<UiState<Unit>> =
+    override fun transferToUser(
+        amount: Double,
+        phone: String,
+        address: String?,
+        currencyEnum: CurrencyEnum
+    ): Flow<UiState<Unit>> =
         mainCloudDataSource.transfer(amount, phone, address, currencyEnum).map { response ->
             when (response) {
                 is ApiResponse.Success -> return@map UiState.Success(Unit)
@@ -95,8 +111,8 @@ class MainRepositoryImpl @Inject constructor(
             }
         }
 
-    override fun history(
-        currencyEnum: CurrencyEnum?,
+    override suspend fun history(
+        currencyEnum: List<CurrencyEnum>?,
         fromTime: Long,
         toTime: Long,
         take: Int,
@@ -108,4 +124,28 @@ class MainRepositoryImpl @Inject constructor(
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
             }
         }
+
+    override fun getCurrency(): List<CurrencyEnum> {
+        return historyLocalDataSource.getCurrency()
+    }
+
+    override fun setCurrency(currency: List<CurrencyEnum>) {
+        historyLocalDataSource.setCurrency(currency)
+    }
+
+    override fun getFromTime(): Long {
+        return historyLocalDataSource.getFromTime()
+    }
+
+    override fun setFromTime(time: Long) {
+        historyLocalDataSource.setFromTime(time)
+    }
+
+    override fun getToTime(): Long {
+        return historyLocalDataSource.getToTime()
+    }
+
+    override fun setToTime(time: Long) {
+        historyLocalDataSource.setToTime(time)
+    }
 }

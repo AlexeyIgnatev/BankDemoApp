@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 data class GetTransactionsDto(
     @SerializedName("currency")
-    val currency: CurrencyEnum? = null,
+    val currency: List<CurrencyEnum>? = null,
     @SerializedName("from_time")
     val fromTime: Long,
     @SerializedName("to_time")

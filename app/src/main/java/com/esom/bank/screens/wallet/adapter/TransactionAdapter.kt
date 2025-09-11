@@ -4,84 +4,108 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.R
 import com.esom.bank.databinding.ItemTransactionBinding
+import com.esom.bank.screens.history.enums.TransactionEnum
+import com.esom.bank.screens.history.model.TransactionModel
+import com.esom.bank.screens.main.enums.CurrencyEnum
 
-class TransactionAdapter(private val context: Context): ListAdapter<Transaction, TransactionAdapter.TransactionViewHolder>(TransactionDiffCallback()) {
+class TransactionAdapter(private val context: Context) :
+    ListAdapter<TransactionModel, TransactionAdapter.TransactionViewHolder>(TransactionDiffCallback()) {
 
-    inner class TransactionViewHolder(private val binding: ItemTransactionBinding): RecyclerView.ViewHolder(binding.root) {
+    inner class TransactionViewHolder(private val binding: ItemTransactionBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
-        fun bind(item: Transaction) {
-            when(item.type) {
-                TypeOfTransaction.SOM -> {
-                    binding.icon.setImageResource(R.drawable.som_icon)
-                    binding.title.text = context.getString(R.string.convert_som)
+        fun bind(item: TransactionModel) {
+            when (item.currencyEnum) {
+                CurrencyEnum.SOM -> binding.icon.setImageResource(R.drawable.som_icon)
+                CurrencyEnum.ESOM -> binding.icon.setImageResource(R.drawable.salam_icon)
+                CurrencyEnum.USDT_TRC20 -> binding.icon.setImageResource(R.drawable.usdt_icon)
+                CurrencyEnum.BTC -> binding.icon.setImageResource(R.drawable.bitcoin_icon)
+                CurrencyEnum.ETH -> binding.icon.setImageResource(R.drawable.eth_icon)
+            }
+
+            val stringResId = when (item.type) {
+                TransactionEnum.CONVERSATION -> when (item.currencyEnum) {
+                    CurrencyEnum.SOM -> R.string.convert_som
+                    CurrencyEnum.ESOM -> R.string.convert_digital
+                    CurrencyEnum.ETH -> R.string.convert_eth
+                    CurrencyEnum.BTC -> R.string.convert_bitcoin
+                    CurrencyEnum.USDT_TRC20 -> R.string.convert_usdt
                 }
-                TypeOfTransaction.DIGITAL -> {
-                    binding.icon.setImageResource(R.drawable.salam_icon)
-                    binding.title.text = context.getString(R.string.convert_digital)
+
+                TransactionEnum.INCOME -> when (item.currencyEnum) {
+                    CurrencyEnum.SOM -> R.string.income_som
+                    CurrencyEnum.ESOM -> R.string.income_digital
+                    CurrencyEnum.ETH -> R.string.income_eth
+                    CurrencyEnum.BTC -> R.string.income_bitcoin
+                    CurrencyEnum.USDT_TRC20 -> R.string.income_usdt
                 }
-                TypeOfTransaction.USDT -> {
-                    binding.icon.setImageResource(R.drawable.usdt_icon)
-                    binding.title.text = context.getString(R.string.convert_usdt)
+
+                TransactionEnum.EXPENSE -> when (item.currencyEnum) {
+                    CurrencyEnum.SOM -> R.string.expense_som
+                    CurrencyEnum.ESOM -> R.string.expense_digital
+                    CurrencyEnum.ETH -> R.string.expense_eth
+                    CurrencyEnum.BTC -> R.string.expense_bitcoin
+                    CurrencyEnum.USDT_TRC20 -> R.string.expense_usdt
                 }
-                TypeOfTransaction.BITCOIN -> {
-                    binding.icon.setImageResource(R.drawable.bitcoin_icon)
-                    binding.title.text = context.getString(R.string.convert_bitcoin)
+
+                TransactionEnum.INFLOW -> when (item.currencyEnum) {
+                    CurrencyEnum.SOM -> R.string.inflow_som
+                    CurrencyEnum.ESOM -> R.string.inflow_digital
+                    CurrencyEnum.ETH -> R.string.inflow_eth
+                    CurrencyEnum.BTC -> R.string.inflow_bitcoin
+                    CurrencyEnum.USDT_TRC20 -> R.string.inflow_usdt
                 }
-                TypeOfTransaction.ETH -> {
-                    binding.icon.setImageResource(R.drawable.eth_icon)
-                    binding.title.text = context.getString(R.string.convert_eth)
+
+                TransactionEnum.TRANSFER -> when (item.currencyEnum) {
+                    CurrencyEnum.SOM -> R.string.transfer_som
+                    CurrencyEnum.ESOM -> R.string.transfer_digital
+                    CurrencyEnum.ETH -> R.string.transfer_eth
+                    CurrencyEnum.BTC -> R.string.transfer_bitcoin
+                    CurrencyEnum.USDT_TRC20 -> R.string.transfer_usdt
                 }
             }
 
-            if(item.sum > 0) {
-                binding.somIcon.setColorFilter(Color.parseColor("#38C72E"))
-                binding.sum.setTextColor(Color.parseColor("#38C72E"))
-                binding.sum.text = "+" + item.sum
-            } else {
-                binding.somIcon.setColorFilter(Color.parseColor("#1D1D1B"))
-                binding.sum.setTextColor(Color.parseColor("#1D1D1B"))
-                binding.sum.text = item.sum.toString()
+            binding.title.text = context.getString(stringResId)
+            val (sign, color) = when (item.type) {
+                TransactionEnum.INCOME, TransactionEnum.INFLOW -> "+" to "#38C72E"
+                TransactionEnum.EXPENSE, TransactionEnum.TRANSFER -> "-" to "#1D1D1B"
+                TransactionEnum.CONVERSATION -> "-" to "#1D1D1B"
             }
+
+            binding.sum.setTextColor(Color.parseColor(color))
+            binding.somIcon.setColorFilter(Color.parseColor(color))
+            binding.sum.text = "$sign${item.amount.toLong()}"
+
+            binding.somIcon.visibility =
+                if (item.currencyEnum == CurrencyEnum.SOM) View.VISIBLE else View.INVISIBLE
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
-        val binding = ItemTransactionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding =
+            ItemTransactionBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return TransactionViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: TransactionViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        getItem(position)?.let { holder.bind(it) }
     }
 }
 
-class TransactionDiffCallback: DiffUtil.ItemCallback<Transaction>() {
-    override fun areItemsTheSame(oldItem: Transaction, newItem: Transaction): Boolean {
-        return oldItem.type == newItem.type
+class TransactionDiffCallback : DiffUtil.ItemCallback<TransactionModel>() {
+    override fun areItemsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean {
+        return oldItem.createdAt == newItem.createdAt
     }
 
-    override fun areContentsTheSame(oldItem: Transaction, newItem: Transaction): Boolean {
+    override fun areContentsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean {
         return oldItem == newItem
     }
-
-}
-
-data class Transaction(
-    val type: TypeOfTransaction,
-    val title: String,
-    val sum: Long
-)
-
-enum class TypeOfTransaction {
-    SOM,
-    DIGITAL,
-    USDT,
-    BITCOIN,
-    ETH
 }

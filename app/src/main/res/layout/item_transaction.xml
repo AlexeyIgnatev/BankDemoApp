@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:text="@string/convert_som"
         android:fontFamily="@font/mont_regular"
-        android:textSize="@dimen/_16sp"
+        android:textSize="@dimen/_14sp"
         android:textColor="#1D1D1B"
         android:letterSpacing="-0.02"
         app:layout_constraintStart_toEndOf="@id/icon"

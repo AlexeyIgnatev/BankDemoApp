@@ -48,11 +48,13 @@ class ReceiveFragment : Fragment() {
             )
             insets
         }
+        if(args.currency == CurrencyEnum.SOM)
+            binding.contact.text = args.contact.formatPhone()
+        else binding.contact.text = args.contact
         if(args.currency != CurrencyEnum.SOM) {
-            binding.contact.text = args.contact
             val qrBitmap = QRCodeGenerator.generateCryptoQRCodeWithScheme(
-                address = "TQ6d3mF5eW8rY9uP1hG7kZ2xV4bN8sJ6Lq",
-                currency = CurrencyEnum.USDT_TRC20
+                address = args.contact,
+                currency = args.currency
             )
             binding.qrIcon.setImageBitmap(qrBitmap)
         }
@@ -60,20 +62,6 @@ class ReceiveFragment : Fragment() {
 
         binding.backBtn.setOnClickListener {
             findNavController().popBackStack()
-        }
-
-        model.myData.observe(viewLifecycleOwner) {
-            when (it) {
-                is UiState.Loading -> {}
-
-                is UiState.Error -> {
-                    binding.root.showErrorSnackbar(it.message)
-                }
-
-                is UiState.Success -> {
-                    binding.contact.text = it.data.phone.formatPhone()
-                }
-            }
         }
 
         binding.copyBtn.setOnClickListener {

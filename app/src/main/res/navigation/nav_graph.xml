@@ -50,7 +50,11 @@
         android:id="@+id/transferFragment"
         android:name="com.esom.bank.screens.transfer.TransferFragment"
         android:label="fragment_transfer"
-        tools:layout="@layout/fragment_transfer" />
+        tools:layout="@layout/fragment_transfer">
+        <argument
+            android:name="currency"
+            app:argType="com.esom.bank.screens.main.enums.CurrencyEnum"/>
+    </fragment>
 
     <action
         android:id="@+id/startReceiveFragment"

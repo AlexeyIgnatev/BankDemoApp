@@ -44,7 +44,7 @@ class ActionsFragment : Fragment() {
         }
 
         binding.sendCard.setOnClickListener {
-            findParentNavController().navigate(NavGraphDirections.startTransferFragment())
+            //findParentNavController().navigate(NavGraphDirections.startTransferFragment())
         }
 
         binding.receiveCard.setOnClickListener {

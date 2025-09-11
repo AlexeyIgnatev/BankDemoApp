@@ -54,6 +54,7 @@ class SwapFragment : Fragment() {
         }
 
         initInitialIcons()
+
         listOf(
             binding.sum50Layout to "50",
             binding.sum100Layout to "100",
@@ -67,7 +68,6 @@ class SwapFragment : Fragment() {
         }
 
         updateBalanceDisplay()
-
         binding.backBtn.setOnClickListener { findNavController().popBackStack() }
         binding.currentCurrencyLayout.setOnClickListener { togglePanel(true) }
         binding.peopleLayout.setOnClickListener { togglePanel(false) }
@@ -86,7 +86,9 @@ class SwapFragment : Fragment() {
             binding.indicator.isVisible = it is UiState.Loading
 
             when (it) {
-                is UiState.Error -> findNavController().navigate(NavGraphDirections.startFailTransferFragment(it.message))
+                is UiState.Error -> findNavController().navigate(
+                    NavGraphDirections.startFailTransferFragment(it.message)
+                )
                 is UiState.Success -> {
                     findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
                     findNavController().popBackStack()
@@ -101,6 +103,7 @@ class SwapFragment : Fragment() {
             currentFromCurrency = CurrencyEnum.SOM
             currentToCurrency = CurrencyEnum.ESOM
             binding.somIcon.visibility = View.VISIBLE
+            binding.peopleSomIcon.visibility = View.VISIBLE
             binding.somIcon50.visibility = View.VISIBLE
             binding.somIcon100.visibility = View.VISIBLE
             binding.somIcon1000.visibility = View.VISIBLE
@@ -123,6 +126,7 @@ class SwapFragment : Fragment() {
         } else {
             currentFromCurrency = CurrencyEnum.ESOM
             currentToCurrency = CurrencyEnum.SOM
+            binding.peopleSomIcon.visibility = View.GONE
             binding.somIcon.visibility = View.GONE
             binding.somIcon50.visibility = View.GONE
             binding.somIcon100.visibility = View.GONE
@@ -152,12 +156,10 @@ class SwapFragment : Fragment() {
             if (currentFromCurrency == CurrencyEnum.ESOM) {
                 currentFromCurrency = CurrencyEnum.SOM
                 currentToCurrency = CurrencyEnum.ESOM
-
                 binding.fiatIcon.setImageResource(R.drawable.salam_icon)
                 binding.fiatTitle.text = getString(R.string.digital)
                 binding.icon.setImageResource(R.drawable.som_icon)
                 binding.currencyTitle.text = getString(R.string.som)
-
                 binding.peopleFiatIcon.setImageResource(R.drawable.som_icon)
                 binding.peopleFiatTitle.text = getString(R.string.som)
                 binding.peopleIcon.setImageResource(R.drawable.salam_icon)
@@ -165,27 +167,24 @@ class SwapFragment : Fragment() {
             } else {
                 currentFromCurrency = CurrencyEnum.ESOM
                 currentToCurrency = CurrencyEnum.SOM
-
                 binding.fiatIcon.setImageResource(R.drawable.som_icon)
                 binding.fiatTitle.text = getString(R.string.som)
                 binding.icon.setImageResource(R.drawable.salam_icon)
                 binding.currencyTitle.text = getString(R.string.digital)
-
                 binding.peopleFiatIcon.setImageResource(R.drawable.salam_icon)
                 binding.peopleFiatTitle.text = getString(R.string.digital)
                 binding.peopleIcon.setImageResource(R.drawable.som_icon)
                 binding.peopleTitle.text = getString(R.string.som)
             }
+            if (isPanelShown) togglePanel(true)
         } else {
             if (currentToCurrency == CurrencyEnum.SOM) {
                 currentToCurrency = CurrencyEnum.ESOM
                 currentFromCurrency = CurrencyEnum.SOM
-
                 binding.peopleFiatIcon.setImageResource(R.drawable.som_icon)
                 binding.peopleFiatTitle.text = getString(R.string.som)
                 binding.peopleIcon.setImageResource(R.drawable.salam_icon)
                 binding.peopleTitle.text = getString(R.string.digital)
-
                 binding.fiatIcon.setImageResource(R.drawable.salam_icon)
                 binding.fiatTitle.text = getString(R.string.digital)
                 binding.icon.setImageResource(R.drawable.som_icon)
@@ -193,21 +192,21 @@ class SwapFragment : Fragment() {
             } else {
                 currentToCurrency = CurrencyEnum.SOM
                 currentFromCurrency = CurrencyEnum.ESOM
-
                 binding.peopleFiatIcon.setImageResource(R.drawable.salam_icon)
                 binding.peopleFiatTitle.text = getString(R.string.digital)
                 binding.peopleIcon.setImageResource(R.drawable.som_icon)
                 binding.peopleTitle.text = getString(R.string.som)
-
                 binding.fiatIcon.setImageResource(R.drawable.som_icon)
                 binding.fiatTitle.text = getString(R.string.som)
                 binding.icon.setImageResource(R.drawable.salam_icon)
                 binding.currencyTitle.text = getString(R.string.digital)
             }
+            if (isPeoplePanelShown) togglePanel(false)
         }
 
         if (currentFromCurrency == CurrencyEnum.SOM) {
             binding.somIcon.visibility = View.VISIBLE
+            binding.peopleSomIcon.visibility = View.GONE
             binding.somIcon50.visibility = View.VISIBLE
             binding.somIcon100.visibility = View.VISIBLE
             binding.somIcon1000.visibility = View.VISIBLE
@@ -217,8 +216,9 @@ class SwapFragment : Fragment() {
             binding.secondTitle.text = getString(R.string.digital)
             binding.salamIconSwap.visibility = View.GONE
             binding.totalSomIcon.visibility = View.GONE
-        } else {
+        } else if (currentToCurrency == CurrencyEnum.SOM) {
             binding.somIcon.visibility = View.GONE
+            binding.peopleSomIcon.visibility = View.VISIBLE
             binding.somIcon50.visibility = View.GONE
             binding.somIcon100.visibility = View.GONE
             binding.somIcon1000.visibility = View.GONE
@@ -228,33 +228,43 @@ class SwapFragment : Fragment() {
             binding.secondTitle.text = getString(R.string.som)
             binding.salamIconSwap.visibility = View.VISIBLE
             binding.totalSomIcon.visibility = View.VISIBLE
+        } else {
+            binding.somIcon.visibility = View.GONE
+            binding.peopleSomIcon.visibility = View.GONE
         }
 
         updateBalanceDisplay()
         updateCommissionAndTotal()
     }
 
+
     private fun updateBalanceDisplay() {
         val wallet = (model.myData.value as? UiState.Success)?.data?.wallets
             ?.find { it.currency == currentFromCurrency }
-
         val walletBalance = wallet?.balance ?: 0.0
         binding.sum.text = walletBalance.format(2)
+        binding.peopleSum4.text = walletBalance.format(2)
 
-        val walletSuffix = when (currentFromCurrency) {
-            CurrencyEnum.SOM -> (model.myData.value as? UiState.Success)?.data?.phone?.takeLast(3)
-            else -> wallet?.address?.takeLast(3)
-        } ?: ""
-        binding.currency.text = "*$walletSuffix"
+        val oppositeCurrency = if (currentFromCurrency == CurrencyEnum.SOM) CurrencyEnum.ESOM else CurrencyEnum.SOM
+        val oppositeWallet = (model.myData.value as? UiState.Success)?.data?.wallets
+            ?.find { it.currency == oppositeCurrency }
+        binding.peopleSum.text = oppositeWallet?.balance?.format(2)
+        binding.sum4.text = oppositeWallet?.balance?.format(2) ?: "0.00"
+        binding.peopleSum4.text = wallet?.balance?.format(2) ?: "0.00"
 
-        val contactSuffix = (model.myData.value as? UiState.Success)?.data?.phone?.takeLast(3)
-        binding.contact.text = "*$contactSuffix"
+        val fromWalletSuffix = wallet?.address?.takeLast(3) ?: ""
+        val toWalletSuffix = oppositeWallet?.address?.takeLast(3) ?: ""
+
+        binding.fiat.text = "*$toWalletSuffix"
+        binding.peopleFiat.text = "*$fromWalletSuffix"
+        binding.currency.text = "*$fromWalletSuffix"
+        binding.contact.text = "*$toWalletSuffix"
     }
+
 
     private fun updateCommissionAndTotal() {
         val platformFee = (model.myData.value as? UiState.Success)?.data?.platformFee ?: 0.0
         val fromAmount = binding.sumInput.text.toString().toDoubleOrNull() ?: 0.0
-
         val exchangeRate = when {
             currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM ->
                 (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == CurrencyEnum.ESOM }?.buyRate ?: 1.0
@@ -262,11 +272,9 @@ class SwapFragment : Fragment() {
                 (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == CurrencyEnum.ESOM }?.sellRate ?: 1.0
             else -> 1.0
         }
-
         val secondValue = fromAmount * exchangeRate
         val commissionAmount = if (currentFromCurrency == CurrencyEnum.SOM) secondValue * platformFee else fromAmount * platformFee
         val totalAmount = secondValue - commissionAmount
-
         binding.comissionValue.text = fromAmount.format(2)
         binding.secondValue.text = secondValue.format(2)
         binding.total.text = totalAmount.format(2)
@@ -274,22 +282,18 @@ class SwapFragment : Fragment() {
 
     private fun handleConvertButtonClick() {
         if (model.swapRes.value is UiState.Loading) return
-
         val fromAmount = binding.sumInput.text.toString().toDoubleOrNull() ?: run {
             binding.root.showErrorSnackbar("Введите сумму для обмена")
             return
         }
-
         val walletBalance = (model.myData.value as? UiState.Success)?.data?.wallets
             ?.find { it.currency == currentFromCurrency }
             ?.balance ?: 0.0
-
         if (fromAmount > walletBalance) {
             val currencyName = if (currentFromCurrency == CurrencyEnum.SOM) "Сом" else "Салам"
             binding.root.showErrorSnackbar("Недостаточно $currencyName на балансе")
             return
         }
-
         when {
             currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM -> model.transferFromFiat(fromAmount)
             currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM -> model.transferToFiat(fromAmount)
@@ -299,7 +303,6 @@ class SwapFragment : Fragment() {
 
     private fun updateAmounts(fromAmount: Double?, toAmount: Double?) {
         val platformFee = (model.myData.value as? UiState.Success)?.data?.platformFee ?: 0.0
-
         when {
             fromAmount != null -> {
                 val formatted = fromAmount.format(2)
@@ -315,22 +318,50 @@ class SwapFragment : Fragment() {
             }
             else -> binding.sumInput.setTextProgrammatically("")
         }
-
         updateCommissionAndTotal()
     }
 
     private fun togglePanel(isCurrencyPanel: Boolean) {
         if (isCurrencyPanel) {
-            binding.peopleLayout.isClickable = !isPanelShown
-            if (isPanelShown) slideOut(binding.typeCurrencyLayout) else slideIn(binding.typeCurrencyLayout)
-            binding.backgroundConversationLayout.visibility = if (isPanelShown) View.GONE else View.VISIBLE
-            isPanelShown = !isPanelShown
+            if (isPeoplePanelShown) {
+                slideOut(binding.peopleCurrencyLayout) {
+                    binding.peopleCurrencyLayout.visibility = View.GONE
+                    binding.peopleLayout.elevation = 0f
+                    isPeoplePanelShown = false
+                }
+            }
+
+            if (isPanelShown) {
+                slideOut(binding.typeCurrencyLayout) {
+                    binding.typeCurrencyLayout.visibility = View.GONE
+                    binding.backgroundConversationLayout.visibility = View.GONE
+                    isPanelShown = false
+                }
+            } else {
+                binding.backgroundConversationLayout.visibility = View.VISIBLE
+                slideIn(binding.typeCurrencyLayout)
+                isPanelShown = true
+            }
         } else {
-            binding.currentCurrencyLayout.isClickable = !isPeoplePanelShown
-            binding.peopleCurrencyLayout.visibility = if (isPeoplePanelShown) View.GONE else View.VISIBLE
-            if (!isPeoplePanelShown) slideIn(binding.peopleCurrencyLayout) else slideOut(binding.peopleCurrencyLayout)
-            binding.peopleLayout.elevation = if (isPeoplePanelShown) 0f else 20f
-            isPeoplePanelShown = !isPeoplePanelShown
+            if (isPanelShown) {
+                slideOut(binding.typeCurrencyLayout) {
+                    binding.typeCurrencyLayout.visibility = View.GONE
+                    binding.backgroundConversationLayout.visibility = View.GONE
+                    isPanelShown = false
+                }
+            }
+
+            if (isPeoplePanelShown) {
+                slideOut(binding.peopleCurrencyLayout) {
+                    binding.peopleCurrencyLayout.visibility = View.GONE
+                    binding.peopleLayout.elevation = 0f
+                    isPeoplePanelShown = false
+                }
+            } else {
+                binding.peopleLayout.elevation = 20f
+                slideIn(binding.peopleCurrencyLayout)
+                isPeoplePanelShown = true
+            }
         }
     }
 
@@ -343,9 +374,12 @@ class SwapFragment : Fragment() {
         }
     }
 
-    private fun slideOut(view: View) {
-        view.animate().translationY(-view.height.toFloat()).alpha(0f).setDuration(450).withEndAction {
-            view.visibility = View.GONE
-        }.start()
+    private fun slideOut(view: View, onEnd: (() -> Unit)? = null) {
+        view.animate().translationY(-view.height.toFloat()).alpha(0f).setDuration(450)
+            .withEndAction {
+                view.visibility = View.GONE
+                onEnd?.invoke()
+            }.start()
     }
+
 }

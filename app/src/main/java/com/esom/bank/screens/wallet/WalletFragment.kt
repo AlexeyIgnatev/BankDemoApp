@@ -123,13 +123,14 @@ class WalletFragment : Fragment() {
         }, { currency ->
             val address =
                 (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currency }?.address
+            Log.e("address", address.toString())
             findParentNavController().navigate(
                 NavGraphDirections.startReceiveFragment(
                     address ?: "", currency
                 )
             )
         }, {
-            findParentNavController().navigate(NavGraphDirections.startTransferFragment())
+            findParentNavController().navigate(NavGraphDirections.startTransferFragment(it))
         })
         val pageMarginPx = resources.getDimension(R.dimen._3dp).toInt()
         val offsetPx = resources.getDimension(R.dimen._32dp).toInt()
@@ -208,21 +209,37 @@ class WalletFragment : Fragment() {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(1, false)
                         }, 150)
+                        binding.pager.layoutParams.height = resources.getDimensionPixelSize(R.dimen._189dp)
+                        binding.pager.requestLayout()
+                        binding.infoLayout.layoutParams.height = resources.getDimensionPixelSize(R.dimen._559dp)
+                        binding.infoLayout.requestLayout()
                         updateTransactions(transactionsSom, transactionAdapter)
                         Log.e("currency", "SOM")
                     }
 
                     1 -> {
+                        binding.pager.layoutParams.height = resources.getDimensionPixelSize(R.dimen._159dp)
+                        binding.pager.requestLayout()
+                        binding.infoLayout.layoutParams.height = resources.getDimensionPixelSize(R.dimen._529dp)
+                        binding.infoLayout.requestLayout()
                         updateTransactions(transactionsUSDT, transactionAdapter)
                         Log.e("currency", "USDT")
                     }
 
                     2 -> {
+                        binding.pager.layoutParams.height = resources.getDimensionPixelSize(R.dimen._159dp)
+                        binding.pager.requestLayout()
+                        binding.infoLayout.layoutParams.height = resources.getDimensionPixelSize(R.dimen._529dp)
+                        binding.infoLayout.requestLayout()
                         updateTransactions(transactionsBitcoin, transactionAdapter)
                         Log.e("currency", "BITCOIN")
                     }
 
                     3 -> {
+                        binding.pager.layoutParams.height = resources.getDimensionPixelSize(R.dimen._159dp)
+                        binding.pager.requestLayout()
+                        binding.infoLayout.layoutParams.height = resources.getDimensionPixelSize(R.dimen._529dp)
+                        binding.infoLayout.requestLayout()
                         updateTransactions(transactionsEth, transactionAdapter)
                         Log.e("currency", "ETHEREUM")
                     }
@@ -231,6 +248,10 @@ class WalletFragment : Fragment() {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(cards.size, false)
                         }, 150)
+                        binding.pager.layoutParams.height = resources.getDimensionPixelSize(R.dimen._189dp)
+                        binding.pager.requestLayout()
+                        binding.infoLayout.layoutParams.height = resources.getDimensionPixelSize(R.dimen._559dp)
+                        binding.infoLayout.requestLayout()
                         updateTransactions(transactionsDigit, transactionAdapter)
                         Log.e("currency", "DIGIT")
                     }

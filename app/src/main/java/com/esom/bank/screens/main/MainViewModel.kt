@@ -98,13 +98,13 @@ class MainViewModel @Inject constructor(
         ).flow.cachedIn(viewModelScope)
     }
 
-    suspend fun latestTransactions(currencyEnum: CurrencyEnum) {
+    fun latestTransactions(currencyEnum: CurrencyEnum) {
         mainRepository.history(listOf(currencyEnum), getFromTime(), getToTime(), 5, 0).onEach {
             _history.value = it
         }.launchIn(viewModelScope)
     }
 
-    suspend fun monthTransactions() {
+    fun monthTransactions() {
         val now = System.currentTimeMillis()
         val calendar = java.util.Calendar.getInstance().apply { timeInMillis = now }
         calendar.add(java.util.Calendar.MONTH, -1)

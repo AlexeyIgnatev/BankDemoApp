@@ -85,7 +85,7 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
         emit(ApiResponse.Success(StatusDto("success"), code = 200))
     }
 
-    override suspend fun history(
+    override fun history(
         currencyEnum: List<CurrencyEnum>?,
         fromTime: Long,
         toTime: Long,

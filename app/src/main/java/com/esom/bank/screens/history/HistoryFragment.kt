@@ -57,9 +57,7 @@ class HistoryFragment : Fragment() {
         binding.history.adapter = adapter
         loadTransactions()
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            model.monthTransactions()
-        }
+        model.monthTransactions()
         model.month.observe(viewLifecycleOwner) {
             when (it) {
                 is UiState.Loading -> {}

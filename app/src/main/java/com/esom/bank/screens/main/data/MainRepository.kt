@@ -37,7 +37,7 @@ interface MainRepository {
         currencyEnum: CurrencyEnum
     ): Flow<UiState<Unit>>
 
-    suspend fun history(
+    fun history(
         currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
         take: Int, skip: Int
     ): Flow<UiState<List<TransactionModel>>>
@@ -111,7 +111,7 @@ class MainRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun history(
+    override fun history(
         currencyEnum: List<CurrencyEnum>?,
         fromTime: Long,
         toTime: Long,

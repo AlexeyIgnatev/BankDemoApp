@@ -85,9 +85,7 @@ class WalletFragment : Fragment() {
 
         var transactionAdapter = TransactionAdapter(requireContext())
         binding.transactions.adapter = transactionAdapter
-        viewLifecycleOwner.lifecycleScope.launch {
-            model.latestTransactions(CurrencyEnum.SOM)
-        }
+        model.latestTransactions(CurrencyEnum.SOM)
         model.history.observe(viewLifecycleOwner) {
             when (it) {
                 is UiState.Loading -> {}
@@ -206,9 +204,7 @@ class WalletFragment : Fragment() {
                         binding.infoLayout.layoutParams.height =
                             resources.getDimensionPixelSize(R.dimen._559dp)
                         binding.infoLayout.requestLayout()
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            model.latestTransactions(CurrencyEnum.SOM)
-                        }
+                        model.latestTransactions(CurrencyEnum.SOM)
                     }
 
                     1 -> {
@@ -218,9 +214,7 @@ class WalletFragment : Fragment() {
                         binding.infoLayout.layoutParams.height =
                             resources.getDimensionPixelSize(R.dimen._529dp)
                         binding.infoLayout.requestLayout()
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            model.latestTransactions(CurrencyEnum.USDT_TRC20)
-                        }
+                        model.latestTransactions(CurrencyEnum.USDT_TRC20)
                     }
 
                     2 -> {
@@ -230,9 +224,7 @@ class WalletFragment : Fragment() {
                         binding.infoLayout.layoutParams.height =
                             resources.getDimensionPixelSize(R.dimen._529dp)
                         binding.infoLayout.requestLayout()
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            model.latestTransactions(CurrencyEnum.BTC)
-                        }
+                        model.latestTransactions(CurrencyEnum.BTC)
                     }
 
                     3 -> {
@@ -242,9 +234,7 @@ class WalletFragment : Fragment() {
                         binding.infoLayout.layoutParams.height =
                             resources.getDimensionPixelSize(R.dimen._529dp)
                         binding.infoLayout.requestLayout()
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            model.latestTransactions(CurrencyEnum.ETH)
-                        }
+                        model.latestTransactions(CurrencyEnum.ETH)
                     }
 
                     4 -> {
@@ -257,9 +247,7 @@ class WalletFragment : Fragment() {
                         binding.infoLayout.layoutParams.height =
                             resources.getDimensionPixelSize(R.dimen._559dp)
                         binding.infoLayout.requestLayout()
-                        viewLifecycleOwner.lifecycleScope.launch {
-                            model.latestTransactions(CurrencyEnum.ESOM)
-                        }
+                        model.latestTransactions(CurrencyEnum.ESOM)
                     }
                 }
             }
@@ -268,9 +256,7 @@ class WalletFragment : Fragment() {
         binding.notificationBtn.setOnClickListener {
             findNavController().navigate(MainNavGraphDirections.startNotificationFragment())
         }
-        viewLifecycleOwner.lifecycleScope.launch {
-            model.monthTransactions()
-        }
+        model.monthTransactions()
         model.month.observe(viewLifecycleOwner) {
             when (it) {
                 is UiState.Loading -> {}

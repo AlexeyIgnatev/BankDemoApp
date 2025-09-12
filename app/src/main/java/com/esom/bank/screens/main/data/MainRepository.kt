@@ -54,7 +54,7 @@ interface MainRepository {
 
 class MainRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val mainCloudDataSource: MainCloudDataSource,
+    private val mainCloudDataSource: MainCloudDataSourceMock,
     private val authLocalDataSource: AuthLocalDataSource,
     private val historyLocalDataSource: HistoryLocalDataSource
 ) : MainRepository {

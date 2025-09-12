@@ -7,10 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.R
+import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
+import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentNotificationBinding
+import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.notification.adapter.NotificationAdapter
 import com.esom.bank.screens.notification.model.Notification
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,7 +22,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class NotificationFragment : Fragment() {
     private lateinit var binding: FragmentNotificationBinding
-
+    private val model: MainViewModel by activityViewModels()
     private val adapter = NotificationAdapter()
 
     override fun onCreateView(
@@ -40,19 +44,17 @@ class NotificationFragment : Fragment() {
         binding.backBtn.setOnClickListener {
             findNavController().popBackStack()
         }
-        val notifications = listOf(
-            NotificationAdapter.NotificationItem.Date("Сегодня"),
-            NotificationAdapter.NotificationItem.Notifications( Notification("Уведомление о графике работы", "Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях", false)),
-            NotificationAdapter.NotificationItem.Notifications( Notification("Уведомление о графике работы", "Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях", true)),
-            NotificationAdapter.NotificationItem.Notifications( Notification("Уведомление о графике работы", "Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях", true)),
-            NotificationAdapter.NotificationItem.Notifications( Notification("Уведомление о графике работы", "Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях", true)),
-            NotificationAdapter.NotificationItem.Date("Вчера"),
-            NotificationAdapter.NotificationItem.Notifications( Notification("Уведомление о графике работы", "Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях", true)),
-            NotificationAdapter.NotificationItem.Notifications( Notification("Уведомление о графике работы", "Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях", true)),
-            NotificationAdapter.NotificationItem.Notifications( Notification("Уведомление о графике работы", "Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях", true)),
-            NotificationAdapter.NotificationItem.Notifications( Notification("Уведомление о графике работы", "Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях", true))
-        )
+        model.loadNotifications()
         binding.notifications.adapter = adapter
-        adapter.submitList(notifications)
+        model.notifications.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> {}
+                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
+                is UiState.Success -> {
+                    val sortedList = it.data.sortedByDescending { notification -> notification.createdAt }
+                    adapter.submitNotifications(sortedList)
+                }
+            }
+        }
     }
 }

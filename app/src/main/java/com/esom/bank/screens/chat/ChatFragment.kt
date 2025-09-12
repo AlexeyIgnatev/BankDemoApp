@@ -1,23 +1,27 @@
 package com.esom.bank.screens.chat
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.R
+import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
+import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentChatBinding
 import com.esom.bank.screens.chat.adapter.ChatAdapter
-import com.esom.bank.screens.chat.adapter.Message
+import com.esom.bank.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ChatFragment : Fragment() {
     private lateinit var binding: FragmentChatBinding
+    private val model: MainViewModel by activityViewModels()
     private val adapter = ChatAdapter()
 
     override fun onCreateView(
@@ -33,7 +37,9 @@ class ChatFragment : Fragment() {
         binding.root.doOnApplyWindowInsets { view, insets, rect ->
             view.updatePadding(
                 top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top,
-                bottom = rect.bottom + if(insets.getInsets(WindowInsetsCompat.Type.ime()).bottom > 0) insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                bottom = rect.bottom + if (insets.getInsets(WindowInsetsCompat.Type.ime()).bottom > 0) insets.getInsets(
+                    WindowInsetsCompat.Type.ime()
+                ).bottom
                 else insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
             )
             insets
@@ -41,14 +47,33 @@ class ChatFragment : Fragment() {
         binding.backBtn.setOnClickListener {
             findNavController().popBackStack()
         }
+        model.getMessages()
+        model.messages.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> {}
+                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
+                is UiState.Success -> {
+                    adapter.submitSupportMessages(it.data)
+
+                }
+            }
+        }
         binding.messages.adapter = adapter
-        val messages = listOf(
-            ChatAdapter.MessageItem.Date("21 декабря"),
-            ChatAdapter.MessageItem.SenderMessage(
-                Message("Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях", "20:21")),
-            ChatAdapter.MessageItem.ReceiverMessage(
-                Message("Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях", "20:21", "Оператор Алия"))
-        )
-        adapter.submitList(messages)
+        model.sendMessage.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> {}
+                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
+                is UiState.Success -> model.getMessages()
+            }
+        }
+
+        binding.sendBtn.setOnClickListener {
+            if (binding.messageInput.text.isNullOrEmpty())
+                binding.root.showErrorSnackbar(getString(R.string.enter_message))
+            else {
+                model.sendMessage(binding.messageInput.text.toString())
+                binding.messageInput.setText("")
+            }
+        }
     }
 }

@@ -1,15 +1,19 @@
 package com.esom.bank.retrofit.api
 
+import com.esom.bank.screens.chat.dto.SendMessageDto
+import com.esom.bank.screens.chat.dto.SupportDto
 import com.esom.bank.screens.history.dto.GetTransactionsDto
 import com.esom.bank.screens.history.dto.TransactionDto
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.SwapDto
 import com.esom.bank.screens.main.dto.TransferDto
 import com.esom.bank.screens.main.dto.UserDto
+import com.esom.bank.screens.notification.dto.NotificationDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ServerApi {
     @GET("users/info")
@@ -34,4 +38,20 @@ interface ServerApi {
     suspend fun history(
         @Body transactionsDto: GetTransactionsDto
     ): Response<List<TransactionDto>>
+
+    @GET("/api/support/message")
+    suspend fun getMessages(
+        @Query("take") take: Int = 40
+    ): Response<List<SupportDto>>
+
+    @POST("/api/support/message")
+    suspend fun sendMessage(
+        @Body sendMessageDto: SendMessageDto
+    ): Response<SupportDto>
+
+    @GET("/api/notifications")
+    suspend fun getNotifications(
+        @Query("skip") skip: Int = 0,
+        @Query("take") take: Int = 40
+    ): Response<List<NotificationDto>>
 }

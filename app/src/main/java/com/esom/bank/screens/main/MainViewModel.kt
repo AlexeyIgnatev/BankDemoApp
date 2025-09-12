@@ -18,7 +18,9 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.esom.bank.screens.chat.model.SupportModel
 import com.esom.bank.screens.history.pagingsource.TransactionsPagingSource
+import com.esom.bank.screens.notification.model.NotificationModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 
@@ -40,6 +42,16 @@ class MainViewModel @Inject constructor(
 
     private val _month = SingleLiveEvent<UiState<List<TransactionModel>>>()
     val month: LiveData<UiState<List<TransactionModel>>> = _month
+
+    private val _messages = MutableLiveData<UiState<List<SupportModel>>>()
+    val messages: LiveData<UiState<List<SupportModel>>> = _messages
+
+    private val _sendMessage = MutableLiveData<UiState<SupportModel>>()
+    val sendMessage: LiveData<UiState<SupportModel>> =_sendMessage
+
+    private val _notifications = MutableLiveData<UiState<List<NotificationModel>>>()
+    val notifications: LiveData<UiState<List<NotificationModel>>> = _notifications
+
 
     fun isAuthenticated() = mainRepository.isAuthenticated()
 
@@ -134,5 +146,21 @@ class MainViewModel @Inject constructor(
     fun getToTime(): Long = mainRepository.getToTime()
     fun setToTime(time: Long) {
         mainRepository.setToTime(time)
+    }
+
+    fun getMessages() {
+        mainRepository.getMessages().onEach {
+            _messages.value = it
+        }.launchIn(viewModelScope)
+    }
+    fun sendMessage(text: String) {
+        mainRepository.sendMessage(text).onEach {
+            _sendMessage.value = it
+        }.launchIn(viewModelScope)
+    }
+    fun loadNotifications() {
+        mainRepository.getNotifications().onEach {
+            _notifications.value = it
+        }.launchIn(viewModelScope)
     }
 }

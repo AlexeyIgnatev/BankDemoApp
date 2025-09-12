@@ -12,7 +12,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.esom.bank.MainNavGraphDirections
@@ -36,7 +35,6 @@ import com.esom.bank.screens.wallet.adapter.NewsAdapter
 import com.esom.bank.screens.wallet.adapter.TransactionAdapter
 import com.esom.bank.screens.wallet.adapter.TypeOfCurrency
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
@@ -83,7 +81,7 @@ class WalletFragment : Fragment() {
         val currencyAdapter = CurrencyAdapter(requireContext())
         binding.currencies.adapter = currencyAdapter
 
-        var transactionAdapter = TransactionAdapter(requireContext())
+        val transactionAdapter = TransactionAdapter(requireContext())
         binding.transactions.adapter = transactionAdapter
         model.latestTransactions(CurrencyEnum.SOM)
         model.history.observe(viewLifecycleOwner) {
@@ -92,6 +90,49 @@ class WalletFragment : Fragment() {
                 is UiState.Error -> binding.root.showErrorSnackbar(it.message)
                 is UiState.Success -> {
                     transactionAdapter.submitList(it.data)
+                    val calendarStart = java.util.Calendar.getInstance().apply {
+                        set(2025, java.util.Calendar.SEPTEMBER, 1, 0, 0, 0)
+                        set(java.util.Calendar.MILLISECOND, 0)
+                    }
+                    val calendarEnd = java.util.Calendar.getInstance().apply {
+                        set(2025, java.util.Calendar.SEPTEMBER, 30, 23, 59, 59)
+                        set(java.util.Calendar.MILLISECOND, 999)
+                    }
+
+                    val fromTimeMonth = calendarStart.timeInMillis
+                    val toTimeMonth = calendarEnd.timeInMillis
+
+                    val monthFormat = java.text.SimpleDateFormat("LLLL", Locale("ru"))
+                    val monthText = monthFormat.format(Date(fromTimeMonth))
+
+                    val monthInGenitive = when (monthText.lowercase(Locale.getDefault())) {
+                        "январь" -> "январе"
+                        "февраль" -> "феврале"
+                        "март" -> "марте"
+                        "апрель" -> "апреле"
+                        "май" -> "мае"
+                        "июнь" -> "июне"
+                        "июль" -> "июле"
+                        "август" -> "августе"
+                        "сентябрь" -> "сентябре"
+                        "октябрь" -> "октябре"
+                        "ноябрь" -> "ноябре"
+                        "декабрь" -> "декабре"
+                        else -> monthText
+                    }
+
+                    val monthTransactions = it.data.filter { tx ->
+                        val createdAtMillis =
+                            if (tx.createdAt < 1_000_000_000_000) tx.createdAt * 1000 else tx.createdAt
+                        createdAtMillis in fromTimeMonth..toTimeMonth
+                    }
+
+                    val expenseSum = monthTransactions
+                        .filter { it.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER }
+                        .sumOf { it.amount }
+                    binding.monthWasteTitle.text = "Расходы в $monthInGenitive"
+                    binding.monthWaste.text = expenseSum.toInt().toString()
+
                 }
             }
         }
@@ -226,58 +267,7 @@ class WalletFragment : Fragment() {
         binding.notificationBtn.setOnClickListener {
             findNavController().navigate(MainNavGraphDirections.startNotificationFragment())
         }
-        model.monthTransactions()
-        model.month.observe(viewLifecycleOwner) {
-            when (it) {
-                is UiState.Loading -> {}
-                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
-                is UiState.Success -> {
-                    val calendarStart = java.util.Calendar.getInstance().apply {
-                        set(2025, java.util.Calendar.SEPTEMBER, 1, 0, 0, 0)
-                        set(java.util.Calendar.MILLISECOND, 0)
-                    }
-                    val calendarEnd = java.util.Calendar.getInstance().apply {
-                        set(2025, java.util.Calendar.SEPTEMBER, 30, 23, 59, 59)
-                        set(java.util.Calendar.MILLISECOND, 999)
-                    }
 
-                    val fromTimeMonth = calendarStart.timeInMillis
-                    val toTimeMonth = calendarEnd.timeInMillis
-
-                    val monthFormat = java.text.SimpleDateFormat("LLLL", Locale("ru"))
-                    val monthText = monthFormat.format(Date(fromTimeMonth))
-
-                    val monthInGenitive = when (monthText.lowercase(Locale.getDefault())) {
-                        "январь" -> "январе"
-                        "февраль" -> "феврале"
-                        "март" -> "марте"
-                        "апрель" -> "апреле"
-                        "май" -> "мае"
-                        "июнь" -> "июне"
-                        "июль" -> "июле"
-                        "август" -> "августе"
-                        "сентябрь" -> "сентябре"
-                        "октябрь" -> "октябре"
-                        "ноябрь" -> "ноябре"
-                        "декабрь" -> "декабре"
-                        else -> monthText
-                    }
-
-                    val monthTransactions = it.data.filter { tx ->
-                        val createdAtMillis = if (tx.createdAt < 1_000_000_000_000) tx.createdAt * 1000 else tx.createdAt
-                        createdAtMillis in fromTimeMonth..toTimeMonth
-                    }
-
-                    val expenseSum = monthTransactions
-                        .filter { it.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER }
-                        .sumOf { it.amount }
-                    binding.monthWasteTitle.text = "Расходы в $monthInGenitive"
-                    binding.monthWaste.text = expenseSum.toInt().toString()
-
-                }
-
-            }
-        }
         model.updateUserData()
         model.myData.observe(viewLifecycleOwner) {
             when (it) {

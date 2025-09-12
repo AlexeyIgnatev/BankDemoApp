@@ -3,6 +3,8 @@ package com.esom.bank.screens.main.data
 import com.esom.bank.common.data.AbstractBaseCloudDataSource
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.retrofit.api.ServerApi
+import com.esom.bank.screens.chat.dto.SendMessageDto
+import com.esom.bank.screens.chat.dto.SupportDto
 import com.esom.bank.screens.history.dto.GetTransactionsDto
 import com.esom.bank.screens.history.dto.TransactionDto
 import com.esom.bank.screens.main.dto.StatusDto
@@ -10,6 +12,7 @@ import com.esom.bank.screens.main.dto.SwapDto
 import com.esom.bank.screens.main.dto.TransferDto
 import com.esom.bank.screens.main.dto.UserDto
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.notification.dto.NotificationDto
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -20,6 +23,9 @@ interface MainCloudDataSource {
     fun transfer(amount: Double, phone: String, address: String? = null, currencyEnum: CurrencyEnum): Flow<ApiResponse<StatusDto>>
     fun history(currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
                 take: Int, skip: Int): Flow<ApiResponse<List<TransactionDto>>>
+    fun getMessages(): Flow<ApiResponse<List<SupportDto>>>
+    fun sendMessage(text: String): Flow<ApiResponse<SupportDto>>
+    fun getNotifications(): Flow<ApiResponse<List<NotificationDto>>>
 }
 
 class MainCloudDataSourceImpl @Inject constructor(
@@ -53,5 +59,17 @@ class MainCloudDataSourceImpl @Inject constructor(
         serverApi.history(GetTransactionsDto(
             currencyEnum, fromTime, toTime, take, skip
         ))
+    }
+
+    override fun getMessages(): Flow<ApiResponse<List<SupportDto>>> = safeApiCall {
+        serverApi.getMessages()
+    }
+
+    override fun sendMessage(text: String): Flow<ApiResponse<SupportDto>> = safeApiCall {
+        serverApi.sendMessage(SendMessageDto(text))
+    }
+
+    override fun getNotifications(): Flow<ApiResponse<List<NotificationDto>>> = safeApiCall {
+        serverApi.getNotifications()
     }
 }

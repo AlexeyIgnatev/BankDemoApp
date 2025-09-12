@@ -72,6 +72,7 @@
         app:layout_constraintTop_toBottomOf="@id/notification_title"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginTop="@dimen/_20dp"
+        android:layout_marginBottom="@dimen/_13dp"
         android:layout_marginHorizontal="@dimen/_20dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,12 +4,16 @@ import android.content.Context
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.model.UiState
 import com.esom.bank.screens.auth.data.AuthLocalDataSource
+import com.esom.bank.screens.chat.model.SupportModel
+import com.esom.bank.screens.chat.model.toModel
 import com.esom.bank.screens.history.data.HistoryLocalDataSource
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.toModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.UserModel
 import com.esom.bank.screens.main.model.toModel
+import com.esom.bank.screens.notification.model.NotificationModel
+import com.esom.bank.screens.notification.model.toModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -50,6 +54,10 @@ interface MainRepository {
 
     fun getToTime(): Long
     fun setToTime(time: Long)
+
+    fun getNotifications(): Flow<UiState<List<NotificationModel>>>
+    fun getMessages(): Flow<UiState<List<SupportModel>>>
+    fun sendMessage(text: String): Flow<UiState<SupportModel>>
 }
 
 class MainRepositoryImpl @Inject constructor(
@@ -148,4 +156,31 @@ class MainRepositoryImpl @Inject constructor(
     override fun setToTime(time: Long) {
         historyLocalDataSource.setToTime(time)
     }
+
+    override fun getNotifications(): Flow<UiState<List<NotificationModel>>> =
+        mainCloudDataSource.getNotifications().map { state ->
+            when (state) {
+                is ApiResponse.Success -> return@map UiState.Success(state.data.toModel())
+                is ApiResponse.Error -> return@map UiState.Error(state.toString(context))
+            }
+        }
+
+    override fun getMessages(): Flow<UiState<List<SupportModel>>> =
+        mainCloudDataSource.getMessages().map {
+            when(it) {
+                is ApiResponse.Error -> return@map UiState.Error(it.toString(context))
+                is ApiResponse.Success -> {
+                    return@map UiState.Success(it.data.toModel())
+                }
+            }
+        }
+
+    override fun sendMessage(text: String): Flow<UiState<SupportModel>> =
+        mainCloudDataSource.sendMessage(text).map {
+            when(it) {
+                is ApiResponse.Error -> return@map  UiState.Error(it.toString(context))
+                is ApiResponse.Success -> return@map UiState.Success(it.data.toModel())
+            }
+        }
+
 }

@@ -198,42 +198,18 @@ class WalletFragment : Fragment() {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(1, false)
                         }, 150)
-                        binding.pager.layoutParams.height =
-                            resources.getDimensionPixelSize(R.dimen._189dp)
-                        binding.pager.requestLayout()
-                        binding.infoLayout.layoutParams.height =
-                            resources.getDimensionPixelSize(R.dimen._559dp)
-                        binding.infoLayout.requestLayout()
                         model.latestTransactions(CurrencyEnum.SOM)
                     }
 
                     1 -> {
-                        binding.pager.layoutParams.height =
-                            resources.getDimensionPixelSize(R.dimen._159dp)
-                        binding.pager.requestLayout()
-                        binding.infoLayout.layoutParams.height =
-                            resources.getDimensionPixelSize(R.dimen._529dp)
-                        binding.infoLayout.requestLayout()
                         model.latestTransactions(CurrencyEnum.USDT_TRC20)
                     }
 
                     2 -> {
-                        binding.pager.layoutParams.height =
-                            resources.getDimensionPixelSize(R.dimen._159dp)
-                        binding.pager.requestLayout()
-                        binding.infoLayout.layoutParams.height =
-                            resources.getDimensionPixelSize(R.dimen._529dp)
-                        binding.infoLayout.requestLayout()
                         model.latestTransactions(CurrencyEnum.BTC)
                     }
 
                     3 -> {
-                        binding.pager.layoutParams.height =
-                            resources.getDimensionPixelSize(R.dimen._159dp)
-                        binding.pager.requestLayout()
-                        binding.infoLayout.layoutParams.height =
-                            resources.getDimensionPixelSize(R.dimen._529dp)
-                        binding.infoLayout.requestLayout()
                         model.latestTransactions(CurrencyEnum.ETH)
                     }
 
@@ -241,12 +217,6 @@ class WalletFragment : Fragment() {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(cards.size, false)
                         }, 150)
-                        binding.pager.layoutParams.height =
-                            resources.getDimensionPixelSize(R.dimen._189dp)
-                        binding.pager.requestLayout()
-                        binding.infoLayout.layoutParams.height =
-                            resources.getDimensionPixelSize(R.dimen._559dp)
-                        binding.infoLayout.requestLayout()
                         model.latestTransactions(CurrencyEnum.ESOM)
                     }
                 }

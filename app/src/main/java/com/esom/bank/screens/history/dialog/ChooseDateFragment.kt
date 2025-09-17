@@ -111,11 +111,11 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
 
         adapter = CalendarAdapter(
             requireContext(),
-            currentDay, // День без ведущего нуля (например, "5")
+            currentDay,
             isCurrentMonth = isCurrentMonth,
-        ) { fullDate -> // fullDate в формате "yyyy-MM-dd"
+        ) { fullDate ->
             if (fullDate.isNotEmpty()) {
-                val formattedDate = formatDateToDDMMYYYY(fullDate) // Преобразуем в "dd.MM.yyyy"
+                val formattedDate = formatDateToDDMMYYYY(fullDate)
                 if (selectedDate == 0) {
                     binding.startDate.text = formattedDate
                     startDate = formattedDate
@@ -135,11 +135,11 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val outputFormat =
-                SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()) // Изменили на гггг
+                SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
             val date = inputFormat.parse(dateString)
             outputFormat.format(date)
         } catch (e: Exception) {
-            dateString // Возвращаем оригинальную строку в случае ошибки
+            dateString
         }
     }
 
@@ -153,18 +153,15 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
     private fun generateDaysForMonth(calendar: Calendar): List<String> {
         val days = mutableListOf<String>()
         val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH) + 1 // Calendar.MONTH начинается с 0
-
+        val month = calendar.get(Calendar.MONTH) + 1
         val firstDayOfMonth = calendar.clone() as Calendar
         firstDayOfMonth.set(Calendar.DAY_OF_MONTH, 1)
 
         val firstDayOfWeek = (firstDayOfMonth.get(Calendar.DAY_OF_WEEK) + 5) % 7
         val totalDaysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
 
-        // Пустые строки для выравнивания
         repeat(firstDayOfWeek) { days.add("") }
 
-        // Формируем полные даты в формате "yyyy-MM-dd"
         for (day in 1..totalDaysInMonth) {
             val formattedDay = day.toString().padStart(2, '0')
             val formattedMonth = month.toString().padStart(2, '0')

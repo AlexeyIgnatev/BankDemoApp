@@ -10,15 +10,21 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.R
 import com.esom.bank.databinding.CalendarItemBinding
+
 class CalendarAdapter(
     private val context: Context,
-    private val currentDay: String,
-    private val isCurrentMonth: Boolean,
     private val onDayClicked: (String) -> Unit
 ) : ListAdapter<String, CalendarAdapter.DayViewHolder>(DayDiffCallback()) {
 
-    companion object {
-        var selectedPosition: Int = RecyclerView.NO_POSITION
+    private var selectedStartDate: String? = null
+    private var selectedEndDate: String? = null
+    private var selectionMode: Int = 0
+
+    fun setSelectedDates(startDate: String?, endDate: String?, mode: Int) {
+        selectedStartDate = startDate
+        selectedEndDate = endDate
+        selectionMode = mode
+        notifyDataSetChanged()
     }
 
     inner class DayViewHolder(
@@ -27,9 +33,7 @@ class CalendarAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             fullDate: String,
-            position: Int,
-            isSelected: Boolean,
-            onItemClick: (Int) -> Unit
+            onItemClick: (String) -> Unit
         ) {
             val dayToShow = if (fullDate.isEmpty()) ""
             else fullDate.substring(fullDate.lastIndexOf("-") + 1)
@@ -38,21 +42,24 @@ class CalendarAdapter(
 
             if(fullDate.isEmpty()) {
                 binding.day.setTextColor(Color.TRANSPARENT)
-            }
-
-            binding.root.background = if (isSelected) {
-                ContextCompat.getDrawable(context, R.drawable.background_calendar_item)
+                binding.root.background = null
             } else {
-                null
-            }
+                val isStartSelected = fullDate == selectedStartDate
+                val isEndSelected = fullDate == selectedEndDate
 
-            binding.day.setTextColor(if(isSelected) Color.parseColor("#FFFFFF")
-            else Color.parseColor("#1D1D1B"))
+                binding.root.background = if (isStartSelected || isEndSelected) {
+                    ContextCompat.getDrawable(context, R.drawable.background_calendar_item)
+                } else {
+                    null
+                }
+
+                binding.day.setTextColor(if(isStartSelected || isEndSelected) Color.parseColor("#FFFFFF")
+                else Color.parseColor("#1D1D1B"))
+            }
 
             binding.root.setOnClickListener {
                 if (fullDate.isNotEmpty()) {
-                    onItemClick(position)
-                    onDayClicked(fullDate)
+                    onItemClick(fullDate)
                 }
             }
         }
@@ -65,27 +72,8 @@ class CalendarAdapter(
 
     override fun onBindViewHolder(holder: DayViewHolder, position: Int) {
         val fullDate = getItem(position)
-        val isCurrentDay = isCurrentMonth &&
-                fullDate.isNotEmpty() &&
-                fullDate.substring(fullDate.lastIndexOf("-") + 1) == currentDay
-
-        if (isCurrentDay && selectedPosition == RecyclerView.NO_POSITION) {
-            selectedPosition = position
-            onDayClicked(fullDate)
-        }
-
-        holder.bind(
-            fullDate = fullDate,
-            position = position,
-            isSelected = selectedPosition == position,
-        ) { newPosition ->
-            val previousSelected = selectedPosition
-            selectedPosition = newPosition
-
-            if (previousSelected != RecyclerView.NO_POSITION) {
-                notifyItemChanged(previousSelected)
-            }
-            notifyItemChanged(newPosition)
+        holder.bind(fullDate) { selectedDate ->
+            onDayClicked(selectedDate)
         }
     }
 }

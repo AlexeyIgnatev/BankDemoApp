@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/_21dp"
+    android:layout_marginBottom="@dimen/_16dp"
     tools:ignore="MissingConstraints">
     <View
         android:layout_width="@dimen/_44dp"

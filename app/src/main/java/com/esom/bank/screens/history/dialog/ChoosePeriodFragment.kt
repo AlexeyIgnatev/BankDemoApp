@@ -26,6 +26,10 @@ class ChoosePeriodFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.month3Btn.setOnClickListener { binding.last3monthCheck.isChecked = !binding.last3monthCheck.isChecked }
+        binding.monthBtn.setOnClickListener { binding.lastMonthCheck.isChecked = !binding.lastMonthCheck.isChecked }
+        binding.weekBtn.setOnClickListener { binding.lastWeekCheck.isChecked = !binding.lastWeekCheck.isChecked }
+
         binding.last3monthCheck.setOnCheckedChangeListener { _, isChecked ->
             if(isChecked) {
                 binding.lastMonthCheck.isChecked = false

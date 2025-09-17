@@ -290,7 +290,7 @@
                 android:textColor="#B2B2B2"
                 android:fontFamily="@font/mont_semibold"
                 app:layout_constraintTop_toBottomOf="@id/people_layout"
-                app:layout_constraintStart_toStartOf="@id/people_layout"
+                app:layout_constraintStart_toStartOf="@id/sum_input"
                 android:layout_marginTop="@dimen/_50dp"/>
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/sum_input"

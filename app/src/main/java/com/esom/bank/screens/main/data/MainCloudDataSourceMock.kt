@@ -1,5 +1,6 @@
 package com.esom.bank.screens.main.data
 
+import com.esom.bank.R
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.screens.chat.dto.SupportDto
 import com.esom.bank.screens.chat.enums.SupportRole
@@ -86,7 +87,7 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
         address: String?,
         currencyEnum: CurrencyEnum
     ): Flow<ApiResponse<StatusDto>> = flow {
-        emit(ApiResponse.Success(StatusDto("success"), code = 200))
+        emit(ApiResponse.Error(R.string.wallet_ban, null, null))
     }
 
     override fun history(

@@ -10,6 +10,7 @@ import com.esom.bank.R
 import com.esom.bank.databinding.ItemDataBinding
 import com.esom.bank.databinding.ItemNotificationBinding
 import com.esom.bank.screens.notification.model.NotificationModel
+import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -22,8 +23,17 @@ class NotificationAdapter :
         private const val TYPE_NOTIFICATION = 1
     }
 
-    private val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
-
+    private val dateFormat = SimpleDateFormat("dd MMMM", Locale("ru")).apply {
+        val months = arrayOf(
+            "января", "февраля", "марта", "апреля", "мая", "июня",
+            "июля", "августа", "сентября", "октября", "ноября", "декабря"
+        )
+        dateFormatSymbols = object : DateFormatSymbols(Locale("ru")) {
+            override fun getMonths(): Array<String> {
+                return months
+            }
+        }
+    }
     sealed class NotificationListItem {
         data class DateItem(val date: String, val timestamp: Long) : NotificationListItem()
         data class NotificationItem(val notification: NotificationModel) : NotificationListItem()

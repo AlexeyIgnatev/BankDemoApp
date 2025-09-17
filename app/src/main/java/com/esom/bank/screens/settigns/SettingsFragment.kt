@@ -45,8 +45,7 @@ class SettingsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.root.doOnApplyWindowInsets { view, insets, rect ->
             view.updatePadding(
-                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top,
-                bottom = rect.bottom + insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom,
+                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
             )
             insets
         }

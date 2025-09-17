@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/currency_background"
-    android:padding="@dimen/_16dp"
+    android:paddingHorizontal="@dimen/_16dp"
+    android:paddingTop="@dimen/_16dp"
     android:layout_marginTop="@dimen/_5dp"
     tools:ignore="MissingConstraints">
     <androidx.recyclerview.widget.RecyclerView

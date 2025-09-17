@@ -91,7 +91,6 @@ class SwapFragment : Fragment() {
                 )
                 is UiState.Success -> {
                     findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
-                    findNavController().popBackStack()
                 }
                 else -> {}
             }
@@ -273,11 +272,9 @@ class SwapFragment : Fragment() {
             else -> 1.0
         }
         val secondValue = fromAmount * exchangeRate
-        val commissionAmount = if (currentFromCurrency == CurrencyEnum.SOM) secondValue * platformFee else fromAmount * platformFee
-        val totalAmount = secondValue - commissionAmount
         binding.comissionValue.text = fromAmount.format(2)
         binding.secondValue.text = secondValue.format(2)
-        binding.total.text = totalAmount.format(2)
+        binding.total.text = secondValue.format(2)
     }
 
     private fun handleConvertButtonClick() {

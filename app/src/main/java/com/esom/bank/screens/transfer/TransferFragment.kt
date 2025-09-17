@@ -47,7 +47,10 @@ class TransferFragment : Fragment() {
         binding.root.doOnApplyWindowInsets { view, insets, rect ->
             view.updatePadding(
                 top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top,
-                bottom = rect.bottom + insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+                bottom = rect.bottom + if (insets.getInsets(WindowInsetsCompat.Type.ime()).bottom > 0) insets.getInsets(
+                    WindowInsetsCompat.Type.ime()
+                ).bottom
+                else insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
             )
             insets
         }
@@ -100,7 +103,6 @@ class TransferFragment : Fragment() {
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
                     findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
-                    findNavController().popBackStack()
                 }
                 else -> {}
             }
@@ -242,16 +244,32 @@ class TransferFragment : Fragment() {
         editText.setText("")
         editText.inputType = InputType.TYPE_CLASS_PHONE
         phoneMaskWatcher?.let { editText.removeTextChangedListener(it) }
+
         val watcher = object : TextWatcher {
             private var isEditing = false
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            private var lastLength = 0
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                lastLength = s?.length ?: 0
+            }
+
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
             override fun afterTextChanged(s: Editable?) {
                 if (isEditing) return
                 isEditing = true
-                var digits = s.toString().filter { it.isDigit() }
+
+                val currentText = s.toString()
+
+                if (currentText.length < lastLength) {
+                    isEditing = false
+                    return
+                }
+
+                var digits = currentText.filter { it.isDigit() }
                 if (digits.startsWith("996")) digits = digits.removePrefix("996")
                 if (digits.length > 9) digits = digits.substring(0, 9)
+
                 val builder = StringBuilder()
                 if (digits.isNotEmpty()) builder.append("+996 ")
                 if (digits.length >= 3) {
@@ -267,13 +285,17 @@ class TransferFragment : Fragment() {
                     if (digits.length >= 6) builder.append("-")
                 }
                 if (digits.length > 6) builder.append(digits.substring(6))
+
                 editText.removeTextChangedListener(this)
                 editText.setText(builder.toString())
-                editText.text?.let { editText.setSelection(it.length) }
+                editText.text?.let {
+                    editText.setSelection(it.length)
+                }
                 editText.addTextChangedListener(this)
                 isEditing = false
             }
         }
+
         editText.addTextChangedListener(watcher)
         phoneMaskWatcher = watcher
     }

@@ -30,7 +30,7 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
 
     private var startDate = ""
     private var endDate = ""
-    private var selectedDate = 0
+    private var selectedDateMode = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,6 +43,7 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setInitialDates()
         setCurrentDate()
         updateMonthAndCalendar()
         binding.previousMonth.setOnClickListener {
@@ -66,7 +67,8 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
             it.elevation = 0F
             binding.endPeriodLayout.setBackgroundResource(R.drawable.currency_background)
             binding.endPeriodLayout.elevation = 8F
-            selectedDate = 0
+            selectedDateMode = 0
+            updateCalendarSelection()
         }
 
         binding.endPeriodLayout.setOnClickListener {
@@ -81,8 +83,8 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
             it.elevation = 0F
             binding.startPeriodLayout.setBackgroundResource(R.drawable.currency_background)
             binding.startPeriodLayout.elevation = 8F
-            selectedDate = 0
-            selectedDate = 1
+            selectedDateMode = 1
+            updateCalendarSelection()
         }
         binding.chooseBtn.setOnClickListener {
             val dateString = binding.startDate.text.toString()
@@ -96,6 +98,18 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         }
     }
 
+    private fun setInitialDates() {
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+
+        val fromTime = model.getFromTime()
+        val toTime = model.getToTime()
+
+        startDate = formatDateToYYYYMMDD(dateFormat.format(fromTime))
+        endDate = formatDateToYYYYMMDD(dateFormat.format(toTime))
+        binding.startDate.text = dateFormat.format(fromTime)
+        binding.endDate.text = dateFormat.format(toTime)
+    }
+
     private fun setCurrentDate() {
         calendar.set(Calendar.YEAR, currentYear)
         calendar.set(Calendar.MONTH, currentMonth)
@@ -106,36 +120,50 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         updateMonthTitle()
 
         val daysInMonth = generateDaysForMonth(calendar)
-        val isCurrentMonth = calendar.get(Calendar.MONTH) == currentMonth &&
-                calendar.get(Calendar.YEAR) == currentYear
 
         adapter = CalendarAdapter(
             requireContext(),
-            currentDay,
-            isCurrentMonth = isCurrentMonth,
         ) { fullDate ->
             if (fullDate.isNotEmpty()) {
                 val formattedDate = formatDateToDDMMYYYY(fullDate)
-                if (selectedDate == 0) {
+                if (selectedDateMode == 0) {
                     binding.startDate.text = formattedDate
-                    startDate = formattedDate
+                    startDate = fullDate
                 } else {
                     binding.endDate.text = formattedDate
-                    endDate = formattedDate
+                    endDate = fullDate
                 }
+                updateCalendarSelection()
             }
         }
 
         binding.calendar.layoutManager = GridLayoutManager(requireContext(), 7)
         binding.calendar.adapter = adapter
         adapter.submitList(daysInMonth)
+        updateCalendarSelection()
+    }
+
+    private fun updateCalendarSelection() {
+        val startDateForAdapter = startDate.ifEmpty { null }
+        val endDateForAdapter = endDate.ifEmpty { null }
+        adapter.setSelectedDates(startDateForAdapter, endDateForAdapter, selectedDateMode)
+    }
+
+    private fun formatDateToYYYYMMDD(dateString: String): String {
+        return try {
+            val inputFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val date = inputFormat.parse(dateString)
+            outputFormat.format(date)
+        } catch (e: Exception) {
+            dateString
+        }
     }
 
     private fun formatDateToDDMMYYYY(dateString: String): String {
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val outputFormat =
-                SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
             val date = inputFormat.parse(dateString)
             outputFormat.format(date)
         } catch (e: Exception) {
@@ -170,5 +198,4 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
 
         return days
     }
-
 }

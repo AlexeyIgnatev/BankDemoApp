@@ -26,6 +26,12 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.usdtBtn.setOnClickListener { binding.usdtCheck.isChecked = !binding.usdtCheck.isChecked }
+        binding.bitcoinBtn.setOnClickListener { binding.bitcoinCheck.isChecked = !binding.bitcoinCheck.isChecked }
+        binding.ethBtn.setOnClickListener { binding.ethCheck.isChecked = !binding.ethCheck.isChecked }
+        binding.somBtn.setOnClickListener { binding.fiatCheck.isChecked = !binding.fiatCheck.isChecked }
+        binding.salamBtn.setOnClickListener { binding.digitalCheck.isChecked = !binding.digitalCheck.isChecked }
+
         binding.chooseBtn.setOnClickListener {
             val currencies: MutableList<CurrencyEnum> = mutableListOf()
             if (binding.usdtCheck.isChecked) currencies.add(CurrencyEnum.USDT_TRC20)

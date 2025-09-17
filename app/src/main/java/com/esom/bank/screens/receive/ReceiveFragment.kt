@@ -8,12 +8,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
@@ -54,9 +56,16 @@ class ReceiveFragment : Fragment() {
         if(args.currency != CurrencyEnum.SOM) {
             val qrBitmap = QRCodeGenerator.generateCryptoQRCodeWithScheme(
                 address = args.contact,
-                currency = args.currency
+                currency = args.currency,
+                width = 600,
+                height = 600
             )
             binding.qrIcon.setImageBitmap(qrBitmap)
+            binding.qrIcon.scaleType = ImageView.ScaleType.FIT_CENTER
+            binding.qrIcon.scaleX = 1.1f
+            binding.qrIcon.scaleY = 1.1f
+            binding.qrIcon.adjustViewBounds = true
+            binding.copyOpinion.text = getString(R.string.copy_address)
         }
 
 
@@ -65,14 +74,16 @@ class ReceiveFragment : Fragment() {
         }
 
         binding.copyBtn.setOnClickListener {
-            val phone =
-                (model.myData.value as? UiState.Success)?.data?.phone ?: return@setOnClickListener
+            val phone = (model.myData.value as? UiState.Success)?.data?.wallets?.
+                find { it.currency == args.currency  }?.address ?: return@setOnClickListener
             val clipboard: ClipboardManager =
                 requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(phone, phone)
             clipboard.setPrimaryClip(clip)
-
-            binding.root.showSuccessSnackbar("Номер телефона скопирован")
+            if(args.currency == CurrencyEnum.SOM)
+                binding.root.showSuccessSnackbar(getString(R.string.phone_copy_success))
+            else
+                binding.root.showSuccessSnackbar(getString(R.string.adres_success_copy))
         }
     }
 }

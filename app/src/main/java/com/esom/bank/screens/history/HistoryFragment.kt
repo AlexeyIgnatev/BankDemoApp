@@ -53,6 +53,10 @@ class HistoryFragment : Fragment() {
             )
             insets
         }
+
+        val currentMonth = getCurrentMonthInPrepositional()
+        binding.titleMonth.text = currentMonth
+
         adapter = HistoryAdapter(requireContext())
         binding.history.adapter = adapter
         loadTransactions()
@@ -111,7 +115,6 @@ class HistoryFragment : Fragment() {
                     binding.income.text = incomeSum.toInt().toString()
                     binding.expences.text = expenseSum.toInt().toString()
                 }
-
             }
         }
         binding.dataPeriodBtn.setOnClickListener {
@@ -122,6 +125,29 @@ class HistoryFragment : Fragment() {
         }
         binding.activeBtn.setOnClickListener {
             findParentNavController().navigate(NavGraphDirections.startChooseActiveFragment())
+        }
+    }
+
+    private fun getCurrentMonthInPrepositional(): String {
+        val calendar = java.util.Calendar.getInstance()
+        val russianLocale = Locale("ru", "RU")
+        val monthFormat = java.text.SimpleDateFormat("MMMM", russianLocale)
+        val monthText = monthFormat.format(calendar.time)
+
+        return when (monthText.lowercase(russianLocale)) {
+            "января" -> "Январь"
+            "февраля" -> "Февраль"
+            "марта" -> "Март"
+            "апреля" -> "Апрель"
+            "мая" -> "Май"
+            "июня" -> "Июнь"
+            "июля" -> "Июль"
+            "августа" -> "Август"
+            "сентября" -> "Сентябрь"
+            "октября" -> "Октябрь"
+            "ноября" -> "Ноябрь"
+            "декабря" -> "Декабрь"
+            else -> monthText
         }
     }
 

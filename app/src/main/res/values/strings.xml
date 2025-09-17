@@ -112,6 +112,7 @@
     <string name="receive">Получение</string>
     <string name="receiving_opinion">Для получения Сом, при переводе с другого аккаунта укажите в качестве получателя ваш номер телефона</string>
     <string name="copy_number_phone">Скопировать номер телефона</string>
+    <string name="copy_address">Скопировать адрес кошелька</string>
     <string name="scan_qr">просканируйте qr-код</string>
     <string name="support">Техподдержка</string>
     <string name="support_title">Здравствуйте, Асан! \nКак мы можем Вам помочь?</string>
@@ -144,4 +145,6 @@
     <string name="login_hint">Логин</string>
     <string name="enter_login">Введите логин пользователя</string>
     <string name="enter_message">Введите сообщение</string>
+    <string name="phone_copy_success">Номер телефона скопирован</string>
+    <string name="adres_success_copy">Адрес кошелька скопирован</string>
 </resources>

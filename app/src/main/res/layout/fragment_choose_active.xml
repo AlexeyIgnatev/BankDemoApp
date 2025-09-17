@@ -26,6 +26,41 @@
             android:gravity="center"
             app:layout_constraintTop_toTopOf="parent"/>
 
+        <ImageButton
+            android:id="@+id/usdt_btn"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_0dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintTop_toTopOf="@id/usdt_icon"
+            app:layout_constraintBottom_toTopOf="@id/usdt_view"/>
+        <ImageButton
+            android:id="@+id/bitcoin_btn"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_0dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintTop_toBottomOf="@id/usdt_view"
+            app:layout_constraintBottom_toTopOf="@id/bitcoin_view"/>
+        <ImageButton
+            android:id="@+id/eth_btn"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_0dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintTop_toBottomOf="@id/bitcoin_view"
+            app:layout_constraintBottom_toTopOf="@id/eth_view"/>
+        <ImageButton
+            android:id="@+id/som_btn"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_0dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintTop_toBottomOf="@id/eth_view"
+            app:layout_constraintBottom_toTopOf="@id/fiat_view"/>
+        <ImageButton
+            android:id="@+id/salam_btn"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_0dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintTop_toBottomOf="@id/fiat_view"
+            app:layout_constraintBottom_toBottomOf="@id/digital_icon"/>
         <ImageView
             android:id="@+id/usdt_icon"
             android:layout_width="@dimen/_44dp"

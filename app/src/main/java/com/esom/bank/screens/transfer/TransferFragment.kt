@@ -92,6 +92,7 @@ class TransferFragment : Fragment() {
                     binding.sendText.isVisible = false
                     binding.indicator.isVisible = true
                 }
+
                 is UiState.Error -> {
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
@@ -99,11 +100,13 @@ class TransferFragment : Fragment() {
                         NavGraphDirections.startFailTransferFragment(it.message)
                     )
                 }
+
                 is UiState.Success -> {
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
                     findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
                 }
+
                 else -> {}
             }
         }
@@ -183,10 +186,29 @@ class TransferFragment : Fragment() {
     private fun updateCurrencyIcon(currency: CurrencyEnum) {
         when (currency) {
             CurrencyEnum.SOM -> setCurrencyUI(R.drawable.som_icon, getString(R.string.som), true)
-            CurrencyEnum.ESOM -> setCurrencyUI(R.drawable.salam_icon, getString(R.string.digital), false)
-            CurrencyEnum.BTC -> setCurrencyUI(R.drawable.bitcoin_icon, getString(R.string.bitcoin), false)
-            CurrencyEnum.ETH -> setCurrencyUI(R.drawable.eth_icon, getString(R.string.ethereum), false)
-            CurrencyEnum.USDT_TRC20 -> setCurrencyUI(R.drawable.usdt_icon, getString(R.string.usdt), false)
+            CurrencyEnum.ESOM -> setCurrencyUI(
+                R.drawable.salam_icon,
+                getString(R.string.digital),
+                false
+            )
+
+            CurrencyEnum.BTC -> setCurrencyUI(
+                R.drawable.bitcoin_icon,
+                getString(R.string.bitcoin),
+                false
+            )
+
+            CurrencyEnum.ETH -> setCurrencyUI(
+                R.drawable.eth_icon,
+                getString(R.string.ethereum),
+                false
+            )
+
+            CurrencyEnum.USDT_TRC20 -> setCurrencyUI(
+                R.drawable.usdt_icon,
+                getString(R.string.usdt),
+                false
+            )
         }
     }
 
@@ -213,6 +235,7 @@ class TransferFragment : Fragment() {
                 else -> walletAddress?.takeLast(3)?.let { "*$it" } ?: ""
             }
         }
+
         val walletUSDT = wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }
         val walletBTC = wallets.find { it.currency == CurrencyEnum.BTC }
         val walletETH = wallets.find { it.currency == CurrencyEnum.ETH }
@@ -315,6 +338,7 @@ class TransferFragment : Fragment() {
                     return
                 }
             }
+
             else -> {
                 if (contactInfo.isEmpty()) {
                     binding.root.showErrorSnackbar("Введите адрес получателя")
@@ -326,14 +350,24 @@ class TransferFragment : Fragment() {
                 }
             }
         }
-        val walletBalance = (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currentFromCurrency }?.balance ?: 0.0
+        val walletBalance =
+            (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currentFromCurrency }?.balance
+                ?: 0.0
         if (sum > walletBalance) {
             val currencyName = getCurrencyName(currentFromCurrency)
             binding.root.showErrorSnackbar("Недостаточно $currencyName на балансе")
             return
         }
-        val phone = if (currentFromCurrency in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)) contactInfo.filter { it.isDigit() } else ""
-        val address = if (currentFromCurrency !in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)) contactInfo else null
+        val phone = if (currentFromCurrency in listOf(
+                CurrencyEnum.SOM,
+                CurrencyEnum.ESOM
+            )
+        ) ("+" + contactInfo.filter { it.isDigit() }) else ""
+        val address = if (currentFromCurrency !in listOf(
+                CurrencyEnum.SOM,
+                CurrencyEnum.ESOM
+            )
+        ) contactInfo else null
         if (model.transferRes.value !is UiState.Loading) {
             model.transferToUser(sum, phone, address, currentFromCurrency)
         }
@@ -357,8 +391,9 @@ class TransferFragment : Fragment() {
     }
 
     private fun slideOut(view: View) {
-        view.animate().translationY(-view.height.toFloat()).alpha(0f).setDuration(450).withEndAction {
-            view.visibility = View.GONE
-        }.start()
+        view.animate().translationY(-view.height.toFloat()).alpha(0f).setDuration(450)
+            .withEndAction {
+                view.visibility = View.GONE
+            }.start()
     }
 }

@@ -58,11 +58,14 @@ class TransferFragment : Fragment() {
         currentFromCurrency = args.currency
         updateCurrencyIcon(currentFromCurrency)
         setContactHint(currentFromCurrency)
-        if (currentFromCurrency == CurrencyEnum.SOM) {
+
+        if (currentFromCurrency == CurrencyEnum.SOM || currentFromCurrency == CurrencyEnum.ESOM) {
             applyPhoneMask()
         }
+
         initInitialBalances()
         setupQuickAmounts()
+
         binding.sumInput.setOnUserTextChangeListener { text ->
             updateCommissionAndTotal(text.toString())
         }
@@ -186,6 +189,7 @@ class TransferFragment : Fragment() {
     private fun updateCurrencyIcon(currency: CurrencyEnum) {
         when (currency) {
             CurrencyEnum.SOM -> setCurrencyUI(R.drawable.som_icon, getString(R.string.som), true)
+
             CurrencyEnum.ESOM -> setCurrencyUI(
                 R.drawable.salam_icon,
                 getString(R.string.digital),
@@ -332,7 +336,7 @@ class TransferFragment : Fragment() {
             return
         }
         when (currentFromCurrency) {
-            CurrencyEnum.SOM -> {
+            CurrencyEnum.SOM, CurrencyEnum.ESOM -> {
                 if (contactInfo.isEmpty() || contactInfo.filter { it.isDigit() }.length < 10) {
                     binding.root.showErrorSnackbar("Введите корректный номер телефона")
                     return

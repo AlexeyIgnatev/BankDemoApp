@@ -17,7 +17,18 @@ abstract class AbstractBaseCloudDataSource {
             val response: Response<T> = apiToBeCalled()
 
             if (response.isSuccessful) {
-                emit(ApiResponse.Success(data = response.body()!!, code = response.code()))
+                val body = response.body()
+                if (body != null) {
+                    emit(ApiResponse.Success(data = body, code = response.code()))
+                } else {
+                    emit(
+                        ApiResponse.Error(
+                            R.string.something_went_wrong,
+                            data = null,
+                            code = response.code()
+                        )
+                    )
+                }
             } else {
                 val errorData = try {
                     Gson().fromJson(

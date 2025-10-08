@@ -3,6 +3,7 @@ package com.esom.bank.screens.wallet.adapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,65 +29,69 @@ class TransactionAdapter(private val context: Context) :
                 CurrencyEnum.USDT_TRC20 -> binding.icon.setImageResource(R.drawable.usdt_icon)
                 CurrencyEnum.BTC -> binding.icon.setImageResource(R.drawable.bitcoin_icon)
                 CurrencyEnum.ETH -> binding.icon.setImageResource(R.drawable.eth_icon)
+                null -> Log.e("error", "error - null")
             }
 
-            val stringResId = when (item.type) {
-                TransactionEnum.CONVERSATION -> when (item.currencyEnum) {
+            val stringResId = when {
+                item.type == TransactionEnum.CONVERSATION -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.convert_som
                     CurrencyEnum.ESOM -> R.string.convert_digital
                     CurrencyEnum.ETH -> R.string.convert_eth
                     CurrencyEnum.BTC -> R.string.convert_bitcoin
                     CurrencyEnum.USDT_TRC20 -> R.string.convert_usdt
+                    else -> R.string.transfer_usdt
                 }
-
-                TransactionEnum.INCOME -> when (item.currencyEnum) {
+                item.type == TransactionEnum.INCOME -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.income_som
                     CurrencyEnum.ESOM -> R.string.income_digital
                     CurrencyEnum.ETH -> R.string.income_eth
                     CurrencyEnum.BTC -> R.string.income_bitcoin
                     CurrencyEnum.USDT_TRC20 -> R.string.income_usdt
+                    else -> R.string.transfer_usdt
                 }
-
-                TransactionEnum.EXPENSE -> when (item.currencyEnum) {
+                item.type == TransactionEnum.EXPENSE -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.expense_som
                     CurrencyEnum.ESOM -> R.string.expense_digital
                     CurrencyEnum.ETH -> R.string.expense_eth
                     CurrencyEnum.BTC -> R.string.expense_bitcoin
                     CurrencyEnum.USDT_TRC20 -> R.string.expense_usdt
+                    else -> R.string.transfer_usdt
                 }
-
-                TransactionEnum.INFLOW -> when (item.currencyEnum) {
+                item.type == TransactionEnum.INFLOW -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.inflow_som
                     CurrencyEnum.ESOM -> R.string.inflow_digital
                     CurrencyEnum.ETH -> R.string.inflow_eth
                     CurrencyEnum.BTC -> R.string.inflow_bitcoin
                     CurrencyEnum.USDT_TRC20 -> R.string.inflow_usdt
+                    else -> R.string.transfer_usdt
                 }
-
-                TransactionEnum.TRANSFER -> when (item.currencyEnum) {
+                item.type == TransactionEnum.TRANSFER -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.transfer_som
                     CurrencyEnum.ESOM -> R.string.transfer_digital
                     CurrencyEnum.ETH -> R.string.transfer_eth
                     CurrencyEnum.BTC -> R.string.transfer_bitcoin
                     CurrencyEnum.USDT_TRC20 -> R.string.transfer_usdt
+                    else -> R.string.transfer_usdt
                 }
+                else -> R.string.transfer_usdt
             }
 
             binding.title.text = context.getString(stringResId)
+
             val (sign, color) = when (item.type) {
                 TransactionEnum.INCOME, TransactionEnum.INFLOW -> "+" to "#38C72E"
                 TransactionEnum.EXPENSE, TransactionEnum.TRANSFER -> "-" to "#1D1D1B"
                 TransactionEnum.CONVERSATION -> "-" to "#1D1D1B"
+                else -> "-" to "#1D1D1B"
             }
 
             binding.sum.setTextColor(Color.parseColor(color))
             binding.somIcon.setColorFilter(Color.parseColor(color))
-            binding.sum.text = "$sign${item.amount.toLong()}"
+            binding.sum.text = "$sign${"%.6f".format(item.amount).trimEnd('0').trimEnd('.').ifEmpty { "0" }}"
 
             binding.somIcon.visibility =
                 if (item.currencyEnum == CurrencyEnum.SOM) View.VISIBLE else View.INVISIBLE
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {

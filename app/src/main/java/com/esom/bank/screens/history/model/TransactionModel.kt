@@ -10,22 +10,24 @@ import kotlinx.parcelize.Parcelize
 @Keep
 @Parcelize
 data class TransactionModel(
-    val currencyEnum: CurrencyEnum,
-    val type: TransactionEnum,
-    val amount: Double,
-    val successful: Boolean,
-    val createdAt: Long
+    val currencyEnum: CurrencyEnum?,
+    val type: TransactionEnum?,
+    val amount: Double?,
+    val successful: Boolean?,
+    val createdAt: Long?
 ): Parcelable
 
-fun TransactionDto.toModel(): TransactionModel =
-    TransactionModel(
-        currencyEnum = currencyEnum,
-        type = type,
-        amount = amount,
-        successful = successful,
-        createdAt = createdAt
-    )
+fun TransactionDto?.toModel(): TransactionModel? =
+    this?.currencyEnum?.let {
+        TransactionModel(
+            currencyEnum = it,
+            type = this.type,
+            amount = this.amount,
+            successful = this.successful,
+            createdAt = this.createdAt
+        )
+    }
 
-fun List<TransactionDto>.toModel(): List<TransactionModel> {
+fun List<TransactionDto?>.toModel(): List<TransactionModel?> {
     return this.map { it.toModel() }
 }

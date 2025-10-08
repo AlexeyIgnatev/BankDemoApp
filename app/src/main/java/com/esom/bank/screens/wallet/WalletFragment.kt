@@ -121,15 +121,16 @@ class WalletFragment : Fragment() {
                         else -> monthText
                     }
 
-                    val monthTransactions = it.data.filter { tx ->
+                    val monthTransactions = it.data.filterNotNull().filter { tx ->
                         val createdAtMillis =
-                            if (tx.createdAt < 1_000_000_000_000) tx.createdAt * 1000 else tx.createdAt
+                            if (tx!!.createdAt!! < 1_000_000_000_000) tx.createdAt?.times(1000) else tx.createdAt
                         createdAtMillis in fromTimeMonth..toTimeMonth
                     }
 
                     val expenseSum = monthTransactions
-                        .filter { it.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER }
-                        .sumOf { it.amount }
+                        .filterNotNull()
+                        .filter { it!!.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER }
+                        .sumOf { amount -> amount.amount!!.toLong() }
                     binding.monthWasteTitle.text = "Расходы в $monthInGenitive"
                     binding.monthWaste.text = expenseSum.toInt().toString()
 
@@ -243,7 +244,7 @@ class WalletFragment : Fragment() {
                     }
 
                     1 -> {
-                        model.latestTransactions(CurrencyEnum.USDT_TRC20)
+                        model.latestTransactions(CurrencyEnum.ESOM)
                     }
 
                     2 -> {
@@ -258,7 +259,7 @@ class WalletFragment : Fragment() {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(cards.size, false)
                         }, 150)
-                        model.latestTransactions(CurrencyEnum.ESOM)
+                        model.latestTransactions(CurrencyEnum.USDT_TRC20)
                     }
                 }
             }
@@ -269,6 +270,7 @@ class WalletFragment : Fragment() {
         }
 
         model.updateUserData()
+        model.getSettings()
         model.myData.observe(viewLifecycleOwner) {
             when (it) {
                 is UiState.Loading -> {}
@@ -318,32 +320,42 @@ class WalletFragment : Fragment() {
             when (wallet.currency) {
                 CurrencyEnum.SOM -> Currency(
                     TypeOfCurrency.FIAT,
-                    wallet.buyRate.format(2),
-                    wallet.sellRate.format(2)
+                    wallet.buyRate.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" },
+                    wallet.sellRate.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" }
                 )
 
                 CurrencyEnum.ESOM -> Currency(
                     TypeOfCurrency.DIGITAL,
-                    wallet.buyRate.format(2),
-                    wallet.sellRate.format(2)
+                    wallet.buyRate.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" },
+                    wallet.sellRate.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" }
                 )
 
                 CurrencyEnum.USDT_TRC20 -> Currency(
                     TypeOfCurrency.USDT,
-                    wallet.buyRate.format(2),
-                    wallet.sellRate.format(2)
+                    wallet.buyRate.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" },
+                    wallet.sellRate.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" }
                 )
 
                 CurrencyEnum.BTC -> Currency(
                     TypeOfCurrency.BITCOIN,
-                    wallet.buyRate.format(2),
-                    wallet.sellRate.format(2)
+                    wallet.buyRate.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" },
+                    wallet.sellRate.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" }
                 )
 
                 CurrencyEnum.ETH -> Currency(
                     TypeOfCurrency.ETH,
-                    wallet.buyRate.format(2),
-                    wallet.sellRate.format(2)
+                    wallet.buyRate.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" },
+                    wallet.sellRate.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" }
                 )
             }
         }
@@ -357,7 +369,8 @@ class WalletFragment : Fragment() {
             val balanceInSoms = wallet.balance * wallet.buyRate
             totalBalanceInSoms += balanceInSoms
         }
-        binding.totalWaste.text = totalBalanceInSoms.format(2)
+        binding.totalWaste.text = totalBalanceInSoms.format(6).trimEnd('0')
+            .trimEnd('.').ifEmpty { "0" }
     }
 
 }

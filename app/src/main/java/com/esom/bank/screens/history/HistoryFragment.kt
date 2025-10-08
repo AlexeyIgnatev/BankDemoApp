@@ -62,7 +62,7 @@ class HistoryFragment : Fragment() {
         loadTransactions()
 
         model.monthTransactions()
-        model.month.observe(viewLifecycleOwner) {
+        model.month.observe(viewLifecycleOwner) { it ->
             when (it) {
                 is UiState.Loading -> {}
                 is UiState.Error -> binding.root.showErrorSnackbar(it.message)
@@ -98,16 +98,21 @@ class HistoryFragment : Fragment() {
                     }
 
                     val monthTransactions = it.data.filter { tx ->
-                        tx.createdAt in fromTimeMonth..toTimeMonth
+                        tx!!.createdAt in fromTimeMonth..toTimeMonth
                     }
-
                     val incomeSum = monthTransactions
+                        .filterNotNull()
                         .filter { it.type == TransactionEnum.INCOME || it.type == TransactionEnum.INFLOW }
-                        .sumOf { it.amount }
+                        .sumOf { amount ->
+                            amount.amount!!.toLong()
+                        }
 
                     val expenseSum = monthTransactions
+                        .filterNotNull()
                         .filter { it.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER }
-                        .sumOf { it.amount }
+                        .sumOf { amount ->
+                            amount.amount!!.toLong()
+                        }
 
                     binding.incomeTitle.text = "Доходы за $monthInPrepositional"
                     binding.expencesTitle.text = "Расходы за $monthInPrepositional"

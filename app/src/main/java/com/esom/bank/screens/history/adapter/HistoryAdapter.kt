@@ -49,7 +49,7 @@ class HistoryAdapter(private val context: Context) :
     inner class HistoryTransactionsViewHolder(private val binding: ItemHistoryBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(transactions: List<TransactionModel>) {
-            Log.e("HistoryAdapter", "Transactions bind -> size=${transactions.size}, dates=${transactions.map { dateFormat.format(Date(it.createdAt)) }}")
+            Log.e("HistoryAdapter", "Transactions bind -> size=${transactions.size}, dates=${transactions.map { dateFormat.format(Date(it.createdAt?: 0L)) }}")
             val adapter = TransactionAdapter(context)
             binding.transactions.adapter = adapter
             adapter.submitList(transactions)
@@ -61,9 +61,9 @@ class HistoryAdapter(private val context: Context) :
         val prevItem = if (position > 0) getItem(position - 1) else null
         val nextItem = if (position + 1 < itemCount) getItem(position + 1) else null
 
-        val currentDate = dateFormat.format(Date(item.createdAt))
-        val prevDate = prevItem?.let { dateFormat.format(Date(it.createdAt)) }
-        val nextDate = nextItem?.let { dateFormat.format(Date(it.createdAt)) }
+        val currentDate = dateFormat.format(Date(item.createdAt ?: 0L))
+        val prevDate = prevItem?.let { dateFormat.format(Date(it.createdAt ?: 0L)) }
+        val nextDate = nextItem?.let { dateFormat.format(Date(it.createdAt ?: 0L)) }
 
         val type = when {
             prevItem == null || currentDate != prevDate -> TYPE_DATE
@@ -101,9 +101,9 @@ class HistoryAdapter(private val context: Context) :
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = getItem(position) ?: return
-        val currentDate = dateFormat.format(Date(item.createdAt))
+        val currentDate = dateFormat.format(Date(item.createdAt?: 0L))
         val transactionsForDate = snapshot().items
-            .filter { dateFormat.format(Date(it.createdAt)) == currentDate }
+            .filter { dateFormat.format(Date(it.createdAt?: 0L)) == currentDate }
 
         Log.d(
             "HistoryAdapter",
@@ -112,12 +112,13 @@ class HistoryAdapter(private val context: Context) :
 
         when (holder) {
             is HistoryDateViewHolder -> {
-                val sumForDate = transactionsForDate.sumOf { tx ->
+                val sumForDate = transactionsForDate.filterNotNull().sumOf { tx ->
                     when (tx.type) {
                         TransactionEnum.INCOME, TransactionEnum.INFLOW -> tx.amount
-                        TransactionEnum.EXPENSE, TransactionEnum.TRANSFER -> -tx.amount
+                        TransactionEnum.EXPENSE, TransactionEnum.TRANSFER -> -tx.amount!!
                         TransactionEnum.CONVERSATION -> 0.0
-                    }
+                        null -> 0.0
+                    }!!.toDouble()
                 }
                 holder.bind(currentDate, sumForDate)
             }

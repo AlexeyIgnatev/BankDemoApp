@@ -20,6 +20,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.esom.bank.screens.chat.model.SupportModel
 import com.esom.bank.screens.history.pagingsource.TransactionsPagingSource
+import com.esom.bank.screens.main.model.FeeModel
 import com.esom.bank.screens.notification.model.NotificationModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
@@ -37,11 +38,11 @@ class MainViewModel @Inject constructor(
     private val _transferRes = SingleLiveEvent<UiState<Unit>>()
     val transferRes: LiveData<UiState<Unit>> = _transferRes
 
-    private val _history = SingleLiveEvent<UiState<List<TransactionModel>>>()
-    val history: LiveData<UiState<List<TransactionModel>>> = _history
+    private val _history = SingleLiveEvent<UiState<List<TransactionModel?>>>()
+    val history: LiveData<UiState<List<TransactionModel?>>> = _history
 
-    private val _month = SingleLiveEvent<UiState<List<TransactionModel>>>()
-    val month: LiveData<UiState<List<TransactionModel>>> = _month
+    private val _month = SingleLiveEvent<UiState<List<TransactionModel?>>>()
+    val month: LiveData<UiState<List<TransactionModel?>>> = _month
 
     private val _messages = MutableLiveData<UiState<List<SupportModel>>>()
     val messages: LiveData<UiState<List<SupportModel>>> = _messages
@@ -51,6 +52,9 @@ class MainViewModel @Inject constructor(
 
     private val _notifications = MutableLiveData<UiState<List<NotificationModel>>>()
     val notifications: LiveData<UiState<List<NotificationModel>>> = _notifications
+
+    private val _settings = MutableLiveData<UiState<FeeModel>>()
+    val settings: LiveData<UiState<FeeModel>> = _settings
 
 
     fun isAuthenticated() = mainRepository.isAuthenticated()
@@ -66,6 +70,21 @@ class MainViewModel @Inject constructor(
         mainRepository.getUserInfo().onEach {
             _myData.value = it
         }.launchIn(viewModelScope)
+    }
+
+    fun getSettings() {
+        mainRepository.getSettings().onEach {
+            _settings.value = it
+        }.launchIn(viewModelScope)
+    }
+
+    fun convert(from: CurrencyEnum,
+                to: CurrencyEnum,
+                fromAmount: Double) {
+        _swapRes.value = UiState.Loading()
+        mainRepository.convert(from, to, fromAmount).onEach {
+            _swapRes.value = it
+        } .launchIn(viewModelScope)
     }
 
     fun transferFromFiat(amount: Double) {
@@ -111,8 +130,11 @@ class MainViewModel @Inject constructor(
     }
 
     fun latestTransactions(currencyEnum: CurrencyEnum) {
-        mainRepository.history(listOf(currencyEnum), getFromTime(), getToTime(), 5, 0).onEach {
-            _history.value = it
+        mainRepository.history(listOf(currencyEnum), getFromTime(), getToTime(), 5, 0).onEach { uiState ->
+            _history.value = when (uiState) {
+                is UiState.Success -> UiState.Success(uiState.data.filterNotNull())
+                else -> uiState
+            }
         }.launchIn(viewModelScope)
     }
 
@@ -127,8 +149,11 @@ class MainViewModel @Inject constructor(
             System.currentTimeMillis(),
             50,
             0
-        ).onEach {
-            _month.value = it
+        ).onEach { uiState ->
+            _month.value = when (uiState) {
+                is UiState.Success -> UiState.Success(uiState.data.filterNotNull())
+                else -> uiState
+            }
         }.launchIn(viewModelScope)
     }
 

@@ -10,10 +10,12 @@ import com.esom.bank.screens.history.data.HistoryLocalDataSource
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.toModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.main.model.FeeModel
 import com.esom.bank.screens.main.model.UserModel
 import com.esom.bank.screens.main.model.toModel
 import com.esom.bank.screens.notification.model.NotificationModel
 import com.esom.bank.screens.notification.model.toModel
+import com.esom.bank.screens.swap.dto.ConvertDto
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -25,6 +27,14 @@ interface MainRepository {
     fun isAuthenticated(): Boolean
     fun authenticate(login: String, password: String): Flow<UiState<UserModel>>
     fun getUserInfo(): Flow<UiState<UserModel>>
+
+    fun getSettings(): Flow<UiState<FeeModel>>
+
+    fun convert(
+        from: CurrencyEnum,
+        to: CurrencyEnum,
+        fromAmount: Double
+    ): Flow<UiState<Unit>>
 
     fun transferFromFiat(
         amount: Double,
@@ -44,7 +54,7 @@ interface MainRepository {
     fun history(
         currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
         take: Int, skip: Int
-    ): Flow<UiState<List<TransactionModel>>>
+    ): Flow<UiState<List<TransactionModel?>>>
 
     fun getCurrency(): List<CurrencyEnum>
     fun setCurrency(currency: List<CurrencyEnum>)
@@ -90,6 +100,27 @@ class MainRepositoryImpl @Inject constructor(
             }
         }
 
+    override fun getSettings(): Flow<UiState<FeeModel>> =
+        mainCloudDataSource.getSettings().map { response ->
+            when(response) {
+                is ApiResponse.Success -> return@map UiState.Success(response.data.toModel())
+                is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
+            }
+        }
+
+    override fun convert(
+        from: CurrencyEnum,
+        to: CurrencyEnum,
+        fromAmount: Double
+    ): Flow<UiState<Unit>> =
+        mainCloudDataSource.convert(ConvertDto(from, to, fromAmount)).map {
+            when (it) {
+                is ApiResponse.Success -> return@map UiState.Success(Unit)
+                is ApiResponse.Error -> return@map UiState.Error(it.toString(context))
+            }
+        }
+
+
     override fun transferFromFiat(amount: Double): Flow<UiState<Unit>> =
         mainCloudDataSource.fiatToCrypto(amount).map { response ->
             when (response) {
@@ -125,7 +156,7 @@ class MainRepositoryImpl @Inject constructor(
         toTime: Long,
         take: Int,
         skip: Int
-    ): Flow<UiState<List<TransactionModel>>> =
+    ): Flow<UiState<List<TransactionModel?>>> =
         mainCloudDataSource.history(currencyEnum, fromTime, toTime, take, skip).map { response ->
             when (response) {
                 is ApiResponse.Success -> return@map UiState.Success(response.data.toModel())

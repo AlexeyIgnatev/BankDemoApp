@@ -6,11 +6,13 @@ import com.esom.bank.screens.chat.dto.SupportDto
 import com.esom.bank.screens.chat.enums.SupportRole
 import com.esom.bank.screens.history.dto.TransactionDto
 import com.esom.bank.screens.history.enums.TransactionEnum
+import com.esom.bank.screens.main.dto.FeeDto
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.UserDto
 import com.esom.bank.screens.main.dto.WalletDto
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.notification.dto.NotificationDto
+import com.esom.bank.screens.swap.dto.ConvertDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.Calendar
@@ -40,37 +42,62 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                         WalletDto(
                             currency = CurrencyEnum.USDT_TRC20,
                             address = "TJkTgPifKq1Q9crT9zNCy5dbcXrd71vvof",
-                            balance = 0.0,
-                            buyRate = 1.0,
-                            sellRate = 1.0
+                            balance = 1000.0,
+                            buyRate = 88.5,
+                            sellRate = 87.2
                         ),
                         WalletDto(
                             currency = CurrencyEnum.BTC,
                             address = "bc1qycral9w687hqzzh2jpq67e3rt5udj3khrzwqnq",
-                            balance = 0.0,
-                            buyRate = 1.0,
-                            sellRate = 1.0
+                            balance = 2000.0,
+                            buyRate = 5800000.0,
+                            sellRate = 5750000.0
                         ),
                         WalletDto(
                             currency = CurrencyEnum.ETH,
                             address = "0x604fFa2e0a04f0595206A03AcA898ddAaed900A0",
-                            balance = 0.0,
-                            buyRate = 1.0,
-                            sellRate = 1.0
+                            balance = 30000.0,
+                            buyRate = 320000.0,
+                            sellRate = 315000.0
                         ),
                         WalletDto(
                             currency = CurrencyEnum.ESOM,
-                            address = "0x604fFa2e0a04f0595206A03AcA898ddAaed900A0",
-                            balance = 99.0,
-                            buyRate = 1.0,
-                            sellRate = 1.0
-                        ),
-                    ),
-                    platformFee = 0.01
+                            address = "esom_wallet_address_12345",
+                            balance = 500.0,
+                            buyRate = 1.05,
+                            sellRate = 0.95
+                        )
+                    )
                 ),
                 code = 200
             )
         )
+    }
+
+    override fun getSettings(): Flow<ApiResponse<FeeDto>> = flow {
+        emit(
+            ApiResponse.Success(
+                FeeDto(
+                    id = 1,
+                    esomPerUsd = 1,
+                    esomSomConversionFeePct = 3,
+                    btcTradeFeePct = 0.5,
+                    ethTradeFeePct = 0.5,
+                    usdtTradeFeePct = 0.2,
+                    btcWithdrawFeeFixed = 0.0002,
+                    ethWithdrawFeeFixed = 0.003,
+                    usdtWithdrawFeeFixed = 10.0,
+                    minWithdrawBtc = 0.0002,
+                    minWithdrawEth = 0.003,
+                    minWithdrawUsdtTrc20 = 10.0
+                ),
+                200
+            )
+        )
+    }
+
+    override fun convert(convert: ConvertDto): Flow<ApiResponse<StatusDto>> = flow {
+        emit(ApiResponse.Success(StatusDto("success"), 200))
     }
 
     override fun fiatToCrypto(amount: Double): Flow<ApiResponse<StatusDto>> = flow {

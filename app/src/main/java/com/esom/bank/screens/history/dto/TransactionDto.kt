@@ -6,13 +6,13 @@ import com.google.gson.annotations.SerializedName
 
 data class TransactionDto(
     @SerializedName("currency")
-    val currencyEnum: CurrencyEnum,
+    val currencyEnum: CurrencyEnum?,
     @SerializedName("type")
-    val type: TransactionEnum,
+    val type: TransactionEnum?,
     @SerializedName("amount")
-    val amount: Double,
+    val amount: Double?,
     @SerializedName("successful")
-    val successful: Boolean,
+    val successful: Boolean?,
     @SerializedName("created_at")
-    val createdAt: Long
+    val createdAt: Long?
 )

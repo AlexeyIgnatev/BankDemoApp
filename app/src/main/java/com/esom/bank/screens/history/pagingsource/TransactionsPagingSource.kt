@@ -3,7 +3,6 @@ package com.esom.bank.screens.history.pagingsource
 import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.model.UiState
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.main.data.MainRepository
@@ -29,15 +28,16 @@ class TransactionsPagingSource(
             ).first()
 
             if (response is UiState.Success) {
-
-                val transactions = response.data.map { dto ->
-                    TransactionModel(
-                        currencyEnum = dto.currencyEnum,
-                        type = dto.type,
-                        amount = dto.amount,
-                        successful = dto.successful,
-                        createdAt = dto.createdAt
-                    )
+                val transactions = response.data.mapNotNull { dto ->
+                    dto?.let {
+                        TransactionModel(
+                            currencyEnum = it.currencyEnum,
+                            type = it.type,
+                            amount = it.amount,
+                            successful = it.successful,
+                            createdAt = it.createdAt
+                        )
+                    }
                 }
 
                 val nextOffset =

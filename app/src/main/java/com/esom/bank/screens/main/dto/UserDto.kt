@@ -19,7 +19,5 @@ data class UserDto(
     @SerializedName("private_key")
     val privateKey: String? = null,
     @SerializedName("wallets")
-    val wallets: List<WalletDto>,
-    @SerializedName("platform_fee")
-    val platformFee: Double
+    val wallets: List<WalletDto>
 )

@@ -4,11 +4,13 @@ import com.esom.bank.screens.chat.dto.SendMessageDto
 import com.esom.bank.screens.chat.dto.SupportDto
 import com.esom.bank.screens.history.dto.GetTransactionsDto
 import com.esom.bank.screens.history.dto.TransactionDto
+import com.esom.bank.screens.main.dto.FeeDto
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.SwapDto
 import com.esom.bank.screens.main.dto.TransferDto
 import com.esom.bank.screens.main.dto.UserDto
 import com.esom.bank.screens.notification.dto.NotificationDto
+import com.esom.bank.screens.swap.dto.ConvertDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -18,6 +20,11 @@ import retrofit2.http.Query
 interface ServerApi {
     @GET("users/info")
     suspend fun getUserInfo(): Response<UserDto>
+
+    @POST("payments/convert")
+    suspend fun convert(
+        @Body convertDto: ConvertDto
+    ): Response<StatusDto>
 
     @POST("payments/fiat-to-crypto")
     suspend fun fiatToCrypto(
@@ -37,7 +44,10 @@ interface ServerApi {
     @POST("payments/history")
     suspend fun history(
         @Body transactionsDto: GetTransactionsDto
-    ): Response<List<TransactionDto>>
+    ): Response<List<TransactionDto?>>
+
+    @GET("blockchain-config/settings")
+    suspend fun getSettings(): Response<FeeDto>
 
     @GET("/api/support/message")
     suspend fun getMessages(

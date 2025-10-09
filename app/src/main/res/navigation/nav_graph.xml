@@ -33,9 +33,11 @@
         android:label="fragment_swap"
         tools:layout="@layout/fragment_swap">
         <argument
-            android:name="direction"
-            android:defaultValue="0"
-            app:argType="integer" />
+            android:name="from"
+            app:argType="com.esom.bank.screens.main.enums.CurrencyEnum" />
+        <argument
+            android:name="to"
+            app:argType="com.esom.bank.screens.main.enums.CurrencyEnum" />
     </fragment>
 
     <action

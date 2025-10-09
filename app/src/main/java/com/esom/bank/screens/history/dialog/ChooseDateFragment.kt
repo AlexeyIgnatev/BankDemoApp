@@ -92,8 +92,22 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
             val dateString = binding.startDate.text.toString()
             val endDateString = binding.endDate.text.toString()
             val format = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+
             val date: Long = format.parse(dateString)?.time ?: 0L
-            val endDate = format.parse(endDateString)?.time ?: 0L
+
+            val endDateParsed = format.parse(endDateString)
+            val endDate = if (endDateParsed != null) {
+                val calendar = Calendar.getInstance()
+                calendar.time = endDateParsed
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
+                calendar.timeInMillis
+            } else {
+                0L
+            }
+
             model.setFromTime(date)
             model.setToTime(endDate)
             val intent = Intent("ACTION_HISTORY")

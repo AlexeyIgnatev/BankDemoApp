@@ -259,7 +259,6 @@ class SwapFragment : Fragment() {
         }
 
         binding.sumInput.setOnUserTextChangeListener {
-            updateAmounts(it.toDoubleOrNull(), null)
             updateCommissionAndTotal()
         }
 
@@ -311,28 +310,72 @@ class SwapFragment : Fragment() {
 
         updateBalanceDisplay()
         updateSomIconsVisibility()
+        updateCommissionTitles()
+    }
+
+    private fun updateCommissionTitles() {
         binding.comissionTitle.text = getCurrencyName(currentFromCurrency)
         binding.secondTitle.text = getCurrencyName(currentToCurrency)
     }
 
     private fun initInitialIcons() {
-        if (args.direction == 0) {
-            currentFromCurrency = CurrencyEnum.SOM
-            currentToCurrency = CurrencyEnum.ESOM
-            binding.icon.setImageResource(R.drawable.som_icon)
-            binding.currencyTitle.text = getString(R.string.som)
-            binding.peopleIcon.setImageResource(R.drawable.salam_icon)
-            binding.peopleTitle.text = getString(R.string.digital)
-        } else {
-            currentFromCurrency = CurrencyEnum.ESOM
-            currentToCurrency = CurrencyEnum.SOM
-            binding.icon.setImageResource(R.drawable.salam_icon)
-            binding.currencyTitle.text = getString(R.string.digital)
-            binding.peopleIcon.setImageResource(R.drawable.som_icon)
-            binding.peopleTitle.text = getString(R.string.som)
-        }
+        currentFromCurrency = args.from
+        currentToCurrency = args.to
+
+        binding.icon.setImageResource(getCurrencyIcon(currentFromCurrency))
+        binding.currencyTitle.text = getCurrencyString(currentFromCurrency)
+        binding.peopleIcon.setImageResource(getCurrencyIcon(currentToCurrency))
+        binding.peopleTitle.text = getCurrencyString(currentToCurrency)
+
+        val allCurrencies = CurrencyEnum.values().toList()
+        val otherCurrencies = allCurrencies.filter { it != currentFromCurrency && it != currentToCurrency }
+
+        val firstPanelCurrencies = listOf(currentToCurrency) + otherCurrencies
+        val secondPanelCurrencies = listOf(currentFromCurrency) + otherCurrencies
+
+        binding.usdtIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[0]))
+        binding.usdtTitle.text = getCurrencyString(firstPanelCurrencies[0])
+
+        binding.bitcoinIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[1]))
+        binding.bitcoinTitle.text = getCurrencyString(firstPanelCurrencies[1])
+
+        binding.ethIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[2]))
+        binding.ethTitle.text = getCurrencyString(firstPanelCurrencies[2])
+
+        binding.fiatIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[3]))
+        binding.fiatTitle.text = getCurrencyString(firstPanelCurrencies[3])
+
+        binding.peopleUsdtIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[0]))
+        binding.peopleUsdtTitle.text = getCurrencyString(secondPanelCurrencies[0])
+
+        binding.peopleBitcoinIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[1]))
+        binding.peopleBitcoinTitle.text = getCurrencyString(secondPanelCurrencies[1])
+
+        binding.peopleEthIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[2]))
+        binding.peopleEthTitle.text = getCurrencyString(secondPanelCurrencies[2])
+
+        binding.peopleFiatIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[3]))
+        binding.peopleFiatTitle.text = getCurrencyString(secondPanelCurrencies[3])
+
         updateBalanceDisplay()
         updateSomIconsVisibility()
+        updateCommissionTitles()
+    }
+
+    private fun getCurrencyIcon(currency: CurrencyEnum): Int = when (currency) {
+        CurrencyEnum.SOM -> R.drawable.som_icon
+        CurrencyEnum.ESOM -> R.drawable.salam_icon
+        CurrencyEnum.USDT_TRC20 -> R.drawable.usdt_icon
+        CurrencyEnum.BTC -> R.drawable.bitcoin_icon
+        CurrencyEnum.ETH -> R.drawable.eth_icon
+    }
+
+    private fun getCurrencyString(currency: CurrencyEnum): String = when (currency) {
+        CurrencyEnum.SOM -> getString(R.string.som)
+        CurrencyEnum.ESOM -> getString(R.string.digital)
+        CurrencyEnum.USDT_TRC20 -> getString(R.string.usdt)
+        CurrencyEnum.BTC -> getString(R.string.bitcoin)
+        CurrencyEnum.ETH -> getString(R.string.ethereum)
     }
 
     private fun updateSomIconsVisibility() {
@@ -473,7 +516,8 @@ class SwapFragment : Fragment() {
     private fun updateCommissionAndTotal() {
         val fromAmount = binding.sumInput.text.toString().toDoubleOrNull() ?: 0.0
         val exchangeRate = getExchangeRate()
-        val convertedAmount = fromAmount * exchangeRate
+        val fee = calculateFee(fromAmount)
+        val convertedAmount = (fromAmount - fee) * exchangeRate
 
         binding.comissionValue.text = fromAmount.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
         binding.secondValue.text = convertedAmount.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
@@ -481,6 +525,22 @@ class SwapFragment : Fragment() {
 
         Log.d(TAG, "Конвертация: $fromAmount ${getCurrencyName(currentFromCurrency)} -> $convertedAmount ${getCurrencyName(currentToCurrency)}")
         Log.d(TAG, "Курс обмена: $exchangeRate")
+        Log.d(TAG, "Комиссия: $fee ${getCurrencyName(currentFromCurrency)}")
+    }
+
+    private fun calculateFee(amount: Double): Double {
+        val settings = (model.settings.value as? UiState.Success)?.data ?: return 0.0
+
+        return when {
+            currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM ->
+                amount * (settings.esomSomConversionFeePct / 100.0)
+            currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM ->
+                amount * (settings.esomSomConversionFeePct / 100.0)
+            currentFromCurrency == CurrencyEnum.BTC -> settings.btcWithdrawFeeFixed
+            currentFromCurrency == CurrencyEnum.ETH -> settings.ethWithdrawFeeFixed
+            currentFromCurrency == CurrencyEnum.USDT_TRC20 -> settings.usdtWithdrawFeeFixed
+            else -> 0.0
+        }
     }
 
     private fun getExchangeRate(): Double {
@@ -537,27 +597,6 @@ class SwapFragment : Fragment() {
         CurrencyEnum.USDT_TRC20 -> "USDT"
         CurrencyEnum.BTC -> "BTC"
         CurrencyEnum.ETH -> "ETH"
-    }
-
-    private fun updateAmounts(fromAmount: Double?, toAmount: Double?) {
-        when {
-            fromAmount != null -> {
-                val formatted = fromAmount.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-                if (formatted != binding.sumInput.text.toString() && !binding.sumInput.text.toString().endsWith(".")) {
-                    binding.sumInput.setTextProgrammatically(formatted)
-                    binding.sumInput.setSelection(formatted.length)
-                }
-            }
-            toAmount != null -> {
-                val exchangeRate = getExchangeRate()
-                val newFromAmount = toAmount / exchangeRate
-                val formatted = newFromAmount.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-                binding.sumInput.setTextProgrammatically(formatted)
-                binding.sumInput.setSelection(formatted.length)
-            }
-            else -> binding.sumInput.setTextProgrammatically("")
-        }
-        updateCommissionAndTotal()
     }
 
     private fun slideIn(view: View) {

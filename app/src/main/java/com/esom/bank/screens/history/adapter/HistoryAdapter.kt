@@ -39,10 +39,8 @@ class HistoryAdapter(private val context: Context) :
     }
     inner class HistoryDateViewHolder(private val binding: ItemHistoryDateBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(date: String, sum: Double) {
-            val sumText = if (sum >= 0) "+${sum.toInt()}" else sum.toInt().toString()
+        fun bind(date: String) {
             binding.date.text = date
-            binding.sum.text = sumText
         }
     }
 
@@ -112,15 +110,7 @@ class HistoryAdapter(private val context: Context) :
 
         when (holder) {
             is HistoryDateViewHolder -> {
-                val sumForDate = transactionsForDate.filterNotNull().sumOf { tx ->
-                    when (tx.type) {
-                        TransactionEnum.INCOME, TransactionEnum.INFLOW -> tx.amount
-                        TransactionEnum.EXPENSE, TransactionEnum.TRANSFER -> -tx.amount!!
-                        TransactionEnum.CONVERSATION -> 0.0
-                        null -> 0.0
-                    }!!.toDouble()
-                }
-                holder.bind(currentDate, sumForDate)
+                holder.bind(currentDate)
             }
             is HistoryTransactionsViewHolder -> holder.bind(transactionsForDate)
             else -> return

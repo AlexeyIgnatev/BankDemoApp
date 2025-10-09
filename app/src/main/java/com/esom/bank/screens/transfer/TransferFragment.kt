@@ -62,7 +62,7 @@ class TransferFragment : Fragment() {
         updateCurrencyIcon(currentFromCurrency)
         setContactHint()
         setupChangeButton()
-        if (isToPhoneNumber && currentFromCurrency == CurrencyEnum.SOM) {
+        if (isToPhoneNumber) {
             applyPhoneMask()
         } else {
             removePhoneMask()
@@ -238,7 +238,7 @@ class TransferFragment : Fragment() {
         updateCommissionAndTotal(binding.sumInput.text.toString())
         setupChangeButton()
         setContactHint()
-        if (isToPhoneNumber && currency == CurrencyEnum.SOM) {
+        if (isToPhoneNumber) {
             applyPhoneMask()
         } else {
             removePhoneMask()
@@ -272,32 +272,40 @@ class TransferFragment : Fragment() {
         val amount = amountText.toDoubleOrNull() ?: 0.0
 
         val commission = when {
-            isToPhoneNumber -> {
-                val feePercentage = settings.esomSomConversionFeePct.toDouble() / 100.0
-                amount * feePercentage
-            }
+            isToPhoneNumber -> 0.0
             else -> {
                 when (currentFromCurrency) {
                     CurrencyEnum.BTC -> settings.btcWithdrawFeeFixed
                     CurrencyEnum.ETH -> settings.ethWithdrawFeeFixed
                     CurrencyEnum.USDT_TRC20 -> settings.usdtWithdrawFeeFixed
-                    CurrencyEnum.ESOM, CurrencyEnum.SOM -> {
-                        val feePercentage = settings.esomSomConversionFeePct.toDouble() / 100.0
-                        amount * feePercentage
-                    }
+                    else -> 0.0
                 }
             }
         }
 
         val totalAmount = amount - commission
 
-        binding.comissionValue.text = commission.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-        binding.total.text = totalAmount.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
+        binding.comissionValue.text = commission.format(6)
+        binding.total.text = formatTotalAmount(totalAmount)
     }
+
+    private fun formatTotalAmount(amount: Double): String {
+        return if (amount % 1 == 0.0) {
+            amount.toLong().toString()
+        } else {
+            amount.format(6).trimEnd('0').trimEnd('.')
+        }
+    }
+
     private fun applyPhoneMask() {
         val editText = binding.contact
         editText.setText("")
         editText.inputType = InputType.TYPE_CLASS_PHONE
+
+        editText.setHorizontallyScrolling(false)
+        editText.isSingleLine = false
+        editText.maxLines = 3
+
         phoneMaskWatcher?.let { editText.removeTextChangedListener(it) }
 
         val watcher = object : TextWatcher {
@@ -359,8 +367,12 @@ class TransferFragment : Fragment() {
         phoneMaskWatcher?.let { binding.contact.removeTextChangedListener(it) }
         phoneMaskWatcher = null
         binding.contact.setText("")
-        binding.contact.inputType = InputType.TYPE_CLASS_TEXT
+        binding.contact.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
         binding.contact.filters = arrayOf()
+
+        binding.contact.setHorizontallyScrolling(false)
+        binding.contact.isSingleLine = false
+        binding.contact.maxLines = 3
     }
 
     private fun handleTransferButtonClick() {

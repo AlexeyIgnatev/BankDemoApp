@@ -17,7 +17,7 @@ import com.esom.bank.screens.main.model.WalletModel
 
 class CardAdapter(
     private val context: Context,
-    private val onSwapClick: (CurrencyEnum) -> Unit,
+    private val onSwapClick: (CurrencyEnum, CurrencyEnum) -> Unit,
     private val onReceiveClick: (CurrencyEnum) -> Unit,
     private val onTransferClick: (CurrencyEnum) -> Unit
 ) : ListAdapter<WalletModel, CardAdapter.CardViewHolder>(CardDiffCallback()) {
@@ -29,7 +29,7 @@ class CardAdapter(
         fun bind(item: WalletModel) {
             binding.convertBtn.setOnClickListener { onTransferClick(item.currency) }
             binding.acceptBtn.setOnClickListener { onReceiveClick(item.currency) }
-            binding.newConvertBtn.setOnClickListener { onSwapClick(item.currency) }
+            binding.newConvertBtn.setOnClickListener { onSwapClick(CurrencyEnum.ESOM, item.currency) }
 
             when (item.currency) {
                 CurrencyEnum.SOM -> {
@@ -39,7 +39,6 @@ class CardAdapter(
                         .trimEnd('.').ifEmpty { "0" }
                     binding.cardNumberIcon.setImageResource(R.drawable.icon_sum_som)
                     binding.somIconMonth.visibility = View.VISIBLE
-                    binding.newConvertLayout.visibility = View.VISIBLE
                 }
 
                 CurrencyEnum.USDT_TRC20 -> {
@@ -49,6 +48,7 @@ class CardAdapter(
                         .trimEnd('.').ifEmpty { "0" }
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
+                    binding.convertTitle.text = context.getString(R.string.buy_usdt)
                 }
 
                 CurrencyEnum.BTC -> {
@@ -58,6 +58,7 @@ class CardAdapter(
                         .trimEnd('.').ifEmpty { "0" }
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
+                    binding.convertTitle.text = context.getString(R.string.buy_btc)
                 }
 
                 CurrencyEnum.ETH -> {
@@ -67,6 +68,7 @@ class CardAdapter(
                         .trimEnd('.').ifEmpty { "0" }
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
+                    binding.convertTitle.text = context.getString(R.string.buy_eth)
                 }
 
                 CurrencyEnum.ESOM -> {
@@ -76,7 +78,6 @@ class CardAdapter(
                         .trimEnd('.').ifEmpty { "0" }
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
-                    binding.newConvertLayout.visibility = View.VISIBLE
                     binding.convertTitle.text = context.getString(R.string.convert_to_salam)
                 }
             }

@@ -34,7 +34,7 @@
         android:id="@+id/som_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="333 333"
+        android:text="0"
         android:textColor="#1D1D1B"
         android:letterSpacing="-0.01"
         android:textSize="@dimen/_22sp"
@@ -142,7 +142,6 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:visibility="gone"
         android:id="@+id/new_convert_layout"
         android:layout_width="@dimen/_0dp"
         android:layout_height="@dimen/_31dp"

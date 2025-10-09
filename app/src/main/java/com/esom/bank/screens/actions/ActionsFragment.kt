@@ -36,11 +36,11 @@ class ActionsFragment : Fragment() {
         }
 
         binding.somToEsomCard.setOnClickListener {
-            findParentNavController().navigate(NavGraphDirections.startSwapFragment(0))
+            //findParentNavController().navigate(NavGraphDirections.startSwapFragment(0))
         }
 
         binding.esomToSomCard.setOnClickListener {
-            findParentNavController().navigate(NavGraphDirections.startSwapFragment(1))
+            //findParentNavController().navigate(NavGraphDirections.startSwapFragment(1))
         }
 
         binding.sendCard.setOnClickListener {

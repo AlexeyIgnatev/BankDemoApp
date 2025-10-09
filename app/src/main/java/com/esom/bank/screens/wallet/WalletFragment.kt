@@ -60,7 +60,7 @@ class WalletFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.root.doOnApplyWindowInsets { view, insets, rect ->
+        binding.dataLayout.doOnApplyWindowInsets { view, insets, rect ->
             view.updatePadding(
                 top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
             )
@@ -98,13 +98,8 @@ class WalletFragment : Fragment() {
                         set(currentYear, currentMonth, 1, 0, 0, 0)
                         set(java.util.Calendar.MILLISECOND, 0)
                     }
-                    val calendarEnd = java.util.Calendar.getInstance().apply {
-                        set(currentYear, currentMonth, getActualMaximum(java.util.Calendar.DAY_OF_MONTH), 23, 59, 59)
-                        set(java.util.Calendar.MILLISECOND, 999)
-                    }
 
                     val fromTimeMonth = calendarStart.timeInMillis
-                    val toTimeMonth = calendarEnd.timeInMillis
 
                     val monthFormat = java.text.SimpleDateFormat("LLLL", Locale("ru"))
                     val monthText = monthFormat.format(Date(fromTimeMonth))
@@ -125,41 +120,17 @@ class WalletFragment : Fragment() {
                         else -> monthText
                     }
 
-                    val monthTransactions = it.data.filterNotNull().filter { tx ->
-                        val createdAtMillis =
-                            if (tx!!.createdAt!! < 1_000_000_000_000) tx.createdAt?.times(1000) else tx.createdAt
-                        createdAtMillis in fromTimeMonth..toTimeMonth
-                    }
-
-                    val expenseTransactions = monthTransactions
-                        .filterNotNull()
-                        .filter {
-                            val isExpense = it.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER
-                            Log.d("MONTH_STATS", "Expense check: type=${it.type}, isExpense=$isExpense, amount=${it.amount}, amountType=${it.amount?.javaClass}, amountNull=${it.amount == null}")
-                            isExpense
-                        }
-
-                    val expenseSum = expenseTransactions.sumOf { amount ->
-                        val amountValue = amount.amount
-                        val doubleValue = amountValue?.toDouble() ?: 0.0
-                        Log.d("MONTH_STATS", "Adding expense: amount=$amountValue, toDouble=$doubleValue, amountType=${amountValue?.javaClass}")
-                        doubleValue
-                    }
-
                     binding.monthWasteTitle.text = "Расходы в $monthInGenitive"
-                    binding.monthWaste.text = expenseSum.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
-
                 }
             }
         }
 
         val adapter = CardAdapter(
             requireContext(),
-            { currency ->
+            { fromCurrency, toCurrency ->
                 findParentNavController().navigate(
                     NavGraphDirections.startSwapFragment(
-                        if (currency == CurrencyEnum.ESOM) 1 else 0
+                        fromCurrency, toCurrency
                     )
                 )
             },

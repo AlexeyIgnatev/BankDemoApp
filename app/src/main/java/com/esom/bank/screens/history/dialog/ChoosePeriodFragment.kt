@@ -12,6 +12,7 @@ import com.esom.bank.databinding.FragmentChoosePeriodBinding
 import com.esom.bank.screens.main.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Calendar
 
 @AndroidEntryPoint
 class ChoosePeriodFragment : BottomSheetDialogFragment() {
@@ -52,11 +53,19 @@ class ChoosePeriodFragment : BottomSheetDialogFragment() {
         }
         binding.chooseBtn.setOnClickListener {
             if(binding.last3monthCheck.isChecked) {
-                val calendar = java.util.Calendar.getInstance()
+                val calendar = Calendar.getInstance()
 
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
                 val toTime = calendar.timeInMillis
 
-                calendar.add(java.util.Calendar.MONTH, -3)
+                calendar.add(Calendar.MONTH, -3)
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
                 val fromTime = calendar.timeInMillis
 
                 model.setFromTime(fromTime)
@@ -64,11 +73,19 @@ class ChoosePeriodFragment : BottomSheetDialogFragment() {
             }
 
             if(binding.lastMonthCheck.isChecked) {
-                val calendar = java.util.Calendar.getInstance()
+                val calendar = Calendar.getInstance()
 
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
                 val toTime = calendar.timeInMillis
 
-                calendar.add(java.util.Calendar.MONTH, -1)
+                calendar.add(Calendar.MONTH, -1)
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
                 val fromTime = calendar.timeInMillis
 
                 model.setFromTime(fromTime)
@@ -76,19 +93,27 @@ class ChoosePeriodFragment : BottomSheetDialogFragment() {
             }
 
             if (binding.lastWeekCheck.isChecked) {
-                val calendar = java.util.Calendar.getInstance()
+                val calendar = Calendar.getInstance()
 
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
                 val toTime = calendar.timeInMillis
 
-                calendar.add(java.util.Calendar.WEEK_OF_YEAR, -1)
+                calendar.add(Calendar.WEEK_OF_YEAR, -1)
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
                 val fromTime = calendar.timeInMillis
 
                 model.setFromTime(fromTime)
                 model.setToTime(toTime)
             }
+
             val intent = Intent("ACTION_HISTORY")
             LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
-
 
             dismiss()
         }

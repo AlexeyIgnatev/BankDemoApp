@@ -81,8 +81,8 @@ class TransactionAdapter(private val context: Context) :
             val (sign, color) = when (item.type) {
                 TransactionEnum.INCOME, TransactionEnum.INFLOW -> "+" to "#38C72E"
                 TransactionEnum.EXPENSE, TransactionEnum.TRANSFER -> "-" to "#1D1D1B"
-                TransactionEnum.CONVERSATION -> "-" to "#1D1D1B"
-                else -> "-" to "#1D1D1B"
+                TransactionEnum.CONVERSATION -> "" to "#1D1D1B"
+                else -> "" to "#1D1D1B"
             }
 
             binding.sum.setTextColor(Color.parseColor(color))

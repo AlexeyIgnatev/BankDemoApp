@@ -220,7 +220,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/mont_bold"
-            android:text="99 123 456"
+            android:text="0"
             android:textColor="#1D1D1B"
             android:textSize="@dimen/_18sp"
             app:layout_constraintTop_toBottomOf="@id/expences_title" />
@@ -268,7 +268,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/mont_bold"
-            android:text="99 123 456"
+            android:text="0"
             android:textColor="#1D1D1B"
             android:textSize="@dimen/_18sp"
             app:layout_constraintTop_toBottomOf="@id/income_title" />

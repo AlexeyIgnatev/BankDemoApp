@@ -519,13 +519,21 @@ class SwapFragment : Fragment() {
         val fee = calculateFee(fromAmount)
         val convertedAmount = (fromAmount - fee) * exchangeRate
 
-        binding.comissionValue.text = fromAmount.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-        binding.secondValue.text = convertedAmount.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-        binding.total.text = convertedAmount.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
+        binding.comissionValue.text = formatAmount(fromAmount)
+        binding.secondValue.text = formatAmount(convertedAmount)
+        binding.total.text = formatAmount(convertedAmount)
 
         Log.d(TAG, "Конвертация: $fromAmount ${getCurrencyName(currentFromCurrency)} -> $convertedAmount ${getCurrencyName(currentToCurrency)}")
         Log.d(TAG, "Курс обмена: $exchangeRate")
         Log.d(TAG, "Комиссия: $fee ${getCurrencyName(currentFromCurrency)}")
+    }
+
+    private fun formatAmount(amount: Double): String {
+        return if (amount % 1 == 0.0) {
+            amount.toLong().toString()
+        } else {
+            amount.format(6).trimEnd('0').trimEnd('.')
+        }
     }
 
     private fun calculateFee(amount: Double): Double {

@@ -265,7 +265,7 @@
             android:id="@+id/digital_icon"
             android:layout_width="@dimen/_44dp"
             android:layout_height="@dimen/_44dp"
-            android:src="@drawable/digital_icon"
+            android:src="@drawable/salam_icon"
             app:layout_constraintTop_toBottomOf="@id/fiat_view"
             android:layout_marginTop="@dimen/_10dp"/>
         <TextView

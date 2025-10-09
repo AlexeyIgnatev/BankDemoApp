@@ -90,6 +90,17 @@ class WalletFragment : Fragment() {
                 is UiState.Error -> binding.root.showErrorSnackbar(it.message)
                 is UiState.Success -> {
                     transactionAdapter.submitList(it.data)
+
+                    if (it.data.isEmpty()) {
+                        binding.transactionLayout.visibility = View.GONE
+                        binding.lastTransTitle.visibility = View.GONE
+                        binding.historyBtn.visibility = View.GONE
+                    } else {
+                        binding.transactionLayout.visibility = View.VISIBLE
+                        binding.lastTransTitle.visibility = View.VISIBLE
+                        binding.historyBtn.visibility = View.VISIBLE
+                    }
+
                     val calendar = java.util.Calendar.getInstance()
                     val currentYear = calendar.get(java.util.Calendar.YEAR)
                     val currentMonth = calendar.get(java.util.Calendar.MONTH)
@@ -356,7 +367,7 @@ class WalletFragment : Fragment() {
             val balanceInSoms = wallet.balance * wallet.buyRate
             totalBalanceInSoms += balanceInSoms
         }
-        binding.totalWaste.text = totalBalanceInSoms.format(6).trimEnd('0')
+        binding.totalWaste.text = totalBalanceInSoms.format(2).trimEnd('0')
             .trimEnd('.').ifEmpty { "0" }
     }
 

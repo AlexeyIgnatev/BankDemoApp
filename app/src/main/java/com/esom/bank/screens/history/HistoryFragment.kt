@@ -1,5 +1,9 @@
 package com.esom.bank.screens.history
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -10,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
 import androidx.paging.PagingData
 import androidx.paging.map
@@ -38,6 +43,13 @@ class HistoryFragment : Fragment() {
 
     private lateinit var adapter: HistoryAdapter
 
+    private val historyReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            loadTransactions()
+            model.monthTransactions()
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -54,6 +66,8 @@ class HistoryFragment : Fragment() {
             )
             insets
         }
+        LocalBroadcastManager.getInstance(requireContext())
+            .registerReceiver(historyReceiver, IntentFilter("ACTION_HISTORY"))
 
         val currentMonth = getCurrentMonthInPrepositional()
         binding.titleMonth.text = currentMonth
@@ -221,6 +235,8 @@ class HistoryFragment : Fragment() {
                     fromTime = model.getFromTime(),
                     toTime = model.getToTime()
                 ).collectLatest { pagingData ->
+                    adapter.submitData(PagingData.empty())
+
                     Log.d("HistoryFragment", "Received paging data, submitting to adapter")
                     adapter.submitData(pagingData)
                 }
@@ -228,5 +244,10 @@ class HistoryFragment : Fragment() {
                 Log.e("HistoryFragment", "Error loading transactions: ${e.message}")
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(historyReceiver)
     }
 }

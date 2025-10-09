@@ -1,15 +1,21 @@
 package com.esom.bank.screens.history.dialog
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.esom.bank.databinding.FragmentChooseActiveBinding
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ChooseActiveFragment : BottomSheetDialogFragment() {
@@ -40,7 +46,11 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
             if (binding.fiatCheck.isChecked) currencies.add(CurrencyEnum.SOM)
             if (binding.digitalCheck.isChecked) currencies.add(CurrencyEnum.ESOM)
             model.setCurrency(currencies)
+            val intent = Intent("ACTION_HISTORY")
+            LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
+
             dismiss()
+
         }
     }
 

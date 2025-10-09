@@ -1,5 +1,6 @@
 package com.esom.bank.screens.history.dialog
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.activityViewModels
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import com.esom.bank.R
 import com.esom.bank.databinding.FragmentChooseDateBinding
@@ -94,6 +96,9 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
             val endDate = format.parse(endDateString)?.time ?: 0L
             model.setFromTime(date)
             model.setToTime(endDate)
+            val intent = Intent("ACTION_HISTORY")
+            LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)
+
             dismiss()
         }
     }

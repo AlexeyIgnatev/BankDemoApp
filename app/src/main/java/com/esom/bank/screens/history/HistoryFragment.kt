@@ -112,18 +112,18 @@ class HistoryFragment : Fragment() {
                     val monthText = monthFormat.format(Date(fromTimeMonth))
 
                     val monthInPrepositional = when (monthText.lowercase(Locale.getDefault())) {
-                        "января" -> "январь"
-                        "февраля" -> "февраль"
-                        "марта" -> "март"
-                        "апреля" -> "апрель"
-                        "мая" -> "май"
-                        "июня" -> "июнь"
-                        "июля" -> "июль"
-                        "августа" -> "август"
-                        "сентября" -> "сентябрь"
-                        "октября" -> "октябрь"
-                        "ноября" -> "ноябрь"
-                        "декабря" -> "декабрь"
+                        "January" -> "Январь"
+                        "February" -> "Февраль"
+                        "March" -> "Март"
+                        "April" -> "Апрель"
+                        "May" -> "Май"
+                        "June" -> "Июнь"
+                        "July" -> "Июль"
+                        "August" -> "Август"
+                        "September" -> "Сентябрь"
+                        "October" -> "Октябрь"
+                        "November" -> "Ноябрь"
+                        "December" -> "Декабрь"
                         else -> monthText
                     }
 
@@ -209,18 +209,18 @@ class HistoryFragment : Fragment() {
         val monthText = monthFormat.format(calendar.time)
 
         return when (monthText.lowercase(russianLocale)) {
-            "january", "января" -> "Январь"
-            "february", "февраля" -> "Февраль"
-            "march", "марта" -> "Март"
-            "april", "апреля" -> "Апрель"
-            "may", "мая" -> "Май"
-            "june", "июня" -> "Июнь"
-            "july", "июля" -> "Июль"
-            "august", "августа" -> "Август"
-            "september", "сентября" -> "Сентябрь"
-            "october", "октября" -> "Октябрь"
-            "november", "ноября" -> "Ноябрь"
-            "december", "декабря" -> "Декабрь"
+            "January" -> "Январь"
+            "February" -> "Февраль"
+            "March" -> "Март"
+            "April" -> "Апрель"
+            "May" -> "Май"
+            "June" -> "Июнь"
+            "July" -> "Июль"
+            "August" -> "Август"
+            "September" -> "Сентябрь"
+            "October" -> "Октябрь"
+            "November" -> "Ноябрь"
+            "December" -> "Декабрь"
             else -> monthText
         }
     }

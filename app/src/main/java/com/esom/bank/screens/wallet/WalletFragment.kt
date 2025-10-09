@@ -90,12 +90,16 @@ class WalletFragment : Fragment() {
                 is UiState.Error -> binding.root.showErrorSnackbar(it.message)
                 is UiState.Success -> {
                     transactionAdapter.submitList(it.data)
+                    val calendar = java.util.Calendar.getInstance()
+                    val currentYear = calendar.get(java.util.Calendar.YEAR)
+                    val currentMonth = calendar.get(java.util.Calendar.MONTH)
+
                     val calendarStart = java.util.Calendar.getInstance().apply {
-                        set(2025, java.util.Calendar.SEPTEMBER, 1, 0, 0, 0)
+                        set(currentYear, currentMonth, 1, 0, 0, 0)
                         set(java.util.Calendar.MILLISECOND, 0)
                     }
                     val calendarEnd = java.util.Calendar.getInstance().apply {
-                        set(2025, java.util.Calendar.SEPTEMBER, 30, 23, 59, 59)
+                        set(currentYear, currentMonth, getActualMaximum(java.util.Calendar.DAY_OF_MONTH), 23, 59, 59)
                         set(java.util.Calendar.MILLISECOND, 999)
                     }
 
@@ -127,12 +131,24 @@ class WalletFragment : Fragment() {
                         createdAtMillis in fromTimeMonth..toTimeMonth
                     }
 
-                    val expenseSum = monthTransactions
+                    val expenseTransactions = monthTransactions
                         .filterNotNull()
-                        .filter { it!!.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER }
-                        .sumOf { amount -> amount.amount!!.toLong() }
+                        .filter {
+                            val isExpense = it.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER
+                            Log.d("MONTH_STATS", "Expense check: type=${it.type}, isExpense=$isExpense, amount=${it.amount}, amountType=${it.amount?.javaClass}, amountNull=${it.amount == null}")
+                            isExpense
+                        }
+
+                    val expenseSum = expenseTransactions.sumOf { amount ->
+                        val amountValue = amount.amount
+                        val doubleValue = amountValue?.toDouble() ?: 0.0
+                        Log.d("MONTH_STATS", "Adding expense: amount=$amountValue, toDouble=$doubleValue, amountType=${amountValue?.javaClass}")
+                        doubleValue
+                    }
+
                     binding.monthWasteTitle.text = "Расходы в $monthInGenitive"
-                    binding.monthWaste.text = expenseSum.toInt().toString()
+                    binding.monthWaste.text = expenseSum.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" }
 
                 }
             }

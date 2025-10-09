@@ -16,6 +16,7 @@ import androidx.paging.map
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
+import com.esom.bank.common.utils.format
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentHistoryBinding
@@ -67,17 +68,32 @@ class HistoryFragment : Fragment() {
                 is UiState.Loading -> {}
                 is UiState.Error -> binding.root.showErrorSnackbar(it.message)
                 is UiState.Success -> {
+                    Log.d("MONTH_STATS", "Received data: ${it.data.size} transactions")
+
+                    it.data.forEachIndexed { index, tx ->
+                        Log.d("MONTH_STATS", "Transaction $index: type=${tx?.type}, amount=${tx?.amount}, amountType=${tx?.amount?.javaClass}, createdAt=${tx?.createdAt}, date=${if (tx?.createdAt != null) Date(tx.createdAt) else "null"}")
+                    }
+
+                    val calendar = java.util.Calendar.getInstance()
+                    val currentYear = calendar.get(java.util.Calendar.YEAR)
+                    val currentMonth = calendar.get(java.util.Calendar.MONTH)
+
                     val calendarStart = java.util.Calendar.getInstance().apply {
-                        set(2025, java.util.Calendar.SEPTEMBER, 1, 0, 0, 0)
+                        set(currentYear, currentMonth, 1, 0, 0, 0)
                         set(java.util.Calendar.MILLISECOND, 0)
                     }
                     val calendarEnd = java.util.Calendar.getInstance().apply {
-                        set(2025, java.util.Calendar.SEPTEMBER, 30, 23, 59, 59)
+                        set(currentYear, currentMonth, getActualMaximum(java.util.Calendar.DAY_OF_MONTH), 23, 59, 59)
                         set(java.util.Calendar.MILLISECOND, 999)
                     }
 
                     val fromTimeMonth = calendarStart.timeInMillis
                     val toTimeMonth = calendarEnd.timeInMillis
+
+                    Log.d("MONTH_STATS", "Time range: $fromTimeMonth - $toTimeMonth")
+                    Log.d("MONTH_STATS", "Calendar start: ${Date(fromTimeMonth)}")
+                    Log.d("MONTH_STATS", "Calendar end: ${Date(toTimeMonth)}")
+
                     val monthFormat = java.text.SimpleDateFormat("MMMM", Locale.getDefault())
                     val monthText = monthFormat.format(Date(fromTimeMonth))
 
@@ -98,27 +114,66 @@ class HistoryFragment : Fragment() {
                     }
 
                     val monthTransactions = it.data.filter { tx ->
-                        tx!!.createdAt in fromTimeMonth..toTimeMonth
+                        val inRange = tx!!.createdAt in fromTimeMonth..toTimeMonth
+                        Log.d("MONTH_STATS", "Transaction filter: createdAt=${tx.createdAt}, date=${Date(tx.createdAt ?: 0L)}, inRange=$inRange, amount=${tx.amount}, amountType=${tx.amount?.javaClass}")
+                        inRange
                     }
-                    val incomeSum = monthTransactions
+
+                    Log.d("MONTH_STATS", "Filtered month transactions: ${monthTransactions.size}")
+
+                    val incomeTransactions = monthTransactions
                         .filterNotNull()
-                        .filter { it.type == TransactionEnum.INCOME || it.type == TransactionEnum.INFLOW }
-                        .sumOf { amount ->
-                            amount.amount!!.toLong()
+                        .filter {
+                            val isIncome = it.type == TransactionEnum.INCOME || it.type == TransactionEnum.INFLOW
+                            Log.d("MONTH_STATS", "Income check: type=${it.type}, isIncome=$isIncome, amount=${it.amount}, amountType=${it.amount?.javaClass}, amountNull=${it.amount == null}")
+                            isIncome
                         }
 
-                    val expenseSum = monthTransactions
+                    val expenseTransactions = monthTransactions
                         .filterNotNull()
-                        .filter { it.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER }
-                        .sumOf { amount ->
-                            amount.amount!!.toLong()
+                        .filter {
+                            val isExpense = it.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER
+                            Log.d("MONTH_STATS", "Expense check: type=${it.type}, isExpense=$isExpense, amount=${it.amount}, amountType=${it.amount?.javaClass}, amountNull=${it.amount == null}")
+                            isExpense
                         }
+
+                    Log.d("MONTH_STATS", "Income transactions: ${incomeTransactions.size}")
+                    Log.d("MONTH_STATS", "Expense transactions: ${expenseTransactions.size}")
+
+                    incomeTransactions.forEachIndexed { index, transaction ->
+                        Log.d("MONTH_STATS", "Income transaction $index: amount=${transaction.amount}, amountType=${transaction.amount?.javaClass}, toDouble=${transaction.amount?.toDouble()}")
+                    }
+
+                    expenseTransactions.forEachIndexed { index, transaction ->
+                        Log.d("MONTH_STATS", "Expense transaction $index: amount=${transaction.amount}, amountType=${transaction.amount?.javaClass}, toDouble=${transaction.amount?.toDouble()}")
+                    }
+
+                    val incomeSum = incomeTransactions.sumOf { amount ->
+                        val amountValue = amount.amount
+                        val doubleValue = amountValue?.toDouble() ?: 0.0
+                        Log.d("MONTH_STATS", "Adding income: amount=$amountValue, toDouble=$doubleValue, amountType=${amountValue?.javaClass}")
+                        doubleValue
+                    }
+
+                    val expenseSum = expenseTransactions.sumOf { amount ->
+                        val amountValue = amount.amount
+                        val doubleValue = amountValue?.toDouble() ?: 0.0
+                        Log.d("MONTH_STATS", "Adding expense: amount=$amountValue, toDouble=$doubleValue, amountType=${amountValue?.javaClass}")
+                        doubleValue
+                    }
+
+                    Log.d("MONTH_STATS", "Final income sum: $incomeSum (type: ${incomeSum.javaClass})")
+                    Log.d("MONTH_STATS", "Final expense sum: $expenseSum (type: ${expenseSum.javaClass})")
 
                     binding.incomeTitle.text = "Доходы за $monthInPrepositional"
                     binding.expencesTitle.text = "Расходы за $monthInPrepositional"
 
-                    binding.income.text = incomeSum.toInt().toString()
-                    binding.expences.text = expenseSum.toInt().toString()
+                    binding.income.text = incomeSum.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" }
+                    binding.expences.text = expenseSum.format(6).trimEnd('0')
+                        .trimEnd('.').ifEmpty { "0" }
+
+                    Log.d("MONTH_STATS", "UI updated - Income: ${binding.income.text}, Expense: ${binding.expences.text}")
                 }
             }
         }
@@ -158,13 +213,19 @@ class HistoryFragment : Fragment() {
 
     private fun loadTransactions() {
         viewLifecycleOwner.lifecycleScope.launch {
-            model.historyPaging(
-                currencyEnum = model.getCurrency(),
-                fromTime = model.getFromTime(),
-                toTime = model.getToTime()
-            ).collectLatest { pagingData ->
-                adapter.submitData(pagingData)
-                adapter.refresh()
+            try {
+                Log.d("HistoryFragment", "Starting to collect paging data")
+
+                model.historyPaging(
+                    currencyEnum = model.getCurrency(),
+                    fromTime = model.getFromTime(),
+                    toTime = model.getToTime()
+                ).collectLatest { pagingData ->
+                    Log.d("HistoryFragment", "Received paging data, submitting to adapter")
+                    adapter.submitData(pagingData)
+                }
+            } catch (e: Exception) {
+                Log.e("HistoryFragment", "Error loading transactions: ${e.message}")
             }
         }
     }

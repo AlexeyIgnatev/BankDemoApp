@@ -42,6 +42,20 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
             model.setCurrency(currencies)
             dismiss()
         }
+    }
 
+    override fun onResume() {
+        super.onResume()
+        val currencies = model.getCurrency()
+        binding.usdtCheck.isChecked = (currencies.find { it == CurrencyEnum.USDT_TRC20 }
+                == CurrencyEnum.USDT_TRC20)
+        binding.bitcoinCheck.isChecked = (currencies.find { it == CurrencyEnum.BTC }
+                == CurrencyEnum.BTC)
+        binding.ethCheck.isChecked = (currencies.find { it == CurrencyEnum.ETH }
+                == CurrencyEnum.ETH)
+        binding.fiatCheck.isChecked = (currencies.find { it == CurrencyEnum.SOM }
+                == CurrencyEnum.SOM)
+        binding.digitalCheck.isChecked = (currencies.find { it == CurrencyEnum.ESOM }
+                == CurrencyEnum.ESOM)
     }
 }

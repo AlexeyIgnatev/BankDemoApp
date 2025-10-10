@@ -16,6 +16,7 @@ import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
+import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
 import com.esom.bank.common.utils.views.setTextProgrammatically
@@ -398,11 +399,11 @@ class SwapFragment : Fragment() {
 
         val fromWallet = wallets.find { it.currency == currentFromCurrency }
         val fromBalance = fromWallet?.balance ?: 0.0
-        binding.sum.text = fromBalance.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
+        binding.sum.text = fromBalance.formatBalanceNew()
 
         val toWallet = wallets.find { it.currency == currentToCurrency }
         val toBalance = toWallet?.balance ?: 0.0
-        binding.peopleSum.text = toBalance.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
+        binding.peopleSum.text = toBalance.formatBalanceNew()
 
         val firstUsdtCurrency = when (binding.usdtTitle.text.toString()) {
             getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
@@ -476,15 +477,15 @@ class SwapFragment : Fragment() {
             else -> CurrencyEnum.SOM
         }
 
-        binding.sum1.text = (wallets.find { it.currency == firstUsdtCurrency }?.balance ?: 0.0).format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-        binding.sum2.text = (wallets.find { it.currency == firstBitcoinCurrency }?.balance ?: 0.0).format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-        binding.sum3.text = (wallets.find { it.currency == firstEthCurrency }?.balance ?: 0.0).format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-        binding.sum4.text = (wallets.find { it.currency == firstDigitalCurrency }?.balance ?: 0.0).format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
+        binding.sum1.text = (wallets.find { it.currency == firstUsdtCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.sum2.text = (wallets.find { it.currency == firstBitcoinCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.sum3.text = (wallets.find { it.currency == firstEthCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.sum4.text = (wallets.find { it.currency == firstDigitalCurrency }?.balance ?: 0.0).formatBalanceNew()
 
-        binding.peopleSum1.text = (wallets.find { it.currency == secondUsdtCurrency }?.balance ?: 0.0).format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-        binding.peopleSum2.text = (wallets.find { it.currency == secondBitcoinCurrency }?.balance ?: 0.0).format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-        binding.peopleSum3.text = (wallets.find { it.currency == secondEthCurrency }?.balance ?: 0.0).format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
-        binding.peopleSum4.text = (wallets.find { it.currency == secondDigitalCurrency }?.balance ?: 0.0).format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }
+        binding.peopleSum1.text = (wallets.find { it.currency == secondUsdtCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.peopleSum2.text = (wallets.find { it.currency == secondBitcoinCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.peopleSum3.text = (wallets.find { it.currency == secondEthCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.peopleSum4.text = (wallets.find { it.currency == secondDigitalCurrency }?.balance ?: 0.0).formatBalanceNew()
 
         val fromSuffix = fromWallet?.address?.takeLast(3) ?: ""
         val toSuffix = toWallet?.address?.takeLast(3) ?: ""
@@ -532,7 +533,7 @@ class SwapFragment : Fragment() {
         return if (amount % 1 == 0.0) {
             amount.toLong().toString()
         } else {
-            amount.format(6).trimEnd('0').trimEnd('.')
+            amount.formatBalanceNew()
         }
     }
 

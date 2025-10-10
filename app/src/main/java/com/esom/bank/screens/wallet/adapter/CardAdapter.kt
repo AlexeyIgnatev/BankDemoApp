@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
+import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.databinding.CardPageBinding
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.WalletModel
@@ -29,14 +30,18 @@ class CardAdapter(
         fun bind(item: WalletModel) {
             binding.convertBtn.setOnClickListener { onTransferClick(item.currency) }
             binding.acceptBtn.setOnClickListener { onReceiveClick(item.currency) }
-            binding.newConvertBtn.setOnClickListener { onSwapClick(CurrencyEnum.ESOM, item.currency) }
+            binding.newConvertBtn.setOnClickListener {
+                onSwapClick(
+                    CurrencyEnum.ESOM,
+                    item.currency
+                )
+            }
 
             when (item.currency) {
                 CurrencyEnum.SOM -> {
                     binding.somIcon.setImageResource(R.drawable.som_icon)
                     binding.somTitle.text = context.getString(R.string.som)
-                    binding.somCount.text = item.balance.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    binding.somCount.text = item.balance.formatBalanceNew()
                     binding.cardNumberIcon.setImageResource(R.drawable.icon_sum_som)
                     binding.somIconMonth.visibility = View.VISIBLE
                 }
@@ -44,8 +49,7 @@ class CardAdapter(
                 CurrencyEnum.USDT_TRC20 -> {
                     binding.somIcon.setImageResource(R.drawable.usdt_icon)
                     binding.somTitle.text = context.getString(R.string.usdt)
-                    binding.somCount.text = item.balance.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    binding.somCount.text = item.balance.formatBalanceNew()
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
                     binding.convertTitle.text = context.getString(R.string.buy_usdt)
@@ -54,8 +58,7 @@ class CardAdapter(
                 CurrencyEnum.BTC -> {
                     binding.somIcon.setImageResource(R.drawable.bitcoin_icon)
                     binding.somTitle.text = context.getString(R.string.bitcoin)
-                    binding.somCount.text = item.balance.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    binding.somCount.text = item.balance.formatBalanceNew()
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
                     binding.convertTitle.text = context.getString(R.string.buy_btc)
@@ -64,8 +67,7 @@ class CardAdapter(
                 CurrencyEnum.ETH -> {
                     binding.somIcon.setImageResource(R.drawable.eth_icon)
                     binding.somTitle.text = context.getString(R.string.ethereum)
-                    binding.somCount.text = item.balance.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    binding.somCount.text = item.balance.formatBalanceNew()
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
                     binding.convertTitle.text = context.getString(R.string.buy_eth)
@@ -74,8 +76,7 @@ class CardAdapter(
                 CurrencyEnum.ESOM -> {
                     binding.somIcon.setImageResource(R.drawable.salam_icon)
                     binding.somTitle.text = context.getString(R.string.digital)
-                    binding.somCount.text = item.balance.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    binding.somCount.text = item.balance.formatBalanceNew()
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
                     binding.convertTitle.text = context.getString(R.string.convert_to_salam)

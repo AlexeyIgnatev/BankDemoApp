@@ -19,6 +19,7 @@ import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
+import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
 import com.esom.bank.common.utils.views.showErrorSnackbar
@@ -98,6 +99,7 @@ class TransferFragment : Fragment() {
                     binding.sendText.isVisible = false
                     binding.indicator.isVisible = true
                 }
+
                 is UiState.Error -> {
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
@@ -105,12 +107,14 @@ class TransferFragment : Fragment() {
                         NavGraphDirections.startFailTransferFragment(it.message)
                     )
                 }
+
                 is UiState.Success -> {
                     model.updateUserData()
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
                     findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
                 }
+
                 else -> {}
             }
         }
@@ -122,7 +126,12 @@ class TransferFragment : Fragment() {
         )
         binding.changeLayout.isVisible = isCryptoCurrency
         binding.changeLayout.setOnClickListener {
-            if (currentFromCurrency in listOf(CurrencyEnum.BTC, CurrencyEnum.ETH, CurrencyEnum.USDT_TRC20)) {
+            if (currentFromCurrency in listOf(
+                    CurrencyEnum.BTC,
+                    CurrencyEnum.ETH,
+                    CurrencyEnum.USDT_TRC20
+                )
+            ) {
                 isToPhoneNumber = !isToPhoneNumber
                 updateContactType()
             }
@@ -149,6 +158,7 @@ class TransferFragment : Fragment() {
                 else -> walletAddress?.takeLast(3)?.let { "*$it" } ?: ""
             }
         }
+
         val walletUSDT = wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }
         val walletBTC = wallets.find { it.currency == CurrencyEnum.BTC }
         val walletETH = wallets.find { it.currency == CurrencyEnum.ETH }
@@ -160,7 +170,8 @@ class TransferFragment : Fragment() {
         binding.fiat.text = getSuffix(CurrencyEnum.ESOM, walletESOM?.address)
         binding.som.text = getSuffix(CurrencyEnum.SOM, walletSOM?.address)
         val currentWallet = wallets.find { it.currency == currentFromCurrency }
-        binding.sum.text = currentWallet?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+        binding.sum.text =
+            currentWallet?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
         binding.currencyTitle.text = getCurrencyName(currentFromCurrency)
         binding.currency.text = getSuffix(currentFromCurrency, currentWallet?.address)
 
@@ -205,11 +216,16 @@ class TransferFragment : Fragment() {
         val walletETH = wallets.find { it.currency == CurrencyEnum.ETH }
         val walletESOM = wallets.find { it.currency == CurrencyEnum.ESOM }
         val walletSOM = wallets.find { it.currency == CurrencyEnum.SOM }
-        binding.sum1.text = walletUSDT?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
-        binding.sum2.text = walletBTC?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
-        binding.sum3.text = walletETH?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
-        binding.sum4.text = walletESOM?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
-        binding.sum5.text = walletSOM?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+        binding.sum1.text =
+            walletUSDT?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+        binding.sum2.text =
+            walletBTC?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+        binding.sum3.text =
+            walletETH?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+        binding.sum4.text =
+            walletESOM?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+        binding.sum5.text =
+            walletSOM?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
         updateWalletBalances()
     }
 
@@ -248,10 +264,29 @@ class TransferFragment : Fragment() {
     private fun updateCurrencyIcon(currency: CurrencyEnum) {
         when (currency) {
             CurrencyEnum.SOM -> setCurrencyUI(R.drawable.som_icon, getString(R.string.som), true)
-            CurrencyEnum.ESOM -> setCurrencyUI(R.drawable.salam_icon, getString(R.string.digital), false)
-            CurrencyEnum.BTC -> setCurrencyUI(R.drawable.bitcoin_icon, getString(R.string.bitcoin), false)
-            CurrencyEnum.ETH -> setCurrencyUI(R.drawable.eth_icon, getString(R.string.ethereum), false)
-            CurrencyEnum.USDT_TRC20 -> setCurrencyUI(R.drawable.usdt_icon, getString(R.string.usdt), false)
+            CurrencyEnum.ESOM -> setCurrencyUI(
+                R.drawable.salam_icon,
+                getString(R.string.digital),
+                false
+            )
+
+            CurrencyEnum.BTC -> setCurrencyUI(
+                R.drawable.bitcoin_icon,
+                getString(R.string.bitcoin),
+                false
+            )
+
+            CurrencyEnum.ETH -> setCurrencyUI(
+                R.drawable.eth_icon,
+                getString(R.string.ethereum),
+                false
+            )
+
+            CurrencyEnum.USDT_TRC20 -> setCurrencyUI(
+                R.drawable.usdt_icon,
+                getString(R.string.usdt),
+                false
+            )
         }
     }
 
@@ -293,7 +328,7 @@ class TransferFragment : Fragment() {
         return if (amount % 1 == 0.0) {
             amount.toLong().toString()
         } else {
-            amount.format(6).trimEnd('0').trimEnd('.')
+            amount.formatBalanceNew()
         }
     }
 
@@ -394,7 +429,7 @@ class TransferFragment : Fragment() {
             }
             if (sum < minAmount) {
                 val currencyName = getCurrencyName(currentFromCurrency)
-                binding.root.showErrorSnackbar("Минимальная сумма для вывода $currencyName: ${minAmount.format(6).trimEnd('0').trimEnd('.').ifEmpty { "0" }}")
+                binding.root.showErrorSnackbar("Минимальная сумма для вывода $currencyName: ${minAmount.formatBalanceNew()}")
                 return
             }
         }
@@ -406,6 +441,7 @@ class TransferFragment : Fragment() {
                     return
                 }
             }
+
             else -> {
                 if (contactInfo.isEmpty()) {
                     binding.root.showErrorSnackbar("Введите адрес получателя")
@@ -418,7 +454,9 @@ class TransferFragment : Fragment() {
             }
         }
 
-        val walletBalance = (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currentFromCurrency }?.balance ?: 0.0
+        val walletBalance =
+            (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currentFromCurrency }?.balance
+                ?: 0.0
         if (sum > walletBalance) {
             val currencyName = getCurrencyName(currentFromCurrency)
             binding.root.showErrorSnackbar("Недостаточно $currencyName на балансе")
@@ -451,8 +489,9 @@ class TransferFragment : Fragment() {
     }
 
     private fun slideOut(view: View) {
-        view.animate().translationY(-view.height.toFloat()).alpha(0f).setDuration(450).withEndAction {
-            view.visibility = View.GONE
-        }.start()
+        view.animate().translationY(-view.height.toFloat()).alpha(0f).setDuration(450)
+            .withEndAction {
+                view.visibility = View.GONE
+            }.start()
     }
 }

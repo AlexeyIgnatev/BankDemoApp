@@ -3,6 +3,17 @@ package com.esom.bank.common.utils
 fun Double.format(digits: Int = 6) =
     "%.${digits}f".format(this).replace(",", ".").removeTrailingZeros()
 
+fun Double.formatBalanceNew(): String {
+    val formatted = format(6)
+
+    if ("." !in formatted) {
+        return formatted
+    }
+
+    return formatted.trimEnd('0')
+        .trimEnd('.').ifEmpty { "0" }
+}
+
 fun Double.round(digits: Int = 6) =
     format(digits).toDoubleOrNull() ?: this
 

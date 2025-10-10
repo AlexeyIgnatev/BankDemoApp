@@ -19,6 +19,7 @@ import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
+import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentWalletBinding
@@ -318,42 +319,32 @@ class WalletFragment : Fragment() {
             when (wallet.currency) {
                 CurrencyEnum.SOM -> Currency(
                     TypeOfCurrency.FIAT,
-                    wallet.buyRate.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" },
-                    wallet.sellRate.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    wallet.buyRate.formatBalanceNew(),
+                    wallet.sellRate.formatBalanceNew()
                 )
 
                 CurrencyEnum.ESOM -> Currency(
                     TypeOfCurrency.DIGITAL,
-                    wallet.buyRate.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" },
-                    wallet.sellRate.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    wallet.buyRate.formatBalanceNew(),
+                    wallet.sellRate.formatBalanceNew()
                 )
 
                 CurrencyEnum.USDT_TRC20 -> Currency(
                     TypeOfCurrency.USDT,
-                    wallet.buyRate.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" },
-                    wallet.sellRate.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    wallet.buyRate.formatBalanceNew(),
+                    wallet.sellRate.formatBalanceNew()
                 )
 
                 CurrencyEnum.BTC -> Currency(
                     TypeOfCurrency.BITCOIN,
-                    wallet.buyRate.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" },
-                    wallet.sellRate.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    wallet.buyRate.formatBalanceNew(),
+                    wallet.sellRate.formatBalanceNew()
                 )
 
                 CurrencyEnum.ETH -> Currency(
                     TypeOfCurrency.ETH,
-                    wallet.buyRate.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" },
-                    wallet.sellRate.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    wallet.buyRate.formatBalanceNew(),
+                    wallet.sellRate.formatBalanceNew()
                 )
             }
         }

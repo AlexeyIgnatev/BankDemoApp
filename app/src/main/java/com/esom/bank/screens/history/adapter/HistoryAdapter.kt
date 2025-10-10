@@ -55,6 +55,7 @@ class HistoryAdapter(private val context: Context) :
     }
 
     override fun getItemViewType(position: Int): Int {
+        return TYPE_TRANSACTIONS
         val item = getItem(position) ?: return TYPE_PLACEHOLDER
         val prevItem = if (position > 0) getItem(position - 1) else null
         val nextItem = if (position + 1 < itemCount) getItem(position + 1) else null

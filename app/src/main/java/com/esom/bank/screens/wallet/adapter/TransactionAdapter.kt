@@ -32,8 +32,8 @@ class TransactionAdapter(private val context: Context) :
                 null -> Log.e("error", "error - null")
             }
 
-            val stringResId = when {
-                item.type == TransactionEnum.CONVERSATION -> when (item.currencyEnum) {
+            val stringResId = when (item.type) {
+                TransactionEnum.CONVERSION -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.convert_som
                     CurrencyEnum.ESOM -> R.string.convert_digital
                     CurrencyEnum.ETH -> R.string.convert_eth
@@ -41,7 +41,7 @@ class TransactionAdapter(private val context: Context) :
                     CurrencyEnum.USDT_TRC20 -> R.string.convert_usdt
                     else -> R.string.transfer_usdt
                 }
-                item.type == TransactionEnum.INCOME -> when (item.currencyEnum) {
+                TransactionEnum.INCOME -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.income_som
                     CurrencyEnum.ESOM -> R.string.income_digital
                     CurrencyEnum.ETH -> R.string.income_eth
@@ -49,7 +49,7 @@ class TransactionAdapter(private val context: Context) :
                     CurrencyEnum.USDT_TRC20 -> R.string.income_usdt
                     else -> R.string.transfer_usdt
                 }
-                item.type == TransactionEnum.EXPENSE -> when (item.currencyEnum) {
+                TransactionEnum.EXPENSE -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.expense_som
                     CurrencyEnum.ESOM -> R.string.expense_digital
                     CurrencyEnum.ETH -> R.string.expense_eth
@@ -57,7 +57,7 @@ class TransactionAdapter(private val context: Context) :
                     CurrencyEnum.USDT_TRC20 -> R.string.expense_usdt
                     else -> R.string.transfer_usdt
                 }
-                item.type == TransactionEnum.INFLOW -> when (item.currencyEnum) {
+                TransactionEnum.INFLOW -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.inflow_som
                     CurrencyEnum.ESOM -> R.string.inflow_digital
                     CurrencyEnum.ETH -> R.string.inflow_eth
@@ -65,7 +65,7 @@ class TransactionAdapter(private val context: Context) :
                     CurrencyEnum.USDT_TRC20 -> R.string.inflow_usdt
                     else -> R.string.transfer_usdt
                 }
-                item.type == TransactionEnum.TRANSFER -> when (item.currencyEnum) {
+                TransactionEnum.TRANSFER -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.transfer_som
                     CurrencyEnum.ESOM -> R.string.transfer_digital
                     CurrencyEnum.ETH -> R.string.transfer_eth
@@ -73,7 +73,8 @@ class TransactionAdapter(private val context: Context) :
                     CurrencyEnum.USDT_TRC20 -> R.string.transfer_usdt
                     else -> R.string.transfer_usdt
                 }
-                else -> R.string.transfer_usdt
+
+                null -> R.string.transfer_usdt
             }
 
             binding.title.text = context.getString(stringResId)
@@ -81,7 +82,7 @@ class TransactionAdapter(private val context: Context) :
             val (sign, color) = when (item.type) {
                 TransactionEnum.INCOME, TransactionEnum.INFLOW -> "+" to "#38C72E"
                 TransactionEnum.EXPENSE, TransactionEnum.TRANSFER -> "-" to "#1D1D1B"
-                TransactionEnum.CONVERSATION -> "" to "#1D1D1B"
+                TransactionEnum.CONVERSION -> "" to "#1D1D1B"
                 else -> "" to "#1D1D1B"
             }
 

@@ -5,5 +5,5 @@ enum class TransactionEnum {
     EXPENSE,
     INFLOW,
     TRANSFER,
-    CONVERSATION
+    CONVERSION
 }

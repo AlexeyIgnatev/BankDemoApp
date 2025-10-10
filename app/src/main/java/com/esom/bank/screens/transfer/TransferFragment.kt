@@ -171,7 +171,7 @@ class TransferFragment : Fragment() {
         binding.som.text = getSuffix(CurrencyEnum.SOM, walletSOM?.address)
         val currentWallet = wallets.find { it.currency == currentFromCurrency }
         binding.sum.text =
-            currentWallet?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+            currentWallet?.balance?.formatBalanceNew() ?: "0"
         binding.currencyTitle.text = getCurrencyName(currentFromCurrency)
         binding.currency.text = getSuffix(currentFromCurrency, currentWallet?.address)
 
@@ -217,15 +217,15 @@ class TransferFragment : Fragment() {
         val walletESOM = wallets.find { it.currency == CurrencyEnum.ESOM }
         val walletSOM = wallets.find { it.currency == CurrencyEnum.SOM }
         binding.sum1.text =
-            walletUSDT?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+            walletUSDT?.balance?.formatBalanceNew() ?: "0"
         binding.sum2.text =
-            walletBTC?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+            walletBTC?.balance?.formatBalanceNew() ?: "0"
         binding.sum3.text =
-            walletETH?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+            walletETH?.balance?.formatBalanceNew() ?: "0"
         binding.sum4.text =
-            walletESOM?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+            walletESOM?.balance?.formatBalanceNew() ?: "0"
         binding.sum5.text =
-            walletSOM?.balance?.format(6)?.trimEnd('0')?.trimEnd('.')?.ifEmpty { "0" } ?: "0"
+            walletSOM?.balance?.formatBalanceNew() ?: "0"
         updateWalletBalances()
     }
 
@@ -320,7 +320,7 @@ class TransferFragment : Fragment() {
 
         val totalAmount = amount - commission
 
-        binding.comissionValue.text = commission.format(6)
+        binding.comissionValue.text = commission.formatBalanceNew()
         binding.total.text = formatTotalAmount(totalAmount)
     }
 

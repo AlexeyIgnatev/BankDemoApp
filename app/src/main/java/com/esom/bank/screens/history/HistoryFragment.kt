@@ -22,6 +22,7 @@ import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
+import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentHistoryBinding
@@ -182,10 +183,8 @@ class HistoryFragment : Fragment() {
                     binding.incomeTitle.text = "Доходы за $monthInPrepositional"
                     binding.expencesTitle.text = "Расходы за $monthInPrepositional"
 
-                    binding.income.text = incomeSum.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
-                    binding.expences.text = expenseSum.format(6).trimEnd('0')
-                        .trimEnd('.').ifEmpty { "0" }
+                    binding.income.text = incomeSum.formatBalanceNew()
+                    binding.expences.text = expenseSum.formatBalanceNew()
 
                     Log.d("MONTH_STATS", "UI updated - Income: ${binding.income.text}, Expense: ${binding.expences.text}")
                 }

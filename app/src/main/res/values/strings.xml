@@ -110,7 +110,7 @@
     <string name="convertation">Конвертация</string>
     <string name="convert">Конвертировать</string>
     <string name="receive">Получение</string>
-    <string name="receiving_opinion">Для получения Сом, при переводе с другого аккаунта укажите в качестве получателя ваш номер телефона</string>
+    <string name="receiving_opinion">Для получения %s, при переводе с другого аккаунта укажите в качестве получателя ваш номер телефона</string>
     <string name="copy_number_phone">Скопировать номер телефона</string>
     <string name="copy_address">Скопировать адрес кошелька</string>
     <string name="scan_qr">просканируйте qr-код</string>

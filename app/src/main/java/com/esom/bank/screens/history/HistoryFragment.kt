@@ -79,20 +79,17 @@ class HistoryFragment : Fragment() {
             binding.nonTransactionTitle.setTextColor(requireContext().getColor(R.color.white))
         }
         binding.nonTransactionBtn.setOnClickListener {
-            model.setWithoutTransactions(!model.getWithoutTransactions())
-            if(model.getWithoutTransactions()) {
+            val newValue = !model.getWithoutTransactions()
+            model.setWithoutTransactions(newValue)
+            if(model.getWithoutTransactions())
                 binding.nonTransactionLayout.setBackgroundResource(R.drawable.data_period_background)
-                binding.nonTransactionTitle.setTextColor(requireContext().getColor(R.color.white))
-            }
-            else {
+            else
                 binding.nonTransactionLayout.setBackgroundResource(R.drawable.gray_period_background)
-                binding.nonTransactionTitle.setTextColor(Color.parseColor("#1D1D1B"))
-            }
 
-            loadTransactions()
+            adapter.updateFilter(newValue)
         }
 
-        adapter = HistoryAdapter(requireContext())
+        adapter = HistoryAdapter(requireContext(), model.getWithoutTransactions())
         binding.history.adapter = adapter
         loadTransactions()
 
@@ -253,19 +250,7 @@ class HistoryFragment : Fragment() {
                     currencyEnum = model.getCurrency(),
                     fromTime = model.getFromTime(),
                     toTime = model.getToTime()
-                ).map { pagingData ->
-                    if (model.getWithoutTransactions()) {
-                        pagingData.map { transaction ->
-                            (if (transaction.type == TransactionEnum.TRANSFER) {
-                                null
-                            } else {
-                                transaction
-                            })!!
-                        }.filter { true }
-                    } else {
-                        pagingData
-                    }
-                }.collectLatest { pagingData ->
+                ).collectLatest { pagingData ->
                     adapter.submitData(PagingData.empty())
 
                     Log.d("HistoryFragment", "Received filtered paging data, submitting to adapter")

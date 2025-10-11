@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.databinding.ItemHistoryBinding
 import com.esom.bank.databinding.ItemHistoryDateBinding
+import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.wallet.adapter.TransactionAdapter
 import java.text.DateFormatSymbols
@@ -17,8 +18,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class HistoryAdapter(private val context: Context) :
-    PagingDataAdapter<TransactionModel, RecyclerView.ViewHolder>(HistoryDiffCallback()) {
+class HistoryAdapter(
+    private val context: Context,
+    private var showTransfers: Boolean = true
+) : PagingDataAdapter<TransactionModel, RecyclerView.ViewHolder>(HistoryDiffCallback()) {
 
     companion object {
         private const val TYPE_DATE = 0
@@ -38,6 +41,19 @@ class HistoryAdapter(private val context: Context) :
         }
     }
 
+    fun updateFilter(showTransfers: Boolean) {
+        this.showTransfers = showTransfers
+        notifyDataSetChanged()
+    }
+
+    private fun filterTransactions(transactions: List<TransactionModel>): List<TransactionModel> {
+        return if (!showTransfers) {
+            transactions.filter { it.type != TransactionEnum.TRANSFER }
+        } else {
+            transactions
+        }
+    }
+
     inner class HistoryDateViewHolder(private val binding: ItemHistoryDateBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(date: String) {
@@ -48,23 +64,37 @@ class HistoryAdapter(private val context: Context) :
     inner class HistoryTransactionsViewHolder(private val binding: ItemHistoryBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(transactions: List<TransactionModel>) {
-            val dates = transactions.map { dateFormat.format(Date(it.createdAt ?: 0L)) }
-            Log.d("HistoryAdapter", "Даты в адаптере: $dates")
+            val filteredTransactions = filterTransactions(transactions)
+            val dates = filteredTransactions.map { dateFormat.format(Date(it.createdAt ?: 0L)) }
+            Log.d("HistoryAdapter", "Даты в адаптере: $dates, показано транзакций: ${filteredTransactions.size}")
 
             val adapter = TransactionAdapter(context)
             binding.transactions.adapter = adapter
-            adapter.submitList(transactions)
+            adapter.submitList(filteredTransactions)
         }
     }
 
     override fun getItemViewType(position: Int): Int {
         val item = getItem(position) ?: return TYPE_PLACEHOLDER
+
+        if (!showTransfers && item.type == TransactionEnum.TRANSFER) {
+            return TYPE_PLACEHOLDER
+        }
+
         val prevItem = if (position > 0) getItem(position - 1) else null
         val nextItem = if (position + 1 < itemCount) getItem(position + 1) else null
 
         val currentDate = dateFormat.format(Date(item.createdAt ?: 0L))
-        val prevDate = prevItem?.let { dateFormat.format(Date(it.createdAt ?: 0L)) }
-        val nextDate = nextItem?.let { dateFormat.format(Date(it.createdAt ?: 0L)) }
+
+        val prevDate = prevItem?.let {
+            if (!showTransfers && it.type == TransactionEnum.TRANSFER) null
+            else dateFormat.format(Date(it.createdAt ?: 0L))
+        }
+
+        val nextDate = nextItem?.let {
+            if (!showTransfers && it.type == TransactionEnum.TRANSFER) null
+            else dateFormat.format(Date(it.createdAt ?: 0L))
+        }
 
         val type = when {
             prevItem == null || currentDate != prevDate -> TYPE_DATE
@@ -78,18 +108,16 @@ class HistoryAdapter(private val context: Context) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             TYPE_DATE -> {
-                val binding =
-                    ItemHistoryDateBinding.inflate(
-                        LayoutInflater.from(parent.context),
-                        parent,
-                        false
-                    )
+                val binding = ItemHistoryDateBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
                 HistoryDateViewHolder(binding)
             }
 
             TYPE_TRANSACTIONS -> {
-                val binding =
-                    ItemHistoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                val binding = ItemHistoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
                 HistoryTransactionsViewHolder(binding)
             }
 
@@ -108,9 +136,18 @@ class HistoryAdapter(private val context: Context) :
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = getItem(position) ?: return
+
+        if (!showTransfers && item.type == TransactionEnum.TRANSFER) {
+            return
+        }
+
         val currentDate = dateFormat.format(Date(item.createdAt ?: 0L))
+
         val transactionsForDate = snapshot().items
-            .filter { dateFormat.format(Date(it.createdAt ?: 0L)) == currentDate }
+            .filter {
+                val shouldInclude = if (!showTransfers) it.type != TransactionEnum.TRANSFER else true
+                shouldInclude && dateFormat.format(Date(it.createdAt ?: 0L)) == currentDate
+            }
 
         when (holder) {
             is HistoryDateViewHolder -> {

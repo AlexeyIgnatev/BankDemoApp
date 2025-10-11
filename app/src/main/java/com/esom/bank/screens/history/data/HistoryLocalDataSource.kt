@@ -68,7 +68,7 @@ class HistoryLocalDataSourceImpl @Inject constructor(): HistoryLocalDataSource {
     }
 
     override fun getWithoutTransactions(): Boolean =
-        storage.decodeBool("without_transactions")
+        storage.decodeBool("without_transactions", false)
 
     override fun setWithoutTransactions(without: Boolean) {
         storage.encode("without_transactions", without)

@@ -73,7 +73,8 @@ class HistoryFragment : Fragment() {
 
         val currentMonth = getCurrentMonthInPrepositional()
         binding.titleMonth.text = currentMonth
-
+        if(model.getWithoutTransactions())
+            binding.nonTransactionLayout.setBackgroundResource(R.drawable.data_period_background)
         binding.nonTransactionBtn.setOnClickListener {
             model.setWithoutTransactions(!model.getWithoutTransactions())
             if(model.getWithoutTransactions())

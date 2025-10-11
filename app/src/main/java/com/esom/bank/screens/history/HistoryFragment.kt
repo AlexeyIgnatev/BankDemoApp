@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
 import androidx.paging.PagingData
+import androidx.paging.filter
 import androidx.paging.map
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
@@ -72,6 +73,16 @@ class HistoryFragment : Fragment() {
 
         val currentMonth = getCurrentMonthInPrepositional()
         binding.titleMonth.text = currentMonth
+
+        binding.nonTransactionBtn.setOnClickListener {
+            model.setWithoutTransactions(!model.getWithoutTransactions())
+            if(model.getWithoutTransactions())
+                binding.nonTransactionLayout.setBackgroundResource(R.drawable.data_period_background)
+            else
+                binding.nonTransactionLayout.setBackgroundResource(R.drawable.gray_period_background)
+
+            loadTransactions()
+        }
 
         adapter = HistoryAdapter(requireContext())
         binding.history.adapter = adapter
@@ -228,15 +239,28 @@ class HistoryFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 Log.d("HistoryFragment", "Starting to collect paging data")
+                Log.d("HistoryFragment", "Filter transfers: ${!model.getWithoutTransactions()}")
 
                 model.historyPaging(
                     currencyEnum = model.getCurrency(),
                     fromTime = model.getFromTime(),
                     toTime = model.getToTime()
-                ).collectLatest { pagingData ->
+                ).map { pagingData ->
+                    if (!model.getWithoutTransactions()) {
+                        pagingData.map { transaction ->
+                            (if (transaction.type == TransactionEnum.TRANSFER) {
+                                null
+                            } else {
+                                transaction
+                            })!!
+                        }.filter { true }
+                    } else {
+                        pagingData
+                    }
+                }.collectLatest { pagingData ->
                     adapter.submitData(PagingData.empty())
 
-                    Log.d("HistoryFragment", "Received paging data, submitting to adapter")
+                    Log.d("HistoryFragment", "Received filtered paging data, submitting to adapter")
                     adapter.submitData(pagingData)
                 }
             } catch (e: Exception) {

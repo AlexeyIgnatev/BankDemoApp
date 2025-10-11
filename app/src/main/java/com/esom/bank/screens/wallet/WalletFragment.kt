@@ -48,7 +48,7 @@ class WalletFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
     private var cards: List<WalletModel> = emptyList()
     private var infiniteList: List<WalletModel> = emptyList()
-    private var currentCurrency: CurrencyEnum = CurrencyEnum.SOM // Добавляем переменную для отслеживания текущей валюты
+    private var currentCurrency: CurrencyEnum = CurrencyEnum.SOM
 
     override fun onCreateView(
         inflater: LayoutInflater,

@@ -13,6 +13,9 @@ interface HistoryLocalDataSource {
 
     fun getToTime(): Long
     fun setToTime(time: Long)
+
+    fun getWithoutTransactions(): Boolean
+    fun setWithoutTransactions(without: Boolean)
 }
 
 class HistoryLocalDataSourceImpl @Inject constructor(): HistoryLocalDataSource {
@@ -62,6 +65,13 @@ class HistoryLocalDataSourceImpl @Inject constructor(): HistoryLocalDataSource {
 
     override fun setToTime(time: Long) {
         storage.encode("to_time", time)
+    }
+
+    override fun getWithoutTransactions(): Boolean =
+        storage.decodeBool("without_transactions")
+
+    override fun setWithoutTransactions(without: Boolean) {
+        storage.encode("without_transactions", without)
     }
 
 }

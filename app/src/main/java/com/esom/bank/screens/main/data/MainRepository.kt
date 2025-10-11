@@ -56,6 +56,9 @@ interface MainRepository {
         take: Int, skip: Int
     ): Flow<UiState<List<TransactionModel?>>>
 
+    fun getWithoutTransactions(): Boolean
+    fun setWithoutTransactions(without: Boolean)
+
     fun getCurrency(): List<CurrencyEnum>
     fun setCurrency(currency: List<CurrencyEnum>)
 
@@ -163,6 +166,14 @@ class MainRepositoryImpl @Inject constructor(
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
             }
         }
+
+    override fun getWithoutTransactions(): Boolean {
+        return historyLocalDataSource.getWithoutTransactions()
+    }
+
+    override fun setWithoutTransactions(without: Boolean) {
+        historyLocalDataSource.setWithoutTransactions(without)
+    }
 
     override fun getCurrency(): List<CurrencyEnum> {
         return historyLocalDataSource.getCurrency()

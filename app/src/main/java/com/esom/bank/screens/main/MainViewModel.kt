@@ -157,6 +157,8 @@ class MainViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    fun getWithoutTransactions(): Boolean = mainRepository.getWithoutTransactions()
+    fun setWithoutTransactions(without: Boolean) = mainRepository.setWithoutTransactions(without)
 
     fun getCurrency(): List<CurrencyEnum> = mainRepository.getCurrency()
     fun setCurrency(currency: List<CurrencyEnum>) {

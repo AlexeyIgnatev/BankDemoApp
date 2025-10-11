@@ -516,17 +516,29 @@ class SwapFragment : Fragment() {
 
     private fun updateCommissionAndTotal() {
         val fromAmount = binding.sumInput.text.toString().toDoubleOrNull() ?: 0.0
-        val exchangeRate = getExchangeRate()
         val fee = calculateFee(fromAmount)
-        val convertedAmount = (fromAmount - fee) * exchangeRate
 
-        binding.comissionValue.text = formatAmount(fromAmount)
+        val convertedAmount = if (isSomToEsomConversion()) {
+            fromAmount - fee
+        } else {
+            val exchangeRate = getExchangeRate()
+            (fromAmount - fee) * exchangeRate
+        }
+
+        binding.comissionValue.text = formatAmount(fee)
         binding.secondValue.text = formatAmount(convertedAmount)
         binding.total.text = formatAmount(convertedAmount)
 
         Log.d(TAG, "Конвертация: $fromAmount ${getCurrencyName(currentFromCurrency)} -> $convertedAmount ${getCurrencyName(currentToCurrency)}")
-        Log.d(TAG, "Курс обмена: $exchangeRate")
+        if (!isSomToEsomConversion()) {
+            Log.d(TAG, "Курс обмена: ${getExchangeRate()}")
+        }
         Log.d(TAG, "Комиссия: $fee ${getCurrencyName(currentFromCurrency)}")
+    }
+
+    private fun isSomToEsomConversion(): Boolean {
+        return (currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM) ||
+                (currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM)
     }
 
     private fun formatAmount(amount: Double): String {

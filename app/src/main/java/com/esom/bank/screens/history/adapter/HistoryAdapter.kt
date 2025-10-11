@@ -10,12 +10,12 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.databinding.ItemHistoryBinding
 import com.esom.bank.databinding.ItemHistoryDateBinding
-import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.wallet.adapter.TransactionAdapter
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class HistoryAdapter(private val context: Context) :
     PagingDataAdapter<TransactionModel, RecyclerView.ViewHolder>(HistoryDiffCallback()) {
@@ -48,7 +48,6 @@ class HistoryAdapter(private val context: Context) :
     inner class HistoryTransactionsViewHolder(private val binding: ItemHistoryBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(transactions: List<TransactionModel>) {
-            // Единственный лог - только даты
             val dates = transactions.map { dateFormat.format(Date(it.createdAt ?: 0L)) }
             Log.d("HistoryAdapter", "Даты в адаптере: $dates")
 
@@ -80,14 +79,20 @@ class HistoryAdapter(private val context: Context) :
         return when (viewType) {
             TYPE_DATE -> {
                 val binding =
-                    ItemHistoryDateBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                    ItemHistoryDateBinding.inflate(
+                        LayoutInflater.from(parent.context),
+                        parent,
+                        false
+                    )
                 HistoryDateViewHolder(binding)
             }
+
             TYPE_TRANSACTIONS -> {
                 val binding =
                     ItemHistoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
                 HistoryTransactionsViewHolder(binding)
             }
+
             TYPE_PLACEHOLDER -> {
                 val placeholder = View(parent.context)
                 placeholder.layoutParams = RecyclerView.LayoutParams(
@@ -96,20 +101,22 @@ class HistoryAdapter(private val context: Context) :
                 )
                 object : RecyclerView.ViewHolder(placeholder) {}
             }
+
             else -> throw IllegalArgumentException("Invalid view type")
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = getItem(position) ?: return
-        val currentDate = dateFormat.format(Date(item.createdAt?: 0L))
+        val currentDate = dateFormat.format(Date(item.createdAt ?: 0L))
         val transactionsForDate = snapshot().items
-            .filter { dateFormat.format(Date(it.createdAt?: 0L)) == currentDate }
+            .filter { dateFormat.format(Date(it.createdAt ?: 0L)) == currentDate }
 
         when (holder) {
             is HistoryDateViewHolder -> {
                 holder.bind(currentDate)
             }
+
             is HistoryTransactionsViewHolder -> holder.bind(transactionsForDate)
             else -> return
         }

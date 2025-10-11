@@ -24,6 +24,7 @@ import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentWalletBinding
 import com.esom.bank.screens.history.enums.TransactionEnum
+import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
@@ -47,6 +48,7 @@ class WalletFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
     private var cards: List<WalletModel> = emptyList()
     private var infiniteList: List<WalletModel> = emptyList()
+    private var currentCurrency: CurrencyEnum = CurrencyEnum.SOM // Добавляем переменную для отслеживания текущей валюты
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -84,55 +86,64 @@ class WalletFragment : Fragment() {
 
         val transactionAdapter = TransactionAdapter(requireContext())
         binding.transactions.adapter = transactionAdapter
+
+        transactionAdapter.submitList(emptyList())
+
         model.latestTransactions(CurrencyEnum.SOM)
-        model.history.observe(viewLifecycleOwner) {
-            when (it) {
-                is UiState.Loading -> {}
-                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
+        model.history.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Loading -> {
+                }
+                is UiState.Error -> {
+                    binding.root.showErrorSnackbar(state.message)
+                    transactionAdapter.submitList(emptyList())
+                }
                 is UiState.Success -> {
-                    transactionAdapter.submitList(it.data)
+                    if (isDataForCurrentCurrency(state.data)) {
+                        transactionAdapter.submitList(state.data)
 
-                    if (it.data.isEmpty()) {
-                        binding.transactionLayout.visibility = View.GONE
-                        binding.lastTransTitle.visibility = View.GONE
-                        binding.historyBtn.visibility = View.GONE
-                    } else {
-                        binding.transactionLayout.visibility = View.VISIBLE
-                        binding.lastTransTitle.visibility = View.VISIBLE
-                        binding.historyBtn.visibility = View.VISIBLE
+                        if (state.data.isEmpty()) {
+                            binding.transactionLayout.visibility = View.GONE
+                            binding.lastTransTitle.visibility = View.GONE
+                            binding.historyBtn.visibility = View.GONE
+                        } else {
+                            binding.transactionLayout.visibility = View.VISIBLE
+                            binding.lastTransTitle.visibility = View.VISIBLE
+                            binding.historyBtn.visibility = View.VISIBLE
+                        }
+
+                        val calendar = java.util.Calendar.getInstance()
+                        val currentYear = calendar.get(java.util.Calendar.YEAR)
+                        val currentMonth = calendar.get(java.util.Calendar.MONTH)
+
+                        val calendarStart = java.util.Calendar.getInstance().apply {
+                            set(currentYear, currentMonth, 1, 0, 0, 0)
+                            set(java.util.Calendar.MILLISECOND, 0)
+                        }
+
+                        val fromTimeMonth = calendarStart.timeInMillis
+
+                        val monthFormat = java.text.SimpleDateFormat("LLLL", Locale("ru"))
+                        val monthText = monthFormat.format(Date(fromTimeMonth))
+
+                        val monthInGenitive = when (monthText.lowercase(Locale.getDefault())) {
+                            "январь" -> "январе"
+                            "февраль" -> "феврале"
+                            "март" -> "марте"
+                            "апрель" -> "апреле"
+                            "май" -> "мае"
+                            "июнь" -> "июне"
+                            "июль" -> "июле"
+                            "август" -> "августе"
+                            "сентябрь" -> "сентябре"
+                            "октябрь" -> "октябре"
+                            "ноябрь" -> "ноябре"
+                            "декабрь" -> "декабре"
+                            else -> monthText
+                        }
+
+                        binding.monthWasteTitle.text = "Расходы в $monthInGenitive"
                     }
-
-                    val calendar = java.util.Calendar.getInstance()
-                    val currentYear = calendar.get(java.util.Calendar.YEAR)
-                    val currentMonth = calendar.get(java.util.Calendar.MONTH)
-
-                    val calendarStart = java.util.Calendar.getInstance().apply {
-                        set(currentYear, currentMonth, 1, 0, 0, 0)
-                        set(java.util.Calendar.MILLISECOND, 0)
-                    }
-
-                    val fromTimeMonth = calendarStart.timeInMillis
-
-                    val monthFormat = java.text.SimpleDateFormat("LLLL", Locale("ru"))
-                    val monthText = monthFormat.format(Date(fromTimeMonth))
-
-                    val monthInGenitive = when (monthText.lowercase(Locale.getDefault())) {
-                        "январь" -> "январе"
-                        "февраль" -> "феврале"
-                        "март" -> "марте"
-                        "апрель" -> "апреле"
-                        "май" -> "мае"
-                        "июнь" -> "июне"
-                        "июль" -> "июле"
-                        "август" -> "августе"
-                        "сентябрь" -> "сентябре"
-                        "октябрь" -> "октябре"
-                        "ноябрь" -> "ноябре"
-                        "декабрь" -> "декабре"
-                        else -> monthText
-                    }
-
-                    binding.monthWasteTitle.text = "Расходы в $monthInGenitive"
                 }
             }
         }
@@ -234,31 +245,31 @@ class WalletFragment : Fragment() {
                     else -> position - 1
                 }
 
+                val targetCurrency = when (realPosition) {
+                    0 -> CurrencyEnum.SOM
+                    1 -> CurrencyEnum.ESOM
+                    2 -> CurrencyEnum.BTC
+                    3 -> CurrencyEnum.ETH
+                    4 -> CurrencyEnum.USDT_TRC20
+                    else -> return
+                }
+
+                currentCurrency = targetCurrency
+
+                (binding.transactions.adapter as? TransactionAdapter)?.submitList(emptyList())
+
+                model.latestTransactions(targetCurrency)
+
                 when (realPosition) {
                     0 -> {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(1, false)
                         }, 150)
-                        model.latestTransactions(CurrencyEnum.SOM)
                     }
-
-                    1 -> {
-                        model.latestTransactions(CurrencyEnum.ESOM)
-                    }
-
-                    2 -> {
-                        model.latestTransactions(CurrencyEnum.BTC)
-                    }
-
-                    3 -> {
-                        model.latestTransactions(CurrencyEnum.ETH)
-                    }
-
                     4 -> {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(cards.size, false)
                         }, 150)
-                        model.latestTransactions(CurrencyEnum.USDT_TRC20)
                     }
                 }
             }
@@ -290,6 +301,10 @@ class WalletFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun isDataForCurrentCurrency(transactions: List<TransactionModel?>): Boolean {
+        return transactions.any { it?.currencyEnum == currentCurrency } || transactions.isEmpty()
     }
 
     private fun updateCards(wallets: List<WalletModel>) {
@@ -361,5 +376,4 @@ class WalletFragment : Fragment() {
         binding.totalWaste.text = totalBalanceInSoms.format(2).trimEnd('0')
             .trimEnd('.').ifEmpty { "0" }
     }
-
 }

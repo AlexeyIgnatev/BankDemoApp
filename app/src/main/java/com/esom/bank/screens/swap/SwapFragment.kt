@@ -525,7 +525,7 @@ class SwapFragment : Fragment() {
             (fromAmount - fee) * exchangeRate
         }
 
-        binding.comissionValue.text = formatAmount(fee)
+        binding.comissionValue.text = formatAmount(fromAmount)
         binding.secondValue.text = formatAmount(convertedAmount)
         binding.total.text = formatAmount(convertedAmount)
 

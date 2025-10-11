@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -73,14 +74,20 @@ class HistoryFragment : Fragment() {
 
         val currentMonth = getCurrentMonthInPrepositional()
         binding.titleMonth.text = currentMonth
-        if(model.getWithoutTransactions())
+        if(model.getWithoutTransactions()) {
             binding.nonTransactionLayout.setBackgroundResource(R.drawable.data_period_background)
+            binding.nonTransactionTitle.setTextColor(requireContext().getColor(R.color.white))
+        }
         binding.nonTransactionBtn.setOnClickListener {
             model.setWithoutTransactions(!model.getWithoutTransactions())
-            if(model.getWithoutTransactions())
+            if(model.getWithoutTransactions()) {
                 binding.nonTransactionLayout.setBackgroundResource(R.drawable.data_period_background)
-            else
+                binding.nonTransactionTitle.setTextColor(requireContext().getColor(R.color.white))
+            }
+            else {
                 binding.nonTransactionLayout.setBackgroundResource(R.drawable.gray_period_background)
+                binding.nonTransactionTitle.setTextColor(Color.parseColor("#1D1D1B"))
+            }
 
             loadTransactions()
         }
@@ -247,7 +254,7 @@ class HistoryFragment : Fragment() {
                     fromTime = model.getFromTime(),
                     toTime = model.getToTime()
                 ).map { pagingData ->
-                    if (!model.getWithoutTransactions()) {
+                    if (model.getWithoutTransactions()) {
                         pagingData.map { transaction ->
                             (if (transaction.type == TransactionEnum.TRANSFER) {
                                 null

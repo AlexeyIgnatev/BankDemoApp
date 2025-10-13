@@ -31,11 +31,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val navController = findNavController(R.id.nav_host_fragment)
-        val mainNavController = findNavController(R.id.main_nav_host_fragment)
         onBackPressedDispatcher.addCallback(this) {
-            if (mainNavController.previousBackStackEntry != null) {
-                mainNavController.popBackStack()
-            } else if (navController.previousBackStackEntry != null) {
+            if (navController.previousBackStackEntry != null) {
                 navController.popBackStack()
             } else moveTaskToBack(true)
         }

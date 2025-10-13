@@ -4,11 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
-import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.MainNavGraphDirections
 import com.esom.bank.R
@@ -45,10 +46,16 @@ class MainFragment : Fragment() {
             }
             true
         }
+
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
+            if (findMainNavController().previousBackStackEntry != null) {
+                findMainNavController().popBackStack()
+            }
+        }
     }
 
     private fun findMainNavController(): NavController {
-        return Navigation.findNavController(requireView().findViewById(R.id.main_nav_host_fragment))
+        return requireView().findViewById<View>(R.id.main_nav_host_fragment).findNavController()
     }
 
     companion object {

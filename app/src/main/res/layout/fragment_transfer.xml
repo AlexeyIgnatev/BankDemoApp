@@ -284,7 +284,7 @@
                 android:textColorHint="#1D1D1B"
                 android:letterSpacing="-0.01"
                 android:textSize="@dimen/_18sp"
-                android:text="0"
+                android:hint="0"
                 android:fontFamily="@font/mont_semibold"
                 app:layout_constraintTop_toBottomOf="@id/sum_title"
                 android:layout_marginHorizontal="@dimen/_20dp"/>

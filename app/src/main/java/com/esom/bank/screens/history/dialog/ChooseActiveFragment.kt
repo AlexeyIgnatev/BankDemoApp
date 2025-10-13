@@ -2,20 +2,18 @@ package com.esom.bank.screens.history.dialog
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.esom.bank.common.model.UiState
+import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentChooseActiveBinding
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ChooseActiveFragment : BottomSheetDialogFragment() {
@@ -32,11 +30,51 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.usdtBtn.setOnClickListener { binding.usdtCheck.isChecked = !binding.usdtCheck.isChecked }
-        binding.bitcoinBtn.setOnClickListener { binding.bitcoinCheck.isChecked = !binding.bitcoinCheck.isChecked }
-        binding.ethBtn.setOnClickListener { binding.ethCheck.isChecked = !binding.ethCheck.isChecked }
-        binding.somBtn.setOnClickListener { binding.fiatCheck.isChecked = !binding.fiatCheck.isChecked }
-        binding.salamBtn.setOnClickListener { binding.digitalCheck.isChecked = !binding.digitalCheck.isChecked }
+        binding.usdtBtn.setOnClickListener {
+            binding.usdtCheck.isChecked = !binding.usdtCheck.isChecked
+        }
+        binding.bitcoinBtn.setOnClickListener {
+            binding.bitcoinCheck.isChecked = !binding.bitcoinCheck.isChecked
+        }
+        binding.ethBtn.setOnClickListener {
+            binding.ethCheck.isChecked = !binding.ethCheck.isChecked
+        }
+        binding.somBtn.setOnClickListener {
+            binding.fiatCheck.isChecked = !binding.fiatCheck.isChecked
+        }
+        binding.salamBtn.setOnClickListener {
+            binding.digitalCheck.isChecked = !binding.digitalCheck.isChecked
+        }
+
+        model.myData.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> {}
+                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
+                is UiState.Success -> {
+                    binding.usdt.text = it.data.wallets
+                        .find { currency -> currency.currency == CurrencyEnum.USDT_TRC20 }?.address?.takeLast(
+                            3
+                        )
+                    binding.bitcoin.text = it.data.wallets
+                        .find { currency -> currency.currency == CurrencyEnum.BTC }?.address?.takeLast(
+                            3
+                        )
+                    binding.eth.text = it.data.wallets
+                        .find { currency -> currency.currency == CurrencyEnum.ETH }?.address?.takeLast(
+                            3
+                        )
+                    binding.fiat.text = it.data.wallets
+                        .find { currency -> currency.currency == CurrencyEnum.SOM }?.address?.takeLast(
+                            3
+                        )
+                    binding.digital.text = it.data.wallets
+                        .find { currency -> currency.currency == CurrencyEnum.ESOM }?.address?.takeLast(
+                            3
+                        )
+
+                }
+            }
+        }
 
         binding.chooseBtn.setOnClickListener {
             val currencies: MutableList<CurrencyEnum> = mutableListOf()

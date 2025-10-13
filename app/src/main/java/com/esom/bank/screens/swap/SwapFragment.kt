@@ -15,11 +15,9 @@ import androidx.navigation.fragment.navArgs
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
-import com.esom.bank.common.utils.format
 import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
-import com.esom.bank.common.utils.views.setTextProgrammatically
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentSwapBinding
 import com.esom.bank.screens.main.MainViewModel
@@ -52,9 +50,16 @@ class SwapFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.root.doOnApplyWindowInsets { view, insets, rect ->
+            val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            val systemBarsBottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+
             view.updatePadding(
                 top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top,
-                bottom = rect.bottom + insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom,
+                bottom = rect.bottom + if (imeBottom == 0) {
+                    systemBarsBottom
+                } else {
+                    imeBottom
+                }
             )
             insets
         }
@@ -99,7 +104,7 @@ class SwapFragment : Fragment() {
         }
 
         binding.peopleLayout.setOnClickListener {
-            if(isPeoplePanelShown) {
+            if (isPeoplePanelShown) {
                 binding.currentCurrencyLayout.isClickable = true
                 it.elevation = 0f
                 slideOut(binding.peopleCurrencyLayout)
@@ -270,6 +275,7 @@ class SwapFragment : Fragment() {
                     updateBalanceDisplay()
                     updateCommissionAndTotal()
                 }
+
                 else -> {}
             }
         }
@@ -281,10 +287,12 @@ class SwapFragment : Fragment() {
                 is UiState.Error -> findNavController().navigate(
                     NavGraphDirections.startFailTransferFragment(it.message)
                 )
+
                 is UiState.Success -> {
                     model.updateUserData()
                     findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
                 }
+
                 else -> {}
             }
         }
@@ -329,7 +337,8 @@ class SwapFragment : Fragment() {
         binding.peopleTitle.text = getCurrencyString(currentToCurrency)
 
         val allCurrencies = CurrencyEnum.values().toList()
-        val otherCurrencies = allCurrencies.filter { it != currentFromCurrency && it != currentToCurrency }
+        val otherCurrencies =
+            allCurrencies.filter { it != currentFromCurrency && it != currentToCurrency }
 
         val firstPanelCurrencies = listOf(currentToCurrency) + otherCurrencies
         val secondPanelCurrencies = listOf(currentFromCurrency) + otherCurrencies
@@ -389,6 +398,7 @@ class SwapFragment : Fragment() {
         binding.somIcon1000.isVisible = showFromSomIcons
         binding.somIcon10000.isVisible = showFromSomIcons
 
+        binding.thirdIconSwap.isVisible = currentFromCurrency == CurrencyEnum.SOM
         binding.somIconSwap.isVisible = currentFromCurrency == CurrencyEnum.SOM
         binding.salamIconSwap.isVisible = currentToCurrency == CurrencyEnum.SOM
         binding.totalSomIcon.isVisible = currentToCurrency == CurrencyEnum.SOM
@@ -477,15 +487,23 @@ class SwapFragment : Fragment() {
             else -> CurrencyEnum.SOM
         }
 
-        binding.sum1.text = (wallets.find { it.currency == firstUsdtCurrency }?.balance ?: 0.0).formatBalanceNew()
-        binding.sum2.text = (wallets.find { it.currency == firstBitcoinCurrency }?.balance ?: 0.0).formatBalanceNew()
-        binding.sum3.text = (wallets.find { it.currency == firstEthCurrency }?.balance ?: 0.0).formatBalanceNew()
-        binding.sum4.text = (wallets.find { it.currency == firstDigitalCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.sum1.text =
+            (wallets.find { it.currency == firstUsdtCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.sum2.text = (wallets.find { it.currency == firstBitcoinCurrency }?.balance
+            ?: 0.0).formatBalanceNew()
+        binding.sum3.text =
+            (wallets.find { it.currency == firstEthCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.sum4.text = (wallets.find { it.currency == firstDigitalCurrency }?.balance
+            ?: 0.0).formatBalanceNew()
 
-        binding.peopleSum1.text = (wallets.find { it.currency == secondUsdtCurrency }?.balance ?: 0.0).formatBalanceNew()
-        binding.peopleSum2.text = (wallets.find { it.currency == secondBitcoinCurrency }?.balance ?: 0.0).formatBalanceNew()
-        binding.peopleSum3.text = (wallets.find { it.currency == secondEthCurrency }?.balance ?: 0.0).formatBalanceNew()
-        binding.peopleSum4.text = (wallets.find { it.currency == secondDigitalCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.peopleSum1.text =
+            (wallets.find { it.currency == secondUsdtCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.peopleSum2.text = (wallets.find { it.currency == secondBitcoinCurrency }?.balance
+            ?: 0.0).formatBalanceNew()
+        binding.peopleSum3.text =
+            (wallets.find { it.currency == secondEthCurrency }?.balance ?: 0.0).formatBalanceNew()
+        binding.peopleSum4.text = (wallets.find { it.currency == secondDigitalCurrency }?.balance
+            ?: 0.0).formatBalanceNew()
 
         val fromSuffix = fromWallet?.address?.takeLast(3) ?: ""
         val toSuffix = toWallet?.address?.takeLast(3) ?: ""
@@ -525,11 +543,17 @@ class SwapFragment : Fragment() {
             (fromAmount - fee) * exchangeRate
         }
 
+        binding.thirdValue.text = formatAmount(fee)
         binding.comissionValue.text = formatAmount(fromAmount)
         binding.secondValue.text = formatAmount(convertedAmount)
         binding.total.text = formatAmount(convertedAmount)
 
-        Log.d(TAG, "Конвертация: $fromAmount ${getCurrencyName(currentFromCurrency)} -> $convertedAmount ${getCurrencyName(currentToCurrency)}")
+        Log.d(
+            TAG,
+            "Конвертация: $fromAmount ${getCurrencyName(currentFromCurrency)} -> $convertedAmount ${
+                getCurrencyName(currentToCurrency)
+            }"
+        )
         if (!isSomToEsomConversion()) {
             Log.d(TAG, "Курс обмена: ${getExchangeRate()}")
         }
@@ -551,15 +575,13 @@ class SwapFragment : Fragment() {
 
     private fun calculateFee(amount: Double): Double {
         val settings = (model.settings.value as? UiState.Success)?.data ?: return 0.0
-
         return when {
             currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM ->
                 amount * (settings.esomSomConversionFeePct / 100.0)
+
             currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM ->
                 amount * (settings.esomSomConversionFeePct / 100.0)
-            currentFromCurrency == CurrencyEnum.BTC -> settings.btcWithdrawFeeFixed
-            currentFromCurrency == CurrencyEnum.ETH -> settings.ethWithdrawFeeFixed
-            currentFromCurrency == CurrencyEnum.USDT_TRC20 -> settings.usdtWithdrawFeeFixed
+
             else -> 0.0
         }
     }
@@ -568,14 +590,25 @@ class SwapFragment : Fragment() {
         val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return 1.0
 
         return when {
+            currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM -> 1.0
+            currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM -> 1.0
+
+            (currentFromCurrency == CurrencyEnum.ESOM || currentFromCurrency == CurrencyEnum.SOM)
+                    && currentToCurrency != CurrencyEnum.ESOM && currentToCurrency != CurrencyEnum.SOM -> {
+                val toWallet = wallets.find { it.currency == currentToCurrency }
+                toWallet?.sellRate ?: 1.0
+            }
+
             currentToCurrency == CurrencyEnum.SOM -> {
                 val fromWallet = wallets.find { it.currency == currentFromCurrency }
                 fromWallet?.sellRate ?: 1.0
             }
+
             currentFromCurrency == CurrencyEnum.SOM -> {
                 val toWallet = wallets.find { it.currency == currentToCurrency }
                 toWallet?.buyRate ?: 1.0
             }
+
             else -> {
                 val fromWallet = wallets.find { it.currency == currentFromCurrency }
                 val toWallet = wallets.find { it.currency == currentToCurrency }
@@ -624,16 +657,24 @@ class SwapFragment : Fragment() {
         view.alpha = 0f
         view.visibility = View.VISIBLE
         view.post {
-            view.translationY = -view.height.toFloat()
-            view.animate().translationY(0f).alpha(1f).setDuration(450).start()
+            view.translationY = view.height.toFloat()
+            view.animate()
+                .translationY(0f)
+                .alpha(1f)
+                .setDuration(450)
+                .start()
         }
     }
 
     private fun slideOut(view: View, onEnd: (() -> Unit)? = null) {
-        view.animate().translationY(-view.height.toFloat()).alpha(0f).setDuration(450)
+        view.animate()
+            .translationY(view.height.toFloat())
+            .alpha(0f)
+            .setDuration(450)
             .withEndAction {
                 view.visibility = View.GONE
                 onEnd?.invoke()
-            }.start()
+            }
+            .start()
     }
 }

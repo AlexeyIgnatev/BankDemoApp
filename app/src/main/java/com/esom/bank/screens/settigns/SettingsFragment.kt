@@ -66,8 +66,9 @@ class SettingsFragment : Fragment() {
                 }
 
                 is UiState.Success -> {
-                    binding.phone.text =
-                        "${it.data.firstName} ${it.data.middleName} ${it.data.lastName}\n${it.data.phone.formatPhone()}\n${it.data.email}"
+                    binding.fio.text = "${it.data.firstName} ${it.data.middleName} ${it.data.lastName}"
+                    binding.phone.text = "${it.data.phone.formatPhone()}"
+                    binding.mail.text = "${it.data.email}"
                 }
             }
         }

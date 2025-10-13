@@ -48,12 +48,16 @@ class TransferFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.root.doOnApplyWindowInsets { view, insets, rect ->
+            val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            val systemBarsBottom = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+
             view.updatePadding(
                 top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top,
-                bottom = rect.bottom + if (insets.getInsets(WindowInsetsCompat.Type.ime()).bottom > 0) insets.getInsets(
-                    WindowInsetsCompat.Type.ime()
-                ).bottom
-                else insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+                bottom = rect.bottom + if (imeBottom == 0) {
+                    systemBarsBottom
+                } else {
+                    imeBottom
+                }
             )
             insets
         }
@@ -483,15 +487,24 @@ class TransferFragment : Fragment() {
         view.alpha = 0f
         view.visibility = View.VISIBLE
         view.post {
-            view.translationY = -view.height.toFloat()
-            view.animate().translationY(0f).alpha(1f).setDuration(450).start()
+            view.translationY = view.height.toFloat()
+            view.animate()
+                .translationY(0f)
+                .alpha(1f)
+                .setDuration(450)
+                .start()
         }
     }
 
-    private fun slideOut(view: View) {
-        view.animate().translationY(-view.height.toFloat()).alpha(0f).setDuration(450)
+    private fun slideOut(view: View, onEnd: (() -> Unit)? = null) {
+        view.animate()
+            .translationY(view.height.toFloat())
+            .alpha(0f)
+            .setDuration(450)
             .withEndAction {
                 view.visibility = View.GONE
-            }.start()
+                onEnd?.invoke()
+            }
+            .start()
     }
 }

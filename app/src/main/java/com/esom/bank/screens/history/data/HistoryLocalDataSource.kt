@@ -4,6 +4,7 @@ import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.tencent.mmkv.MMKV
 import javax.inject.Inject
 
+// HistoryLocalDataSource.kt
 interface HistoryLocalDataSource {
     fun getCurrency(): List<CurrencyEnum>
     fun setCurrency(currency: List<CurrencyEnum>)
@@ -16,6 +17,8 @@ interface HistoryLocalDataSource {
 
     fun getWithoutTransactions(): Boolean
     fun setWithoutTransactions(without: Boolean)
+
+    fun clearAllHistoryData()
 }
 
 class HistoryLocalDataSourceImpl @Inject constructor(): HistoryLocalDataSource {
@@ -74,4 +77,10 @@ class HistoryLocalDataSourceImpl @Inject constructor(): HistoryLocalDataSource {
         storage.encode("without_transactions", without)
     }
 
+    override fun clearAllHistoryData() {
+        storage.removeValueForKey("currency")
+        storage.removeValueForKey("from_time")
+        storage.removeValueForKey("to_time")
+        storage.removeValueForKey("without_transactions")
+    }
 }

@@ -29,7 +29,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/_12dp"
                     android:fontFamily="@font/mont_bold"
-                    android:text="Асан"
+                    tools:text="Асан"
                     android:textColor="#1D1D1B"
                     android:textSize="@dimen/_20sp"
                     android:layout_marginStart="@dimen/_16dp"

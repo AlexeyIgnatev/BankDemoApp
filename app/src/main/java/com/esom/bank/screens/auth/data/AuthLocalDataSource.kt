@@ -6,12 +6,12 @@ import javax.inject.Inject
 interface AuthLocalDataSource {
     fun getLogin(): String?
     fun setLogin(login: String?)
-
     fun getPassword(): String?
     fun setPassword(password: String?)
+    fun clearAuthData()
 }
 
-class AuthLocalDataSourceImpl @Inject constructor() : AuthLocalDataSource {
+class AuthLocalDataSourceImpl @Inject constructor(): AuthLocalDataSource {
     private val storage by lazy {
         MMKV.mmkvWithID(
             "AuthLocalDataSource",
@@ -19,15 +19,18 @@ class AuthLocalDataSourceImpl @Inject constructor() : AuthLocalDataSource {
         )
     }
 
-    override fun getLogin(): String? = storage.getString("login", null)
-
+    override fun getLogin(): String? = storage.decodeString("login")
     override fun setLogin(login: String?) {
         storage.encode("login", login)
     }
 
-    override fun getPassword(): String? = storage.getString("password", null)
-
+    override fun getPassword(): String? = storage.decodeString("password")
     override fun setPassword(password: String?) {
         storage.encode("password", password)
+    }
+
+    override fun clearAuthData() {
+        storage.removeValueForKey("login")
+        storage.removeValueForKey("password")
     }
 }

@@ -3,7 +3,9 @@ package com.esom.bank.screens.settigns
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,8 +13,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.NavGraphDirections
+import com.esom.bank.R
+import com.esom.bank.activities.MainActivity
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
@@ -56,6 +61,14 @@ class SettingsFragment : Fragment() {
 
         binding.changePassBtn.setOnClickListener {
             findParentNavController().navigate(NavGraphDirections.startPinCreateFragment())
+        }
+
+        binding.logInBtn.setOnClickListener {
+            model.clearAllDataAndNavigate()
+            val intent = Intent(requireContext(), MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            requireActivity().finish()
         }
 
         model.myData.observe(viewLifecycleOwner) {
@@ -106,4 +119,5 @@ class SettingsFragment : Fragment() {
             PredefinedSlots.digit(),
         )
     }
+
 }

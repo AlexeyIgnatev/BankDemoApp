@@ -56,6 +56,19 @@ class MainViewModel @Inject constructor(
     private val _settings = MutableLiveData<UiState<FeeModel>>()
     val settings: LiveData<UiState<FeeModel>> = _settings
 
+    fun clearAllDataAndNavigate() {
+        _myData.value = UiState.Loading()
+        _swapRes.value = UiState.Loading()
+        _transferRes.value = UiState.Loading()
+        _history.value = UiState.Loading()
+        _month.value = UiState.Loading()
+        _messages.value = UiState.Loading()
+        _sendMessage.value = UiState.Loading()
+        _notifications.value = UiState.Loading()
+        _settings.value = UiState.Loading()
+        mainRepository.clearAllLocalData()
+    }
+
 
     fun isAuthenticated() = mainRepository.isAuthenticated()
 

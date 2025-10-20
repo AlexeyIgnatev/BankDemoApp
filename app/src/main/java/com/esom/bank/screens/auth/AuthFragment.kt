@@ -1,9 +1,11 @@
 package com.esom.bank.screens.auth
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
@@ -43,6 +45,10 @@ class AuthFragment : Fragment() {
             )
             insets
         }
+
+        requireActivity().onBackPressedDispatcher.addCallback(this) {
+            requireActivity().moveTaskToBack(true)
+        }
         binding.version.text = getString(R.string.version_title, BuildConfig.VERSION_NAME)
 
         binding.regBtn.setOnClickListener {
@@ -61,8 +67,10 @@ class AuthFragment : Fragment() {
         model.myData.observe(viewLifecycleOwner) {
             when (it) {
                 is UiState.Loading -> {
-                    binding.logInText.isVisible = false
-                    binding.indicator.isVisible = true
+                    if(model.history.value !is UiState.Loading) {
+                        binding.logInText.isVisible = false
+                        binding.indicator.isVisible = true
+                    }
                 }
 
                 is UiState.Error -> {

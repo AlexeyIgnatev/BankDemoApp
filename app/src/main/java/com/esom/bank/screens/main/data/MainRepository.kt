@@ -71,6 +71,8 @@ interface MainRepository {
     fun getNotifications(): Flow<UiState<List<NotificationModel>>>
     fun getMessages(): Flow<UiState<List<SupportModel>>>
     fun sendMessage(text: String): Flow<UiState<SupportModel>>
+
+    fun clearAllLocalData()
 }
 
 class MainRepositoryImpl @Inject constructor(
@@ -224,5 +226,10 @@ class MainRepositoryImpl @Inject constructor(
                 is ApiResponse.Success -> return@map UiState.Success(it.data.toModel())
             }
         }
+
+    override fun clearAllLocalData() {
+        authLocalDataSource.clearAuthData()
+        historyLocalDataSource.clearAllHistoryData()
+    }
 
 }

@@ -88,8 +88,12 @@ class TransactionAdapter(private val context: Context) :
 
             binding.sum.setTextColor(Color.parseColor(color))
             binding.somIcon.setColorFilter(Color.parseColor(color))
-            binding.sum.text = "$sign${"%.6f".format(item.amount).trimEnd('0').trimEnd('.').ifEmpty { "0" }}"
+            val formatted = "%.6f".format(item.amount)
+                .trimEnd('0')
+                .trimEnd('.', ',')
+                .ifEmpty { "0" }
 
+            binding.sum.text = "$sign$formatted"
             binding.somIcon.visibility =
                 if (item.currencyEnum == CurrencyEnum.SOM) View.VISIBLE else View.INVISIBLE
         }

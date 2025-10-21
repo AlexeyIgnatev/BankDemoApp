@@ -3,30 +3,25 @@ package com.esom.bank.screens.history.adapter
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.databinding.ItemHistoryBinding
-import com.esom.bank.databinding.ItemHistoryDateBinding
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.wallet.adapter.TransactionAdapter
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 class HistoryAdapter(
     private val context: Context,
     private var showTransfers: Boolean = true
-) : PagingDataAdapter<TransactionModel, RecyclerView.ViewHolder>(HistoryDiffCallback()) {
+) : PagingDataAdapter<TransactionModel, HistoryAdapter.HistoryGroupViewHolder>(HistoryDiffCallback()) {
 
     companion object {
-        private const val TYPE_DATE = 0
-        private const val TYPE_TRANSACTIONS = 1
-        private const val TYPE_PLACEHOLDER = 2
+        private const val TAG = "HistoryAdapter"
     }
 
     private val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("ru")).apply {
@@ -35,130 +30,80 @@ class HistoryAdapter(
             "июля", "августа", "сентября", "октября", "ноября", "декабря"
         )
         dateFormatSymbols = object : DateFormatSymbols(Locale("ru")) {
-            override fun getMonths(): Array<String> {
-                return months
-            }
+            override fun getMonths(): Array<String> = months
+        }
+    }
+
+    private var groupedItems: List<HistoryGroup> = emptyList()
+
+    init {
+        addOnPagesUpdatedListener {
+            regroup()
         }
     }
 
     fun updateFilter(showTransfers: Boolean) {
         this.showTransfers = showTransfers
+        regroup()
+    }
+
+    private fun regroup() {
+        val allItems = snapshot().items
+        val filtered = if (!showTransfers)
+            allItems.filter { it.type != TransactionEnum.TRANSFER }
+        else allItems
+
+        groupedItems = filtered
+            .groupBy { dateFormat.format(Date(it.createdAt ?: 0L)) }
+            .map { (date, list) -> HistoryGroup(date, list.sortedByDescending { it.createdAt }) }
+            .sortedByDescending { it.list.firstOrNull()?.createdAt ?: 0L }
+
+        Log.d(TAG, "Regrouped items (${groupedItems.size} days):")
+        groupedItems.forEach {
+            Log.d(TAG, " - ${it.date}: ${it.list.map { t -> "${t.type}-${t.amount}" }}")
+        }
+
         notifyDataSetChanged()
     }
 
-    private fun filterTransactions(transactions: List<TransactionModel>): List<TransactionModel> {
-        return if (!showTransfers) {
-            transactions.filter { it.type != TransactionEnum.TRANSFER }
-        } else {
-            transactions
-        }
-    }
-
-    inner class HistoryDateViewHolder(private val binding: ItemHistoryDateBinding) :
+    inner class HistoryGroupViewHolder(private val binding: ItemHistoryBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(date: String) {
+
+        fun bind(group: HistoryGroup) {
+            val date = group.date
+            val transactions = group.list
+            Log.d(TAG, "Binding group for date $date with ${transactions.size} transactions")
+
             binding.date.text = date
-        }
-    }
-
-    inner class HistoryTransactionsViewHolder(private val binding: ItemHistoryBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        fun bind(transactions: List<TransactionModel>) {
-            val filteredTransactions = filterTransactions(transactions)
-            val dates = filteredTransactions.map { dateFormat.format(Date(it.createdAt ?: 0L)) }
-            Log.d("HistoryAdapter", "Даты в адаптере: $dates, показано транзакций: ${filteredTransactions.size}")
 
             val adapter = TransactionAdapter(context)
             binding.transactions.adapter = adapter
-            adapter.submitList(filteredTransactions)
+            adapter.submitList(transactions)
         }
     }
 
-    override fun getItemViewType(position: Int): Int {
-        val item = getItem(position) ?: return TYPE_PLACEHOLDER
+    override fun getItemCount(): Int = groupedItems.size
 
-        if (!showTransfers && item.type == TransactionEnum.TRANSFER) {
-            return TYPE_PLACEHOLDER
-        }
-
-        val prevItem = if (position > 0) getItem(position - 1) else null
-        val nextItem = if (position + 1 < itemCount) getItem(position + 1) else null
-
-        val currentDate = dateFormat.format(Date(item.createdAt ?: 0L))
-
-        val prevDate = prevItem?.let {
-            if (!showTransfers && it.type == TransactionEnum.TRANSFER) null
-            else dateFormat.format(Date(it.createdAt ?: 0L))
-        }
-
-        val nextDate = nextItem?.let {
-            if (!showTransfers && it.type == TransactionEnum.TRANSFER) null
-            else dateFormat.format(Date(it.createdAt ?: 0L))
-        }
-
-        val type = when {
-            prevItem == null || currentDate != prevDate -> TYPE_DATE
-            nextItem == null || currentDate != nextDate -> TYPE_TRANSACTIONS
-            else -> TYPE_PLACEHOLDER
-        }
-
-        return type
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryGroupViewHolder {
+        val binding = ItemHistoryBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return HistoryGroupViewHolder(binding)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return when (viewType) {
-            TYPE_DATE -> {
-                val binding = ItemHistoryDateBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
-                )
-                HistoryDateViewHolder(binding)
-            }
-
-            TYPE_TRANSACTIONS -> {
-                val binding = ItemHistoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-                HistoryTransactionsViewHolder(binding)
-            }
-
-            TYPE_PLACEHOLDER -> {
-                val placeholder = View(parent.context)
-                placeholder.layoutParams = RecyclerView.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    0
-                )
-                object : RecyclerView.ViewHolder(placeholder) {}
-            }
-
-            else -> throw IllegalArgumentException("Invalid view type")
-        }
-    }
-
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val item = getItem(position) ?: return
-
-        if (!showTransfers && item.type == TransactionEnum.TRANSFER) {
-            return
-        }
-
-        val currentDate = dateFormat.format(Date(item.createdAt ?: 0L))
-
-        val transactionsForDate = snapshot().items
-            .filter {
-                val shouldInclude = if (!showTransfers) it.type != TransactionEnum.TRANSFER else true
-                shouldInclude && dateFormat.format(Date(it.createdAt ?: 0L)) == currentDate
-            }
-
-        when (holder) {
-            is HistoryDateViewHolder -> {
-                holder.bind(currentDate)
-            }
-
-            is HistoryTransactionsViewHolder -> holder.bind(transactionsForDate)
-            else -> return
-        }
+    override fun onBindViewHolder(holder: HistoryGroupViewHolder, position: Int) {
+        val group = groupedItems.getOrNull(position)
+        if (group != null) holder.bind(group)
+        else Log.w(TAG, "No group found for position $position")
     }
 }
+
+data class HistoryGroup(
+    val date: String,
+    val list: List<TransactionModel>
+)
 
 class HistoryDiffCallback : DiffUtil.ItemCallback<TransactionModel>() {
     override fun areItemsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean =

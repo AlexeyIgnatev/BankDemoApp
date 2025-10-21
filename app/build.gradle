@@ -113,7 +113,7 @@ dependencies {
     testImplementation "androidx.room:room-testing:$room_version"
     implementation "androidx.room:room-paging:$room_version"
 
-    def paging_version = "3.3.0"
+    def paging_version = "3.3.6"
     implementation "androidx.paging:paging-runtime-ktx:$paging_version"
 
     implementation 'jp.wasabeef:blurry:4.0.1'

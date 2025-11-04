@@ -331,46 +331,77 @@ class SwapFragment : Fragment() {
         currentFromCurrency = args.from
         currentToCurrency = args.to
 
+        Log.d(TAG, "=== initInitialIcons() ===")
+        Log.d(TAG, "currentFromCurrency: $currentFromCurrency")
+        Log.d(TAG, "currentToCurrency: $currentToCurrency")
+
         binding.icon.setImageResource(getCurrencyIcon(currentFromCurrency))
         binding.currencyTitle.text = getCurrencyString(currentFromCurrency)
         binding.peopleIcon.setImageResource(getCurrencyIcon(currentToCurrency))
         binding.peopleTitle.text = getCurrencyString(currentToCurrency)
 
         val allCurrencies = CurrencyEnum.values().toList()
-        val otherCurrencies =
-            allCurrencies.filter { it != currentFromCurrency && it != currentToCurrency }
+        Log.d(TAG, "allCurrencies: $allCurrencies")
 
-        val firstPanelCurrencies = listOf(currentToCurrency) + otherCurrencies
-        val secondPanelCurrencies = listOf(currentFromCurrency) + otherCurrencies
+        val firstPanelCurrencies = allCurrencies
+            .filter { it != currentFromCurrency }
+            .take(4)
 
-        binding.usdtIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[0]))
-        binding.usdtTitle.text = getCurrencyString(firstPanelCurrencies[0])
+        val baseSecondList = allCurrencies
+            .filter { it != currentToCurrency }
 
-        binding.bitcoinIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[1]))
-        binding.bitcoinTitle.text = getCurrencyString(firstPanelCurrencies[1])
+        val secondPanelCurrencies = if (currentToCurrency == CurrencyEnum.ESOM) {
+            val modifiedList = baseSecondList
+                .filter { it != CurrencyEnum.ESOM }
+                .toMutableList()
 
-        binding.ethIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[2]))
-        binding.ethTitle.text = getCurrencyString(firstPanelCurrencies[2])
+            if (!modifiedList.contains(CurrencyEnum.USDT_TRC20)) {
+                modifiedList.add(0, CurrencyEnum.USDT_TRC20)
+            }
 
-        binding.fiatIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[3]))
-        binding.fiatTitle.text = getCurrencyString(firstPanelCurrencies[3])
+            modifiedList.take(4)
+        } else {
+            baseSecondList.take(4)
+        }
 
-        binding.peopleUsdtIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[0]))
-        binding.peopleUsdtTitle.text = getCurrencyString(secondPanelCurrencies[0])
+        Log.d(TAG, "firstPanelCurrencies (main): $firstPanelCurrencies")
+        Log.d(TAG, "secondPanelCurrencies (people): $secondPanelCurrencies")
 
-        binding.peopleBitcoinIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[1]))
-        binding.peopleBitcoinTitle.text = getCurrencyString(secondPanelCurrencies[1])
+        val first = firstPanelCurrencies
+        val second = secondPanelCurrencies
 
-        binding.peopleEthIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[2]))
-        binding.peopleEthTitle.text = getCurrencyString(secondPanelCurrencies[2])
+        binding.usdtIcon.setImageResource(getCurrencyIcon(first[0]))
+        binding.usdtTitle.text = getCurrencyString(first[0])
 
-        binding.peopleFiatIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[3]))
-        binding.peopleFiatTitle.text = getCurrencyString(secondPanelCurrencies[3])
+        binding.bitcoinIcon.setImageResource(getCurrencyIcon(first[1]))
+        binding.bitcoinTitle.text = getCurrencyString(first[1])
+
+        binding.ethIcon.setImageResource(getCurrencyIcon(first[2]))
+        binding.ethTitle.text = getCurrencyString(first[2])
+
+        binding.fiatIcon.setImageResource(getCurrencyIcon(first[3]))
+        binding.fiatTitle.text = getCurrencyString(first[3])
+
+        binding.peopleUsdtIcon.setImageResource(getCurrencyIcon(second[0]))
+        binding.peopleUsdtTitle.text = getCurrencyString(second[0])
+
+        binding.peopleBitcoinIcon.setImageResource(getCurrencyIcon(second[1]))
+        binding.peopleBitcoinTitle.text = getCurrencyString(second[1])
+
+        binding.peopleEthIcon.setImageResource(getCurrencyIcon(second[2]))
+        binding.peopleEthTitle.text = getCurrencyString(second[2])
+
+        binding.peopleFiatIcon.setImageResource(getCurrencyIcon(second[3]))
+        binding.peopleFiatTitle.text = getCurrencyString(second[3])
 
         updateBalanceDisplay()
         updateSomIconsVisibility()
         updateCommissionTitles()
+
+        Log.d(TAG, "=== END initInitialIcons() ===")
     }
+
+
 
     private fun getCurrencyIcon(currency: CurrencyEnum): Int = when (currency) {
         CurrencyEnum.SOM -> R.drawable.som_icon

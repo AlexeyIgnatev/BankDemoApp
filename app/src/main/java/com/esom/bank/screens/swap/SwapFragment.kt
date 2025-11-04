@@ -540,7 +540,11 @@ class SwapFragment : Fragment() {
             fromAmount - fee
         } else {
             val exchangeRate = getExchangeRate()
-            (fromAmount - fee) * exchangeRate
+            if(currentFromCurrency == CurrencyEnum.SOM || currentFromCurrency == CurrencyEnum.ESOM) {
+                (fromAmount - fee) / exchangeRate
+            } else {
+                (fromAmount - fee) * exchangeRate
+            }
         }
 
         binding.thirdValue.text = formatAmount(fee)

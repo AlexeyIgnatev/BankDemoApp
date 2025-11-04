@@ -20,11 +20,6 @@ class CurrencyAdapter(private val context: Context): ListAdapter<Currency, Curre
                         binding.title.text = context.getString(R.string.kgs)
                         binding.currencyName.text = context.getString(R.string.fiat_som)
                     }
-                    TypeOfCurrency.DIGITAL -> {
-                        binding.icon.setImageResource(R.drawable.salam_icon)
-                        binding.title.text = context.getString(R.string.digital_wallet)
-                        binding.currencyName.text = context.getString(R.string.som)
-                    }
                     TypeOfCurrency.USDT -> {
                         binding.icon.setImageResource(R.drawable.usdt_icon)
                         binding.title.visibility = View.GONE
@@ -42,6 +37,12 @@ class CurrencyAdapter(private val context: Context): ListAdapter<Currency, Curre
                         binding.title.visibility = View.GONE
                         binding.currencyName.visibility = View.GONE
                         binding.currency.text = context.getString(R.string.ethereum)
+                    }
+                    TypeOfCurrency.DIGITAL -> {
+                        binding.icon.setImageResource(R.drawable.salam_icon)
+                        binding.title.visibility = View.GONE
+                        binding.currencyName.visibility = View.GONE
+                        binding.currency.text = context.getString(R.string.digital_wallet)
                     }
                 }
 

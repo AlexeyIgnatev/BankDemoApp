@@ -338,12 +338,6 @@ class WalletFragment : Fragment() {
                     wallet.sellRate.formatBalanceNew()
                 )
 
-                CurrencyEnum.ESOM -> Currency(
-                    TypeOfCurrency.DIGITAL,
-                    wallet.buyRate.formatBalanceNew(),
-                    wallet.sellRate.formatBalanceNew()
-                )
-
                 CurrencyEnum.USDT_TRC20 -> Currency(
                     TypeOfCurrency.USDT,
                     wallet.buyRate.formatBalanceNew(),
@@ -358,6 +352,12 @@ class WalletFragment : Fragment() {
 
                 CurrencyEnum.ETH -> Currency(
                     TypeOfCurrency.ETH,
+                    wallet.buyRate.formatBalanceNew(),
+                    wallet.sellRate.formatBalanceNew()
+                )
+
+                CurrencyEnum.ESOM -> Currency(
+                    TypeOfCurrency.DIGITAL,
                     wallet.buyRate.formatBalanceNew(),
                     wallet.sellRate.formatBalanceNew()
                 )

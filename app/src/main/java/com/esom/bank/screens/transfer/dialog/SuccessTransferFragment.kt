@@ -1,5 +1,6 @@
 package com.esom.bank.screens.transfer.dialog
 
+import android.content.DialogInterface
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -9,6 +10,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
+import androidx.navigation.fragment.findNavController
+import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.databinding.FragmentSuccessTransferBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,6 +48,10 @@ class SuccessTransferFragment : DialogFragment() {
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             window.attributes = lp
         }
+    }
 
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        findNavController().navigate(NavGraphDirections.startMainFragment())
     }
 }

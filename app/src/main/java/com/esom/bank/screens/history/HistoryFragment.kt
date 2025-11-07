@@ -72,6 +72,10 @@ class HistoryFragment : Fragment() {
         LocalBroadcastManager.getInstance(requireContext())
             .registerReceiver(historyReceiver, IntentFilter("ACTION_HISTORY"))
 
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            refreshData()
+        }
+
         val currentMonth = getCurrentMonthInPrepositional()
         binding.titleMonth.text = currentMonth
         if(model.getWithoutTransactions()) {
@@ -91,14 +95,17 @@ class HistoryFragment : Fragment() {
 
         adapter = HistoryAdapter(requireContext(), model.getWithoutTransactions())
         binding.history.adapter = adapter
-        loadTransactions()
 
-        model.monthTransactions()
+        refreshData()
         model.month.observe(viewLifecycleOwner) { it ->
             when (it) {
                 is UiState.Loading -> {}
-                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
+                is UiState.Error -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    binding.root.showErrorSnackbar(it.message)
+                }
                 is UiState.Success -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
                     Log.d("MONTH_STATS", "Received data: ${it.data.size} transactions")
 
                     it.data.forEachIndexed { index, tx ->
@@ -240,12 +247,17 @@ class HistoryFragment : Fragment() {
         }
     }
 
+    private fun refreshData() {
+        loadTransactions()
+        model.monthTransactions()
+    }
+
     private fun loadTransactions() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 Log.d("HistoryFragment", "Starting to collect paging data")
                 Log.d("HistoryFragment", "Filter transfers: ${!model.getWithoutTransactions()}")
-
+                binding.swipeRefreshLayout.isRefreshing = false
                 model.historyPaging(
                     currencyEnum = model.getCurrency(),
                     fromTime = model.getFromTime(),
@@ -258,6 +270,7 @@ class HistoryFragment : Fragment() {
                 }
             } catch (e: Exception) {
                 Log.e("HistoryFragment", "Error loading transactions: ${e.message}")
+                binding.swipeRefreshLayout.isRefreshing = false
             }
         }
     }

@@ -44,6 +44,9 @@ class NotificationFragment : Fragment() {
         binding.backBtn.setOnClickListener {
             findNavController().popBackStack()
         }
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            model.loadNotifications()
+        }
         model.loadNotifications()
         binding.notifications.adapter = adapter
         model.notifications.observe(viewLifecycleOwner) {
@@ -51,6 +54,7 @@ class NotificationFragment : Fragment() {
                 is UiState.Loading -> {}
                 is UiState.Error -> binding.root.showErrorSnackbar(it.message)
                 is UiState.Success -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
                     val sortedList = it.data.sortedByDescending { notification -> notification.createdAt }
                     adapter.submitNotifications(sortedList)
                 }

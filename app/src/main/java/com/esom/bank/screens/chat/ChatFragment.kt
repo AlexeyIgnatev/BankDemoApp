@@ -44,28 +44,18 @@ class ChatFragment : Fragment() {
             )
             insets
         }
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            refreshMessages()
+        }
+
         binding.backBtn.setOnClickListener {
             findNavController().popBackStack()
         }
-        model.getMessages()
-        model.messages.observe(viewLifecycleOwner) {
-            when (it) {
-                is UiState.Loading -> {}
-                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
-                is UiState.Success -> {
-                    adapter.submitSupportMessages(it.data)
 
-                }
-            }
-        }
+        loadMessages()
+
         binding.messages.adapter = adapter
-        model.sendMessage.observe(viewLifecycleOwner) {
-            when (it) {
-                is UiState.Loading -> {}
-                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
-                is UiState.Success -> model.getMessages()
-            }
-        }
 
         binding.sendBtn.setOnClickListener {
             if (binding.messageInput.text.isNullOrEmpty())
@@ -75,5 +65,40 @@ class ChatFragment : Fragment() {
                 binding.messageInput.setText("")
             }
         }
+    }
+
+    private fun loadMessages() {
+        model.getMessages()
+        model.messages.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> {}
+                is UiState.Error -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    binding.root.showErrorSnackbar(it.message)
+                }
+                is UiState.Success -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    adapter.submitSupportMessages(it.data)
+                }
+            }
+        }
+
+        model.sendMessage.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> {}
+                is UiState.Error -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    binding.root.showErrorSnackbar(it.message)
+                }
+                is UiState.Success -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    model.getMessages()
+                }
+            }
+        }
+    }
+
+    private fun refreshMessages() {
+        model.getMessages()
     }
 }

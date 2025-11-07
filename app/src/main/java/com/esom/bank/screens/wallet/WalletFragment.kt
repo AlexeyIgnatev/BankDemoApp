@@ -49,6 +49,8 @@ class WalletFragment : Fragment() {
     private var cards: List<WalletModel> = emptyList()
     private var infiniteList: List<WalletModel> = emptyList()
     private var currentCurrency: CurrencyEnum = CurrencyEnum.SOM
+    private var currentPosition: Int = 1
+    private var isUserSwiping: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,6 +72,10 @@ class WalletFragment : Fragment() {
             insets
         }
 
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            refreshData()
+        }
+
         val newsAdapter = NewsAdapter()
         val news = listOf(
             News(R.drawable.new_1),
@@ -89,7 +95,7 @@ class WalletFragment : Fragment() {
 
         transactionAdapter.submitList(emptyList())
 
-        model.latestTransactions(CurrencyEnum.SOM)
+        model.latestTransactions(currentCurrency)
         model.history.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is UiState.Loading -> {
@@ -99,6 +105,7 @@ class WalletFragment : Fragment() {
                     transactionAdapter.submitList(emptyList())
                 }
                 is UiState.Success -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
                     if (isDataForCurrentCurrency(state.data)) {
                         transactionAdapter.submitList(state.data)
 
@@ -233,7 +240,7 @@ class WalletFragment : Fragment() {
         }
 
         binding.pager.adapter = adapter
-        binding.pager.setCurrentItem(1, false)
+        binding.pager.setCurrentItem(currentPosition, false)
 
         binding.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -255,6 +262,7 @@ class WalletFragment : Fragment() {
                 }
 
                 currentCurrency = targetCurrency
+                currentPosition = position
 
                 (binding.transactions.adapter as? TransactionAdapter)?.submitList(emptyList())
 
@@ -270,6 +278,17 @@ class WalletFragment : Fragment() {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(cards.size, false)
                         }, 150)
+                    }
+                }
+            }
+
+            override fun onPageScrollStateChanged(state: Int) {
+                when (state) {
+                    ViewPager2.SCROLL_STATE_DRAGGING -> {
+                        isUserSwiping = true
+                    }
+                    ViewPager2.SCROLL_STATE_IDLE -> {
+                        isUserSwiping = false
                     }
                 }
             }
@@ -294,6 +313,7 @@ class WalletFragment : Fragment() {
                 }
 
                 is UiState.Success -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
                     binding.title.text = "${it.data.firstName} ${it.data.lastName}"
                     updateCards(it.data.wallets)
                     updateCurrencies(it.data.wallets)
@@ -303,11 +323,19 @@ class WalletFragment : Fragment() {
         }
     }
 
+    private fun refreshData() {
+        model.updateUserData()
+        model.getSettings()
+        model.latestTransactions(currentCurrency)
+    }
+
     private fun isDataForCurrentCurrency(transactions: List<TransactionModel?>): Boolean {
         return transactions.any { it?.currencyEnum == currentCurrency } || transactions.isEmpty()
     }
 
     private fun updateCards(wallets: List<WalletModel>) {
+        val previousCurrency = currentCurrency
+
         cards = wallets
         infiniteList = mutableListOf<WalletModel>().apply {
             add(cards.last())
@@ -316,7 +344,24 @@ class WalletFragment : Fragment() {
         }
 
         (binding.pager.adapter as? CardAdapter)?.submitList(infiniteList)
-        binding.pager.setCurrentItem(1, false)
+
+        val targetPosition = when (previousCurrency) {
+            CurrencyEnum.SOM -> 1
+            CurrencyEnum.ESOM -> 2
+            CurrencyEnum.BTC -> 3
+            CurrencyEnum.ETH -> 4
+            CurrencyEnum.USDT_TRC20 -> 5
+        }
+
+        if (targetPosition in 1 until infiniteList.size - 1) {
+            currentPosition = targetPosition
+            binding.pager.setCurrentItem(currentPosition, false)
+        } else {
+            currentPosition = 1
+            binding.pager.setCurrentItem(currentPosition, false)
+        }
+
+        currentCurrency = previousCurrency
     }
 
     private fun updateCurrencies(wallets: List<WalletModel>) {
@@ -375,5 +420,20 @@ class WalletFragment : Fragment() {
         }
         binding.totalWaste.text = totalBalanceInSoms.format(2).trimEnd('0')
             .trimEnd('.').ifEmpty { "0" }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("current_position", currentPosition)
+        outState.putString("current_currency", currentCurrency.name)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        savedInstanceState?.let {
+            currentPosition = it.getInt("current_position", 1)
+            val currencyName = it.getString("current_currency", CurrencyEnum.SOM.name)
+            currentCurrency = CurrencyEnum.valueOf(currencyName)
+        }
     }
 }

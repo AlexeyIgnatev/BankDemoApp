@@ -18,6 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class FailTransferFragment : DialogFragment() {
     private lateinit var binding: FragmentFailTransferBinding
+    private val args: FailTransferFragmentArgs by navArgs()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -46,5 +47,7 @@ class FailTransferFragment : DialogFragment() {
             window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             window.attributes = lp
         }
+
+        binding.failTitle.text = args.error
     }
 }

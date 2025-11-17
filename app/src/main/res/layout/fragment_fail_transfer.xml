@@ -1,53 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/_250dp"
-    android:paddingBottom="@dimen/_32dp"
     android:background="@drawable/fail_success_background"
-    tools:ignore="MissingConstraints"
-    tools:context=".screens.transfer.dialog.FailTransferFragment">
+    android:paddingBottom="@dimen/_32dp"
+    tools:context=".screens.transfer.dialog.FailTransferFragment"
+    tools:ignore="MissingConstraints">
 
     <ImageView
         android:id="@+id/icon"
         android:layout_width="@dimen/_110dp"
         android:layout_height="@dimen/_110dp"
+        android:layout_marginTop="@dimen/_14dp"
         android:src="@drawable/cancel_icon"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/fail_title"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/_14dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/fail_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/mont_bold"
+        android:gravity="center"
         android:text="@string/reject"
         android:textColor="#535353"
-        android:gravity="center"
         android:textSize="@dimen/_28sp"
-        android:fontFamily="@font/mont_bold"
+        app:layout_constraintBottom_toTopOf="@id/opinion"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/icon"
-        app:layout_constraintBottom_toTopOf="@id/opinion"/>
+        app:layout_constraintTop_toBottomOf="@id/icon" />
+
     <TextView
-        android:visibility="invisible"
         android:id="@+id/opinion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/account_ban"
-        android:textSize="@dimen/_16sp"
-        android:paddingHorizontal="@dimen/_50dp"
-        android:textColor="#808080"
-        android:gravity="center"
         android:fontFamily="@font/mont_regular"
-        app:layout_constraintTop_toBottomOf="@id/fail_title"
+        android:gravity="center"
+        android:paddingHorizontal="@dimen/_50dp"
+        android:text="@string/anti_fraud"
+        android:textColor="#808080"
+        android:textSize="@dimen/_16sp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/fail_title" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

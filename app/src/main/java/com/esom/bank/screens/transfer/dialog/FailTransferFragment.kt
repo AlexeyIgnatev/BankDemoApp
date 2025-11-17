@@ -48,6 +48,6 @@ class FailTransferFragment : DialogFragment() {
             window.attributes = lp
         }
 
-        binding.failTitle.text = getString(R.string.anti_fraud)
+        binding.opinion.text = getString(R.string.anti_fraud)
     }
 }

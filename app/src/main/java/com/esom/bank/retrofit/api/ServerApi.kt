@@ -59,7 +59,7 @@ interface ServerApi {
         @Body sendMessageDto: SendMessageDto
     ): Response<SupportDto>
 
-    @GET("/api/notifications")
+    @GET("/notifications")
     suspend fun getNotifications(
         @Query("skip") skip: Int = 0,
         @Query("take") take: Int = 40

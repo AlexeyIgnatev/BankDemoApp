@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
-    android:id="@+id/date"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/date"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:text="Сегодня"
-    android:textColor="#1D1D1B"
-    android:textSize="@dimen/_16sp"
+    android:layout_marginTop="@dimen/_20dp"
     android:fontFamily="@font/mont_bold"
     android:letterSpacing="-0.01"
-    android:layout_marginTop="@dimen/_20dp"/>
+    android:paddingHorizontal="@dimen/_12dp"
+    android:textColor="#1D1D1B"
+    android:textSize="@dimen/_16sp"
+    tools:text="Сегодня" />

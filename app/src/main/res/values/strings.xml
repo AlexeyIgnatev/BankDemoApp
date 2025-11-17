@@ -152,4 +152,5 @@
     <string name="buy_btc">Купить BTC</string>
     <string name="buy_eth">Купить ETH</string>
     <string name="logout">Выйти</string>
+    <string name="anti_fraud">Операция приостановлена системой финконтроля</string>
 </resources>

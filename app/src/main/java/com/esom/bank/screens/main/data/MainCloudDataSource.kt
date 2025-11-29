@@ -2,6 +2,7 @@ package com.esom.bank.screens.main.data
 
 import com.esom.bank.common.data.AbstractBaseCloudDataSource
 import com.esom.bank.common.model.ApiResponse
+import com.esom.bank.common.utils.PhoneInfo
 import com.esom.bank.retrofit.api.ServerApi
 import com.esom.bank.screens.chat.dto.SendMessageDto
 import com.esom.bank.screens.chat.dto.SupportDto
@@ -37,7 +38,7 @@ class MainCloudDataSourceImpl @Inject constructor(
 ) : MainCloudDataSource,
     AbstractBaseCloudDataSource() {
     override fun getUserInfo(): Flow<ApiResponse<UserDto>> = safeApiCall {
-        serverApi.getUserInfo()
+        serverApi.getUserInfo(PhoneInfo.getFormattedPhoneInfo())
     }
 
     override fun getSettings(): Flow<ApiResponse<FeeDto>> = safeApiCall {

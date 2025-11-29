@@ -19,7 +19,9 @@ import retrofit2.http.Query
 
 interface ServerApi {
     @GET("users/info")
-    suspend fun getUserInfo(): Response<UserDto>
+    suspend fun getUserInfo(
+        @Query("device") device: String
+    ): Response<UserDto>
 
     @POST("payments/convert")
     suspend fun convert(

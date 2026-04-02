@@ -11,7 +11,7 @@ import kotlinx.parcelize.Parcelize
 data class UserModel(
     val id: Int = 0,
     val firstName: String,
-    val middleName: String,
+    val middleName: String?,
     val lastName: String,
     val email: String,
     val phone: String,

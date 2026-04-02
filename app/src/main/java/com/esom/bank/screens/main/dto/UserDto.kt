@@ -9,7 +9,7 @@ data class UserDto(
     @SerializedName("first_name")
     val firstName: String,
     @SerializedName("middle_name")
-    val middleName: String,
+    val middleName: String?,
     @SerializedName("last_name")
     val lastName: String,
     @SerializedName("phone")

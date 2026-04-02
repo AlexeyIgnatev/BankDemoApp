@@ -20,7 +20,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        buildConfigField "String", "BACKEND_URL", "\"http://212.112.105.164:8000/\""
+        buildConfigField "String", "BACKEND_URL", "\"https://salam-t.fkb.kg:8000/\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

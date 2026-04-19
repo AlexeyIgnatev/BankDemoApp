@@ -17,6 +17,8 @@ import com.esom.bank.screens.main.dto.SwapDto
 import com.esom.bank.screens.main.dto.TransferDto
 import com.esom.bank.screens.main.dto.UserDto
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.notification.dto.FinancialReportRequestDto
+import com.esom.bank.screens.notification.dto.FinancialReportResponseDto
 import com.esom.bank.screens.notification.dto.NotificationDto
 import com.esom.bank.screens.swap.dto.ConvertDto
 import kotlinx.coroutines.flow.Flow
@@ -35,6 +37,11 @@ interface MainCloudDataSource {
     fun getMessages(): Flow<ApiResponse<List<SupportDto>>>
     fun sendMessage(text: String): Flow<ApiResponse<SupportDto>>
     fun getNotifications(): Flow<ApiResponse<List<NotificationDto>>>
+    fun sendFinancialReport(
+        email: String? = null,
+        fromTime: Long? = null,
+        toTime: Long? = null
+    ): Flow<ApiResponse<FinancialReportResponseDto>>
 }
 
 class MainCloudDataSourceImpl @Inject constructor(
@@ -100,5 +107,19 @@ class MainCloudDataSourceImpl @Inject constructor(
 
     override fun getNotifications(): Flow<ApiResponse<List<NotificationDto>>> = safeApiCall {
         serverApi.getNotifications()
+    }
+
+    override fun sendFinancialReport(
+        email: String?,
+        fromTime: Long?,
+        toTime: Long?
+    ): Flow<ApiResponse<FinancialReportResponseDto>> = safeApiCall {
+        serverApi.sendFinancialReport(
+            FinancialReportRequestDto(
+                email = email,
+                fromTime = fromTime,
+                toTime = toTime
+            )
+        )
     }
 }

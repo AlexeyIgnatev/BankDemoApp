@@ -11,6 +11,8 @@ import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.SwapDto
 import com.esom.bank.screens.main.dto.TransferDto
 import com.esom.bank.screens.main.dto.UserDto
+import com.esom.bank.screens.notification.dto.FinancialReportRequestDto
+import com.esom.bank.screens.notification.dto.FinancialReportResponseDto
 import com.esom.bank.screens.notification.dto.NotificationDto
 import com.esom.bank.screens.swap.dto.ConvertDto
 import retrofit2.Response
@@ -73,4 +75,9 @@ interface ServerApi {
         @Query("skip") skip: Int = 0,
         @Query("take") take: Int = 40
     ): Response<List<NotificationDto>>
+
+    @POST("notifications/financial-report")
+    suspend fun sendFinancialReport(
+        @Body requestDto: FinancialReportRequestDto
+    ): Response<FinancialReportResponseDto>
 }

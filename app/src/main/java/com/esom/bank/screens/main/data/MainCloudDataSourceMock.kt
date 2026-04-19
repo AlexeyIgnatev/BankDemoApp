@@ -13,6 +13,7 @@ import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.UserDto
 import com.esom.bank.screens.main.dto.WalletDto
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.notification.dto.FinancialReportResponseDto
 import com.esom.bank.screens.notification.dto.NotificationDto
 import com.esom.bank.screens.swap.dto.ConvertDto
 import kotlinx.coroutines.flow.Flow
@@ -295,6 +296,19 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
             )
         )
         emit(ApiResponse.Success(notifications, code = 200))
+    }
+
+    override fun sendFinancialReport(
+        email: String?,
+        fromTime: Long?,
+        toTime: Long?
+    ): Flow<ApiResponse<FinancialReportResponseDto>> = flow {
+        emit(
+            ApiResponse.Success(
+                FinancialReportResponseDto(successful = true),
+                code = 200
+            )
+        )
     }
 
     private fun getTimestamp(monthsAgo: Int, daysAgo: Int, minutesAgo: Int = 0): Long {

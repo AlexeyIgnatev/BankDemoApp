@@ -57,7 +57,7 @@ class SettingsFragment : Fragment() {
         }
 
         binding.financeBtn.setOnClickListener {
-            findParentNavController().navigate(NavGraphDirections.startChooseDateFragment())
+            model.sendFinancialReport()
         }
 
         binding.changePassBtn.setOnClickListener {
@@ -87,6 +87,14 @@ class SettingsFragment : Fragment() {
                     binding.phone.text = "${it.data.phone.formatPhone()}"
                     binding.mail.text = "${it.data.email}"
                 }
+            }
+        }
+
+        model.financialReport.observe(viewLifecycleOwner) {
+            when (it) {
+                is UiState.Loading -> Unit
+                is UiState.Error -> binding.root.showErrorSnackbar(it.message)
+                is UiState.Success -> binding.root.showSuccessSnackbar("Выгрузка прошла успешно")
             }
         }
 

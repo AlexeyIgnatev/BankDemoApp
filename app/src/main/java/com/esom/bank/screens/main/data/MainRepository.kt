@@ -75,6 +75,11 @@ interface MainRepository {
     fun getNotifications(): Flow<UiState<List<NotificationModel>>>
     fun getMessages(): Flow<UiState<List<SupportModel>>>
     fun sendMessage(text: String): Flow<UiState<SupportModel>>
+    fun sendFinancialReport(
+        email: String? = null,
+        fromTime: Long? = null,
+        toTime: Long? = null
+    ): Flow<UiState<Unit>>
 
     fun clearAllLocalData()
 }
@@ -240,6 +245,24 @@ class MainRepositoryImpl @Inject constructor(
             when(it) {
                 is ApiResponse.Error -> return@map  UiState.Error(it.toString(context))
                 is ApiResponse.Success -> return@map UiState.Success(it.data.toModel())
+            }
+        }
+
+    override fun sendFinancialReport(
+        email: String?,
+        fromTime: Long?,
+        toTime: Long?
+    ): Flow<UiState<Unit>> =
+        mainCloudDataSource.sendFinancialReport(email, fromTime, toTime).map { response ->
+            when (response) {
+                is ApiResponse.Success -> {
+                    if (response.data.successful == true) {
+                        UiState.Success(Unit)
+                    } else {
+                        UiState.Error("Не удалось выгрузить отчет")
+                    }
+                }
+                is ApiResponse.Error -> UiState.Error(response.toString(context))
             }
         }
 

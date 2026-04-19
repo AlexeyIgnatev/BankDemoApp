@@ -60,6 +60,9 @@ class MainViewModel @Inject constructor(
     private val _settings = MutableLiveData<UiState<FeeModel>>()
     val settings: LiveData<UiState<FeeModel>> = _settings
 
+    private val _financialReport = SingleLiveEvent<UiState<Unit>>()
+    val financialReport: LiveData<UiState<Unit>> = _financialReport
+
     fun clearAllDataAndNavigate() {
         _myData.value = UiState.Loading()
         _swapRes.value = UiState.Loading()
@@ -71,6 +74,7 @@ class MainViewModel @Inject constructor(
         _sendMessage.value = UiState.Loading()
         _notifications.value = UiState.Loading()
         _settings.value = UiState.Loading()
+        _financialReport.value = UiState.Loading()
         mainRepository.clearAllLocalData()
     }
 
@@ -213,6 +217,17 @@ class MainViewModel @Inject constructor(
     fun loadNotifications() {
         mainRepository.getNotifications().onEach {
             _notifications.value = it
+        }.launchIn(viewModelScope)
+    }
+
+    fun sendFinancialReport(
+        email: String? = null,
+        fromTime: Long? = null,
+        toTime: Long? = null
+    ) {
+        _financialReport.value = UiState.Loading()
+        mainRepository.sendFinancialReport(email, fromTime, toTime).onEach {
+            _financialReport.value = it
         }.launchIn(viewModelScope)
     }
 }

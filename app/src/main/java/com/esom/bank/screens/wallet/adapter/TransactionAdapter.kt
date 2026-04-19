@@ -16,7 +16,10 @@ import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 
-class TransactionAdapter(private val context: Context) :
+class TransactionAdapter(
+    private val context: Context,
+    private val onTransactionClick: ((TransactionModel) -> Unit)? = null
+) :
     ListAdapter<TransactionModel, TransactionAdapter.TransactionViewHolder>(TransactionDiffCallback()) {
 
     inner class TransactionViewHolder(private val binding: ItemTransactionBinding) :
@@ -96,6 +99,10 @@ class TransactionAdapter(private val context: Context) :
             binding.sum.text = "$sign$formatted"
             binding.somIcon.visibility =
                 if (item.currencyEnum == CurrencyEnum.SOM) View.VISIBLE else View.INVISIBLE
+
+            binding.root.setOnClickListener {
+                onTransactionClick?.invoke(item)
+            }
         }
     }
 
@@ -112,7 +119,8 @@ class TransactionAdapter(private val context: Context) :
 
 class TransactionDiffCallback : DiffUtil.ItemCallback<TransactionModel>() {
     override fun areItemsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean {
-        return oldItem.createdAt == newItem.createdAt
+        return oldItem.transactionId == newItem.transactionId &&
+            oldItem.createdAt == newItem.createdAt
     }
 
     override fun areContentsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean {

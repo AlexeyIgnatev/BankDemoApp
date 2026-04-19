@@ -1,6 +1,8 @@
 package com.esom.bank.screens.main
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -50,6 +52,17 @@ class MainFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(this) {
             if (findMainNavController().previousBackStackEntry != null) {
                 findMainNavController().popBackStack()
+                when(findMainNavController().currentDestination!!.id) {
+                    R.id.walletFragment -> {
+                        binding.bottomNavigationView.selectedItemId = R.id.ic_wallet
+                    }
+                    R.id.historyFragment -> {
+                        binding.bottomNavigationView.selectedItemId = R.id.ic_activity
+                    }
+                    R.id.settingsFragment -> {
+                        binding.bottomNavigationView.selectedItemId = R.id.ic_settings
+                    }
+                }
             }
         }
     }

@@ -17,7 +17,8 @@ import java.util.*
 
 class HistoryAdapter(
     private val context: Context,
-    private var showTransfers: Boolean = true
+    private var showTransfers: Boolean = true,
+    private val onTransactionClick: ((TransactionModel) -> Unit)? = null
 ) : PagingDataAdapter<TransactionModel, HistoryAdapter.HistoryGroupViewHolder>(HistoryDiffCallback()) {
 
     companion object {
@@ -76,7 +77,7 @@ class HistoryAdapter(
 
             binding.date.text = date
 
-            val adapter = TransactionAdapter(context)
+            val adapter = TransactionAdapter(context, onTransactionClick)
             binding.transactions.adapter = adapter
             adapter.submitList(transactions)
         }
@@ -107,7 +108,9 @@ data class HistoryGroup(
 
 class HistoryDiffCallback : DiffUtil.ItemCallback<TransactionModel>() {
     override fun areItemsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean =
-        oldItem.createdAt == newItem.createdAt && oldItem.amount == newItem.amount
+        oldItem.transactionId == newItem.transactionId &&
+            oldItem.createdAt == newItem.createdAt &&
+            oldItem.amount == newItem.amount
 
     override fun areContentsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean =
         oldItem == newItem

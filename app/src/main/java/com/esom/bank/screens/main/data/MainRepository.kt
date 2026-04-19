@@ -7,6 +7,8 @@ import com.esom.bank.screens.auth.data.AuthLocalDataSource
 import com.esom.bank.screens.chat.model.SupportModel
 import com.esom.bank.screens.chat.model.toModel
 import com.esom.bank.screens.history.data.HistoryLocalDataSource
+import com.esom.bank.screens.history.enums.ConversionSide
+import com.esom.bank.screens.history.model.ReceiptModel
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.toModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
@@ -15,6 +17,7 @@ import com.esom.bank.screens.main.model.UserModel
 import com.esom.bank.screens.main.model.toModel
 import com.esom.bank.screens.notification.model.NotificationModel
 import com.esom.bank.screens.notification.model.toModel
+import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
 import com.esom.bank.screens.swap.dto.ConvertDto
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -55,6 +58,7 @@ interface MainRepository {
         currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
         take: Int, skip: Int
     ): Flow<UiState<List<TransactionModel?>>>
+    fun receipt(transactionId: Long, conversionSide: ConversionSide? = null): Flow<UiState<ReceiptModel>>
 
     fun getWithoutTransactions(): Boolean
     fun setWithoutTransactions(without: Boolean)
@@ -79,7 +83,8 @@ class MainRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val mainCloudDataSource: MainCloudDataSource,
     private val authLocalDataSource: AuthLocalDataSource,
-    private val historyLocalDataSource: HistoryLocalDataSource
+    private val historyLocalDataSource: HistoryLocalDataSource,
+    private val pinLocalDataSource: PinLocalDataSource
 ) : MainRepository {
     override fun isAuthenticated(): Boolean =
         authLocalDataSource.getLogin() != null && authLocalDataSource.getPassword() != null
@@ -169,6 +174,17 @@ class MainRepositoryImpl @Inject constructor(
             }
         }
 
+    override fun receipt(
+        transactionId: Long,
+        conversionSide: ConversionSide?
+    ): Flow<UiState<ReceiptModel>> =
+        mainCloudDataSource.receipt(transactionId, conversionSide).map { response ->
+            when (response) {
+                is ApiResponse.Success -> return@map UiState.Success(response.data.toModel())
+                is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
+            }
+        }
+
     override fun getWithoutTransactions(): Boolean {
         return historyLocalDataSource.getWithoutTransactions()
     }
@@ -230,6 +246,7 @@ class MainRepositoryImpl @Inject constructor(
     override fun clearAllLocalData() {
         authLocalDataSource.clearAuthData()
         historyLocalDataSource.clearAllHistoryData()
+        pinLocalDataSource.clearLock()
     }
 
 }

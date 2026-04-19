@@ -5,17 +5,25 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.BuildConfig
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
+import com.esom.bank.common.views.patternlock.PatternLockView
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.databinding.FragmentLogInBinding
+import com.esom.bank.screens.pinCreate.data.LockType
 import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -23,8 +31,10 @@ class LogInFragment : Fragment() {
     private lateinit var binding: FragmentLogInBinding
     private var pinCode = ""
     private val maxPinLength = 4
+    private var currentMode: LockType = LockType.PIN
 
-    @Inject lateinit var localDataSource: PinLocalDataSource
+    @Inject
+    lateinit var localDataSource: PinLocalDataSource
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,13 +54,12 @@ class LogInFragment : Fragment() {
             insets
         }
         binding.versionTitle.text = getString(R.string.version_title, BuildConfig.VERSION_NAME)
-        if(localDataSource.isBio()) binding.bioBtn.visibility = View.VISIBLE
-        binding.authBtn.setOnClickListener {
-            findNavController().navigate(NavGraphDirections.startAuthFragment())
-        }
 
-        binding.bioBtn.setOnClickListener {
-            findNavController().navigate(NavGraphDirections.startSplashLogInFragment())
+        binding.authBtn.setOnClickListener {
+            findNavController().navigate(
+                R.id.startPinCreateFragment,
+                bundleOf("fromSettings" to true)
+            )
         }
 
         binding.pincDig0Btn.setOnClickListener { onDigitClicked("0") }
@@ -65,9 +74,13 @@ class LogInFragment : Fragment() {
         binding.pincDig9Btn.setOnClickListener { onDigitClicked("9") }
 
         binding.pincDigbackBtn.setOnClickListener { onBackspaceClicked() }
+
+        setupPatternListener()
+        initLockMode()
     }
 
     private fun onBackspaceClicked() {
+        if (currentMode != LockType.PIN) return
         if (pinCode.isNotEmpty()) {
             pinCode = pinCode.substring(0, pinCode.length - 1)
             updatePinDots()
@@ -75,6 +88,7 @@ class LogInFragment : Fragment() {
     }
 
     private fun onDigitClicked(digit: String) {
+        if (currentMode != LockType.PIN) return
         if (pinCode.length < maxPinLength) {
             pinCode += digit
             updatePinDots()
@@ -93,11 +107,74 @@ class LogInFragment : Fragment() {
         }
 
         if (pinCode.length == maxPinLength) {
-            if(localDataSource.isBio())  {
-                findNavController().navigate(NavGraphDirections.startSplashLogInFragment())
+            if (localDataSource.verifyPin(pinCode)) {
+                onUnlockSuccess()
             } else {
-                findNavController().navigate(NavGraphDirections.startBioFragment())
+                showPinError(getString(R.string.lock_wrong_password))
             }
         }
+    }
+
+    private fun setupPatternListener() {
+        binding.patternLockView.setOnPatternListener(object : PatternLockView.OnPatternListener {
+            override fun onComplete(ids: ArrayList<Int>): Boolean {
+                val input = ids.toList()
+                if (input.size < 4 || !localDataSource.verifyPattern(input)) {
+                    showPatternError(getString(R.string.lock_wrong_password))
+                    return false
+                }
+                onUnlockSuccess()
+                return true
+            }
+        })
+    }
+
+    private fun initLockMode() {
+        if (!localDataSource.hasLock()) {
+            findNavController().navigate(
+                R.id.startPinCreateFragment,
+                bundleOf("fromSettings" to false)
+            )
+            return
+        }
+
+        currentMode = localDataSource.getLockType() ?: LockType.PIN
+        binding.pinSection.isVisible = currentMode == LockType.PIN
+        binding.patternSection.isVisible = currentMode == LockType.PATTERN
+        binding.lockTitle.text = if (currentMode == LockType.PIN) {
+            getString(R.string.lock_enter_pin)
+        } else {
+            getString(R.string.lock_enter_pattern)
+        }
+        binding.errorCard.isVisible = false
+        binding.patternErrorCard.isVisible = false
+        pinCode = ""
+        updatePinDots()
+    }
+
+    private fun showPinError(message: String) {
+        binding.errorText.text = message
+        binding.errorCard.isVisible = true
+        val shake = AnimationUtils.loadAnimation(requireContext(), R.anim.shake)
+        binding.pinLayout.startAnimation(shake)
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(900L)
+            binding.errorCard.isVisible = false
+            pinCode = ""
+            updatePinDots()
+        }
+    }
+
+    private fun showPatternError(message: String) {
+        binding.patternErrorText.text = message
+        binding.patternErrorCard.isVisible = true
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(900L)
+            binding.patternErrorCard.isVisible = false
+        }
+    }
+
+    private fun onUnlockSuccess() {
+        findNavController().navigate(NavGraphDirections.startMainFragment())
     }
 }

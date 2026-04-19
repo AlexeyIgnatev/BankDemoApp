@@ -4,7 +4,9 @@ import com.esom.bank.R
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.screens.chat.dto.SupportDto
 import com.esom.bank.screens.chat.enums.SupportRole
+import com.esom.bank.screens.history.dto.ReceiptResponseDto
 import com.esom.bank.screens.history.dto.TransactionDto
+import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.main.dto.FeeDto
 import com.esom.bank.screens.main.dto.StatusDto
@@ -131,8 +133,12 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
             val randomType = TransactionEnum.values()[index % TransactionEnum.values().size]
             val createdAt = System.currentTimeMillis() - index * 60_000L
             TransactionDto(
+                transactionId = 10_000L + index,
                 currencyEnum = randomCurrency,
                 type = randomType,
+                conversionSide = if (randomType == TransactionEnum.CONVERSION) {
+                    if (index % 2 == 0) ConversionSide.IN else ConversionSide.OUT
+                } else null,
                 amount = (10..1000).random().toDouble(),
                 successful = true,
                 createdAt = createdAt
@@ -148,6 +154,29 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
         val result = filtered.drop(skip).take(take)
 
         emit(ApiResponse.Success(result, code = 200))
+    }
+
+    override fun receipt(
+        transactionId: Long,
+        conversionSide: ConversionSide?
+    ): Flow<ApiResponse<ReceiptResponseDto>> = flow {
+        emit(
+            ApiResponse.Success(
+                ReceiptResponseDto(
+                    successful = true,
+                    amount = 260.0,
+                    type = "TRANSFER",
+                    currency = "SOM",
+                    createdAt = System.currentTimeMillis(),
+                    fee = 0.0,
+                    accountDetails = "996557501281",
+                    recipientFullName = "Мирлан Т. у.",
+                    paidFromAccount = "****1234",
+                    receiptNumber = "TX-$transactionId-${System.currentTimeMillis()}"
+                ),
+                code = 200
+            )
+        )
     }
 
     override fun getMessages(): Flow<ApiResponse<List<SupportDto>>> = flow {

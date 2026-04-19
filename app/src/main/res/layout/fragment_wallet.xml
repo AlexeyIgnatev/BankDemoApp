@@ -229,6 +229,7 @@
                             android:layout_height="match_parent"
                             tools:listitem="@layout/item_currency"
                             android:padding="@dimen/_16dp"
+                            tools:itemCount="5"
                             android:clipToPadding="false"
                             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                             android:orientation="horizontal"/>

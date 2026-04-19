@@ -3,6 +3,8 @@ package com.esom.bank.retrofit.api
 import com.esom.bank.screens.chat.dto.SendMessageDto
 import com.esom.bank.screens.chat.dto.SupportDto
 import com.esom.bank.screens.history.dto.GetTransactionsDto
+import com.esom.bank.screens.history.dto.ReceiptRequestDto
+import com.esom.bank.screens.history.dto.ReceiptResponseDto
 import com.esom.bank.screens.history.dto.TransactionDto
 import com.esom.bank.screens.main.dto.FeeDto
 import com.esom.bank.screens.main.dto.StatusDto
@@ -47,6 +49,11 @@ interface ServerApi {
     suspend fun history(
         @Body transactionsDto: GetTransactionsDto
     ): Response<List<TransactionDto?>>
+
+    @POST("payments/receipt")
+    suspend fun receipt(
+        @Body receiptRequestDto: ReceiptRequestDto
+    ): Response<ReceiptResponseDto>
 
     @GET("blockchain-config/settings")
     suspend fun getSettings(): Response<FeeDto>

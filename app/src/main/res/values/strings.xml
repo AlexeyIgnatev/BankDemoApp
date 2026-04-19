@@ -153,4 +153,25 @@
     <string name="buy_eth">Купить ETH</string>
     <string name="logout">Выйти</string>
     <string name="anti_fraud">Операция приостановлена системой финконтроля</string>
+
+    <string name="lock_create_pin_title">Создайте PIN-код</string>
+    <string name="lock_change_pin_title">Измените PIN-код</string>
+    <string name="lock_create_pattern_title">Создайте графический ключ</string>
+    <string name="lock_change_pattern_title">Измените графический ключ</string>
+    <string name="lock_enter_pin">Введите PIN-код</string>
+    <string name="lock_confirm_pin">Повторите PIN-код</string>
+    <string name="lock_enter_pattern">Нарисуйте графический ключ</string>
+    <string name="lock_confirm_pattern">Повторите графический ключ</string>
+    <string name="lock_switch_to_pattern">Использовать графический ключ</string>
+    <string name="lock_switch_to_pin">Использовать PIN-код</string>
+    <string name="lock_reset">Сбросить</string>
+    <string name="lock_pin_not_match">PIN-коды не совпадают</string>
+    <string name="lock_pattern_not_match">Графические ключи не совпадают</string>
+    <string name="lock_pattern_min_points">Минимум 4 точки</string>
+    <string name="lock_wrong_password">Неверный код доступа</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="send_title">Отправить</string>
+    <string name="available_title">Доступно: %s</string>
+    <string name="receive_title">Получить</string>
+    <string name="all">Все</string>
 </resources>

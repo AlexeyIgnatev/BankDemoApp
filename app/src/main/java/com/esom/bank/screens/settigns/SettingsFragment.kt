@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
@@ -60,7 +61,10 @@ class SettingsFragment : Fragment() {
         }
 
         binding.changePassBtn.setOnClickListener {
-            findParentNavController().navigate(NavGraphDirections.startPinCreateFragment())
+            findParentNavController().navigate(
+                R.id.startPinCreateFragment,
+                bundleOf("fromSettings" to true)
+            )
         }
 
         binding.logInBtn.setOnClickListener {

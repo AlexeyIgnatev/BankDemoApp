@@ -1,12 +1,15 @@
 package com.esom.bank.screens.history
 
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Color
 import android.os.Bundle
+import android.os.Build
 import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -16,25 +19,25 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import androidx.navigation.fragment.findNavController
 import androidx.paging.PagingData
-import androidx.paging.filter
-import androidx.paging.map
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
-import com.esom.bank.common.utils.format
+import com.esom.bank.common.utils.files.ReceiptFileUtils
 import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
+import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentHistoryBinding
 import com.esom.bank.screens.history.adapter.HistoryAdapter
+import com.esom.bank.screens.history.dialog.ReceiptConfirmDialogFragment
 import com.esom.bank.screens.history.enums.TransactionEnum
+import com.esom.bank.screens.history.model.ReceiptModel
+import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.Locale
@@ -45,6 +48,19 @@ class HistoryFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
 
     private lateinit var adapter: HistoryAdapter
+    private var selectedTransaction: TransactionModel? = null
+    private var pendingReceiptToSave: ReceiptModel? = null
+
+    private val writeStoragePermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            val pendingReceipt = pendingReceiptToSave
+            pendingReceiptToSave = null
+            if (granted && pendingReceipt != null) {
+                saveReceiptToDownloads(pendingReceipt)
+            } else if (!granted) {
+                binding.root.showErrorSnackbar("Нет разрешения для сохранения в загрузки")
+            }
+        }
 
     private val historyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -93,8 +109,26 @@ class HistoryFragment : Fragment() {
             adapter.updateFilter(newValue)
         }
 
-        adapter = HistoryAdapter(requireContext(), model.getWithoutTransactions())
+        adapter = HistoryAdapter(
+            context = requireContext(),
+            showTransfers = model.getWithoutTransactions()
+        ) { transaction ->
+            selectedTransaction = transaction
+            ReceiptConfirmDialogFragment().show(
+                childFragmentManager,
+                ReceiptConfirmDialogFragment::class.java.simpleName
+            )
+        }
         binding.history.adapter = adapter
+
+        childFragmentManager.setFragmentResultListener(
+            ReceiptConfirmDialogFragment.REQUEST_KEY,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            if (bundle.getBoolean(ReceiptConfirmDialogFragment.CONFIRMED_KEY)) {
+                selectedTransaction?.let { requestReceipt(it) }
+            }
+        }
 
         refreshData()
         model.month.observe(viewLifecycleOwner) { it ->
@@ -222,6 +256,14 @@ class HistoryFragment : Fragment() {
         binding.activeBtn.setOnClickListener {
             findParentNavController().navigate(NavGraphDirections.startChooseActiveFragment())
         }
+
+        model.receipt.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Loading -> Unit
+                is UiState.Error -> binding.root.showErrorSnackbar(state.message)
+                is UiState.Success -> handleReceiptResult(state.data)
+            }
+        }
     }
 
     private fun getCurrentMonthInPrepositional(): String {
@@ -250,6 +292,47 @@ class HistoryFragment : Fragment() {
     private fun refreshData() {
         loadTransactions()
         model.monthTransactions()
+    }
+
+    private fun requestReceipt(transaction: TransactionModel) {
+        val transactionId = transaction.transactionId
+        if (transactionId == null) {
+            binding.root.showErrorSnackbar("Не удалось определить ID операции")
+            return
+        }
+
+        val conversionSide = if (transaction.type == TransactionEnum.CONVERSION) {
+            transaction.conversionSide
+        } else {
+            null
+        }
+
+        model.receipt(transactionId, conversionSide)
+    }
+
+    private fun handleReceiptResult(receipt: ReceiptModel) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            pendingReceiptToSave = receipt
+            writeStoragePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            return
+        }
+
+        saveReceiptToDownloads(receipt)
+    }
+
+    private fun saveReceiptToDownloads(receipt: ReceiptModel) {
+        runCatching {
+            ReceiptFileUtils.saveReceiptToDownloads(requireContext(), receipt)
+        }.onSuccess {
+            binding.root.showSuccessSnackbar("Квитанция в загрузках")
+        }.onFailure { error ->
+            binding.root.showErrorSnackbar(error.message ?: getString(R.string.something_went_wrong))
+        }
     }
 
     private fun loadTransactions() {

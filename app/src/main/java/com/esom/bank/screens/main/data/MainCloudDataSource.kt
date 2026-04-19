@@ -7,7 +7,10 @@ import com.esom.bank.retrofit.api.ServerApi
 import com.esom.bank.screens.chat.dto.SendMessageDto
 import com.esom.bank.screens.chat.dto.SupportDto
 import com.esom.bank.screens.history.dto.GetTransactionsDto
+import com.esom.bank.screens.history.dto.ReceiptRequestDto
+import com.esom.bank.screens.history.dto.ReceiptResponseDto
 import com.esom.bank.screens.history.dto.TransactionDto
+import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.main.dto.FeeDto
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.SwapDto
@@ -28,6 +31,7 @@ interface MainCloudDataSource {
     fun transfer(amount: Double, phone: String, address: String? = null, currencyEnum: CurrencyEnum): Flow<ApiResponse<StatusDto>>
     fun history(currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
                 take: Int, skip: Int): Flow<ApiResponse<List<TransactionDto?>>>
+    fun receipt(transactionId: Long, conversionSide: ConversionSide? = null): Flow<ApiResponse<ReceiptResponseDto>>
     fun getMessages(): Flow<ApiResponse<List<SupportDto>>>
     fun sendMessage(text: String): Flow<ApiResponse<SupportDto>>
     fun getNotifications(): Flow<ApiResponse<List<NotificationDto>>>
@@ -72,6 +76,18 @@ class MainCloudDataSourceImpl @Inject constructor(
         serverApi.history(GetTransactionsDto(
             currencyEnum, fromTime, toTime, take, skip
         ))
+    }
+
+    override fun receipt(
+        transactionId: Long,
+        conversionSide: ConversionSide?
+    ): Flow<ApiResponse<ReceiptResponseDto>> = safeApiCall {
+        serverApi.receipt(
+            ReceiptRequestDto(
+                transactionId = transactionId,
+                conversionSide = conversionSide
+            )
+        )
     }
 
     override fun getMessages(): Flow<ApiResponse<List<SupportDto>>> = safeApiCall {

@@ -43,8 +43,10 @@ class TransactionsPagingSource(
                 is UiState.Success -> {
                     val transactions = finalResult.data.map { dto ->
                         TransactionModel(
+                            transactionId = dto?.transactionId,
                             currencyEnum = dto?.currencyEnum,
                             type = dto?.type,
+                            conversionSide = dto?.conversionSide,
                             amount = dto?.amount,
                             successful = dto?.successful,
                             createdAt = dto?.createdAt

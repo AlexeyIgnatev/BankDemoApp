@@ -1,30 +1,27 @@
-package com.esom.bank.screens.transfer.dialog
+package com.esom.bank.screens.history.dialog
 
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.esom.bank.R
-import com.esom.bank.databinding.FragmentFailTransferBinding
-import dagger.hilt.android.AndroidEntryPoint
+import com.esom.bank.databinding.FragmentReceiptConfirmBinding
 
-@AndroidEntryPoint
-class FailTransferFragment : DialogFragment() {
-    private lateinit var binding: FragmentFailTransferBinding
-    private val args: FailTransferFragmentArgs by navArgs()
+class ReceiptConfirmDialogFragment : DialogFragment() {
+    private lateinit var binding: FragmentReceiptConfirmBinding
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentFailTransferBinding.inflate(inflater, container, false)
+        binding = FragmentReceiptConfirmBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -35,9 +32,7 @@ class FailTransferFragment : DialogFragment() {
         if (window != null) {
             val displayMetrics = Resources.getSystem().displayMetrics
             val screenWidth = displayMetrics.widthPixels
-
             val paddingInPixels = (16 * displayMetrics.density).toInt()
-
             val heightInPixels = requireContext().resources.getDimensionPixelSize(R.dimen._250dp)
 
             val lp = WindowManager.LayoutParams().apply {
@@ -49,9 +44,18 @@ class FailTransferFragment : DialogFragment() {
             window.attributes = lp
         }
 
-        binding.opinion.text = getString(R.string.anti_fraud)
-        binding.closeBtn.setOnClickListener {
-            findNavController().popBackStack()
+        binding.closeBtn.setOnClickListener { dismiss() }
+        binding.confirmBtn.setOnClickListener {
+            parentFragmentManager.setFragmentResult(
+                REQUEST_KEY,
+                bundleOf(CONFIRMED_KEY to true)
+            )
+            dismiss()
         }
+    }
+
+    companion object {
+        const val REQUEST_KEY = "receipt_confirm_request"
+        const val CONFIRMED_KEY = "receipt_confirmed"
     }
 }

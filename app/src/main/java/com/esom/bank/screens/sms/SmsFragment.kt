@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.core.widget.addTextChangedListener
@@ -111,7 +112,10 @@ class SmsFragment : Fragment() {
         allFields.forEach { field ->
             field.addTextChangedListener {
                 if (allFields.all { !it.text.isNullOrEmpty() }) {
-                    findNavController().navigate(NavGraphDirections.startPinCreateFragment())
+                    findNavController().navigate(
+                        R.id.startPinCreateFragment,
+                        bundleOf("fromSettings" to false)
+                    )
                 }
             }
         }

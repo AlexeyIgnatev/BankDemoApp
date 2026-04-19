@@ -29,12 +29,5 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        val navController = findNavController(R.id.nav_host_fragment)
-        onBackPressedDispatcher.addCallback(this) {
-            if (navController.previousBackStackEntry != null) {
-                navController.popBackStack()
-            } else moveTaskToBack(true)
-        }
     }
 }

@@ -78,4 +78,10 @@
 
     <color name="snackbar_error_bg_color">#3D0F14</color>
     <color name="snackbar_error_text_color">#F5F0E7</color>
+
+    <color name="lock_pattern_regular">#D8DBE9</color>
+    <color name="lock_pattern_selected">#EF6161</color>
+    <color name="lock_pattern_error">#EF6161</color>
+    <color name="lock_pattern_dot">#C2C2C2</color>
+    <color name="lock_pattern_bg">#E4E4E4</color>
 </resources>

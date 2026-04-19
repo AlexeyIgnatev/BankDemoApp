@@ -122,7 +122,12 @@
     <fragment
         android:id="@+id/pinCreateFragment"
         android:name="com.esom.bank.screens.pinCreate.PinCreateFragment"
-        tools:layout="@layout/fragment_pin_create" />
+        tools:layout="@layout/fragment_pin_create">
+        <argument
+            android:name="fromSettings"
+            android:defaultValue="false"
+            app:argType="boolean" />
+    </fragment>
     <action
         android:id="@+id/startPinCreateFragment"
         app:destination="@id/pinCreateFragment"

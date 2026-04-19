@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.SingleLiveEvent
+import com.esom.bank.screens.history.enums.ConversionSide
+import com.esom.bank.screens.history.model.ReceiptModel
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.main.data.MainRepository
 import com.esom.bank.screens.main.enums.CurrencyEnum
@@ -23,7 +25,6 @@ import com.esom.bank.screens.history.pagingsource.TransactionsPagingSource
 import com.esom.bank.screens.main.model.FeeModel
 import com.esom.bank.screens.notification.model.NotificationModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -44,6 +45,9 @@ class MainViewModel @Inject constructor(
     private val _month = SingleLiveEvent<UiState<List<TransactionModel?>>>()
     val month: LiveData<UiState<List<TransactionModel?>>> = _month
 
+    private val _receipt = SingleLiveEvent<UiState<ReceiptModel>>()
+    val receipt: LiveData<UiState<ReceiptModel>> = _receipt
+
     private val _messages = MutableLiveData<UiState<List<SupportModel>>>()
     val messages: LiveData<UiState<List<SupportModel>>> = _messages
 
@@ -62,6 +66,7 @@ class MainViewModel @Inject constructor(
         _transferRes.value = UiState.Loading()
         _history.value = UiState.Loading()
         _month.value = UiState.Loading()
+        _receipt.value = UiState.Loading()
         _messages.value = UiState.Loading()
         _sendMessage.value = UiState.Loading()
         _notifications.value = UiState.Loading()
@@ -148,6 +153,13 @@ class MainViewModel @Inject constructor(
                 is UiState.Success -> UiState.Success(uiState.data.filterNotNull())
                 else -> uiState
             }
+        }.launchIn(viewModelScope)
+    }
+
+    fun receipt(transactionId: Long, conversionSide: ConversionSide? = null) {
+        _receipt.value = UiState.Loading()
+        mainRepository.receipt(transactionId, conversionSide).onEach {
+            _receipt.value = it
         }.launchIn(viewModelScope)
     }
 

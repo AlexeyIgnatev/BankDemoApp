@@ -4,313 +4,457 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0EEEE"
-    tools:context=".screens.login.LogInFragment"
-    tools:ignore="MissingConstraints">
+    android:background="#F3F3F3"
+    tools:context=".screens.login.LogInFragment">
 
-    <LinearLayout
-        android:id="@+id/pin_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/_31dp"
-        android:layout_marginTop="@dimen/_130dp"
-        android:orientation="horizontal"
+    <TextView
+        android:id="@+id/lock_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:fontFamily="@font/mont_semibold"
+        android:gravity="center"
+        android:text="@string/lock_enter_pin"
+        android:textColor="#1D1D1B"
+        android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/first_layout"
-            android:layout_width="@dimen/_22dp"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="@dimen/_5dp">
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/error_card"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="#EF6161"
+        app:cardCornerRadius="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lock_title">
+
+        <TextView
+            android:id="@+id/error_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="8dp"
+            android:text="@string/lock_wrong_password"
+            android:textColor="@color/white"
+            android:textSize="13sp" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/pin_section"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/auth_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/error_card">
+
+        <LinearLayout
+            android:id="@+id/pin_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <View
                 android:id="@+id/one"
-                android:layout_width="@dimen/_9dp"
-                android:layout_height="@dimen/_9dp"
-                android:background="@drawable/pin_not_choose_background"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/second_layout"
-            android:layout_width="@dimen/_22dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="@dimen/_6dp"
-            android:layout_marginEnd="@dimen/_6dp">
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="10dp"
+                android:background="@drawable/pin_not_choose_background" />
 
             <View
                 android:id="@+id/two"
-                android:layout_width="@dimen/_9dp"
-                android:layout_height="@dimen/_9dp"
-                android:background="@drawable/pin_not_choose_background"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/third_layout"
-            android:layout_width="@dimen/_22dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="@dimen/_6dp"
-            android:layout_marginEnd="@dimen/_6dp">
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="10dp"
+                android:background="@drawable/pin_not_choose_background" />
 
             <View
                 android:id="@+id/three"
-                android:layout_width="@dimen/_9dp"
-                android:layout_height="@dimen/_9dp"
-                android:background="@drawable/pin_not_choose_background"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/fourth_layout"
-            android:layout_width="@dimen/_22dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="@dimen/_6dp"
-            android:layout_marginEnd="@dimen/_6dp">
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="10dp"
+                android:background="@drawable/pin_not_choose_background" />
 
             <View
                 android:id="@+id/four"
-                android:layout_width="@dimen/_9dp"
-                android:layout_height="@dimen/_9dp"
-                android:background="@drawable/pin_not_choose_background"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </LinearLayout>
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="10dp"
+                android:background="@drawable/pin_not_choose_background" />
+        </LinearLayout>
 
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/pin_digs_lay"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_70dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pin_layout">
-
-        <TextView
-            android:id="@+id/pinc_dig1_btn"
-            android:layout_width="@dimen/_50dp"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/mont_semibold"
-            android:gravity="center"
-            android:letterSpacing="-0.01"
-            android:padding="@dimen/_4dp"
-            android:text="1"
-            android:textColor="#1D1D1B"
-            android:textSize="@dimen/_32sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed" />
-
-        <TextView
-            android:id="@+id/pinc_dig2_btn"
-            android:layout_width="@dimen/_50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_60dp"
-            android:fontFamily="@font/mont_semibold"
-            android:gravity="center"
-            android:letterSpacing="-0.01"
-            android:padding="@dimen/_4dp"
-            android:text="2"
-            android:textColor="#1D1D1B"
-            android:textSize="@dimen/_32sp"
-            app:layout_constraintStart_toEndOf="@id/pinc_dig1_btn"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/pinc_dig3_btn"
-            android:layout_width="@dimen/_50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_60dp"
-            android:fontFamily="@font/mont_semibold"
-            android:gravity="center"
-            android:letterSpacing="-0.01"
-            android:padding="@dimen/_4dp"
-            android:text="3"
-            android:textColor="#1D1D1B"
-            android:textSize="@dimen/_32sp"
-            app:layout_constraintStart_toEndOf="@id/pinc_dig2_btn"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/pinc_dig4_btn"
-            android:layout_width="@dimen/_50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_30dp"
-            android:fontFamily="@font/mont_semibold"
-            android:gravity="center"
-            android:letterSpacing="-0.01"
-            android:padding="@dimen/_4dp"
-            android:text="4"
-            android:textColor="#1D1D1B"
-            android:textSize="@dimen/_32sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/pinc_dig1_btn"
-            app:layout_constraintVertical_chainStyle="packed" />
-
-        <TextView
-            android:id="@+id/pinc_dig5_btn"
-            android:layout_width="@dimen/_50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_60dp"
-            android:layout_marginTop="@dimen/_30dp"
-            android:fontFamily="@font/mont_semibold"
-            android:gravity="center"
-            android:letterSpacing="-0.01"
-            android:padding="@dimen/_4dp"
-            android:text="5"
-            android:textColor="#1D1D1B"
-            android:textSize="@dimen/_32sp"
-            app:layout_constraintStart_toEndOf="@id/pinc_dig4_btn"
-            app:layout_constraintTop_toBottomOf="@id/pinc_dig1_btn" />
-
-        <TextView
-            android:id="@+id/pinc_dig6_btn"
-            android:layout_width="@dimen/_50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_60dp"
-            android:layout_marginTop="@dimen/_30dp"
-            android:fontFamily="@font/mont_semibold"
-            android:gravity="center"
-            android:letterSpacing="-0.01"
-            android:padding="@dimen/_4dp"
-            android:text="6"
-            android:textColor="#1D1D1B"
-            android:textSize="@dimen/_32sp"
-            app:layout_constraintStart_toEndOf="@id/pinc_dig5_btn"
-            app:layout_constraintTop_toBottomOf="@id/pinc_dig1_btn" />
-
-        <TextView
-            android:id="@+id/pinc_dig7_btn"
-            android:layout_width="@dimen/_50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_30dp"
-            android:fontFamily="@font/mont_semibold"
-            android:gravity="center"
-            android:letterSpacing="-0.01"
-            android:padding="@dimen/_4dp"
-            android:text="7"
-            android:textColor="#1D1D1B"
-            android:textSize="@dimen/_32sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/pinc_dig4_btn"
-            app:layout_constraintVertical_chainStyle="packed" />
-
-        <TextView
-            android:id="@+id/pinc_dig8_btn"
-            android:layout_width="@dimen/_50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_60dp"
-            android:layout_marginTop="@dimen/_30dp"
-            android:fontFamily="@font/mont_semibold"
-            android:gravity="center"
-            android:letterSpacing="-0.01"
-            android:padding="@dimen/_4dp"
-            android:text="8"
-            android:textColor="#1D1D1B"
-            android:textSize="@dimen/_32sp"
-            app:layout_constraintStart_toEndOf="@id/pinc_dig7_btn"
-            app:layout_constraintTop_toBottomOf="@id/pinc_dig4_btn" />
-
-        <TextView
-            android:id="@+id/pinc_dig9_btn"
-            android:layout_width="@dimen/_50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_60dp"
-            android:layout_marginTop="@dimen/_30dp"
-            android:fontFamily="@font/mont_semibold"
-            android:gravity="center"
-            android:letterSpacing="-0.01"
-            android:padding="@dimen/_4dp"
-            android:text="9"
-            android:textColor="#1D1D1B"
-            android:textSize="@dimen/_32sp"
-            app:layout_constraintStart_toEndOf="@id/pinc_dig8_btn"
-            app:layout_constraintTop_toBottomOf="@id/pinc_dig4_btn" />
-
-        <ImageButton
-            android:visibility="gone"
-            android:id="@+id/bio_btn"
-            android:layout_width="@dimen/_54dp"
-            android:layout_height="@dimen/_54dp"
-            android:scaleType="centerCrop"
-            android:scaleY="1.5"
-            android:scaleX="1.5"
-            android:layout_marginTop="@dimen/_30dp"
-            android:padding="@dimen/_12dp"
-            android:background="@android:color/transparent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pinc_dig9_btn"
-            app:srcCompat="@drawable/pin_bio_icon" />
-
-        <TextView
-            android:id="@+id/pinc_dig0_btn"
-            android:layout_width="@dimen/_50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_60dp"
-            android:layout_marginTop="@dimen/_30dp"
-            android:fontFamily="@font/mont_semibold"
-            android:gravity="center"
-            android:letterSpacing="-0.01"
-            android:padding="@dimen/_4dp"
-            android:text="0"
-            android:textColor="#1D1D1B"
-            android:textSize="@dimen/_32sp"
-            app:layout_constraintStart_toEndOf="@id/pinc_dig7_btn"
-            app:layout_constraintTop_toBottomOf="@id/pinc_dig8_btn" />
-
-        <ImageButton
-            android:id="@+id/pinc_digback_btn"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/pin_digs_lay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_60dp"
-            android:layout_marginTop="@dimen/_30dp"
-            android:background="@android:color/transparent"
-            android:paddingLeft="@dimen/_4dp"
-            android:paddingTop="@dimen/_8dp"
-            android:paddingRight="@dimen/_20dp"
-            android:paddingBottom="@dimen/_8dp"
-            app:layout_constraintStart_toEndOf="@+id/pinc_dig8_btn"
-            app:layout_constraintTop_toBottomOf="@+id/pinc_dig9_btn"
-            app:srcCompat="@drawable/ic_backspace" />
+            android:layout_marginTop="36dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pin_layout">
+
+            <TextView
+                android:id="@+id/pinc_dig1_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="#1D1D1B"
+                android:textSize="30sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/pinc_dig2_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="60dp"
+                android:gravity="center"
+                android:text="2"
+                android:textColor="#1D1D1B"
+                android:textSize="30sp"
+                app:layout_constraintStart_toEndOf="@id/pinc_dig1_btn"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/pinc_dig3_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="60dp"
+                android:gravity="center"
+                android:text="3"
+                android:textColor="#1D1D1B"
+                android:textSize="30sp"
+                app:layout_constraintStart_toEndOf="@id/pinc_dig2_btn"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/pinc_dig4_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:text="4"
+                android:textColor="#1D1D1B"
+                android:textSize="30sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/pinc_dig1_btn" />
+
+            <TextView
+                android:id="@+id/pinc_dig5_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:text="5"
+                android:textColor="#1D1D1B"
+                android:textSize="30sp"
+                app:layout_constraintStart_toEndOf="@id/pinc_dig4_btn"
+                app:layout_constraintTop_toBottomOf="@id/pinc_dig2_btn" />
+
+            <TextView
+                android:id="@+id/pinc_dig6_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:text="6"
+                android:textColor="#1D1D1B"
+                android:textSize="30sp"
+                app:layout_constraintStart_toEndOf="@id/pinc_dig5_btn"
+                app:layout_constraintTop_toBottomOf="@id/pinc_dig3_btn" />
+
+            <TextView
+                android:id="@+id/pinc_dig7_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:text="7"
+                android:textColor="#1D1D1B"
+                android:textSize="30sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/pinc_dig4_btn" />
+
+            <TextView
+                android:id="@+id/pinc_dig8_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:text="8"
+                android:textColor="#1D1D1B"
+                android:textSize="30sp"
+                app:layout_constraintStart_toEndOf="@id/pinc_dig7_btn"
+                app:layout_constraintTop_toBottomOf="@id/pinc_dig5_btn" />
+
+            <TextView
+                android:id="@+id/pinc_dig9_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:text="9"
+                android:textColor="#1D1D1B"
+                android:textSize="30sp"
+                app:layout_constraintStart_toEndOf="@id/pinc_dig8_btn"
+                app:layout_constraintTop_toBottomOf="@id/pinc_dig6_btn" />
+
+            <TextView
+                android:id="@+id/pinc_dig0_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:text="0"
+                android:textColor="#1D1D1B"
+                android:textSize="30sp"
+                app:layout_constraintStart_toStartOf="@id/pinc_dig8_btn"
+                app:layout_constraintTop_toBottomOf="@id/pinc_dig8_btn" />
+
+            <ImageButton
+                android:id="@+id/pinc_digback_btn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="24dp"
+                android:background="@android:color/transparent"
+                android:padding="10dp"
+                app:layout_constraintStart_toEndOf="@id/pinc_dig0_btn"
+                app:layout_constraintTop_toBottomOf="@id/pinc_dig9_btn"
+                app:srcCompat="@drawable/ic_backspace" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <TextView
-        android:id="@+id/version_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_27dp"
-        android:fontFamily="@font/mont_semibold"
-        android:gravity="center"
-        android:text="@string/version_title"
-        android:textColor="#B2B2B2"
-        android:textSize="@dimen/_14sp"
-        app:layout_constraintBottom_toBottomOf="parent" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/pattern_section"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/auth_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/error_card">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/pattern_dots_preview"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
+            app:layout_constraintBottom_toBottomOf="@id/pattern_lock_view"
+            app:layout_constraintEnd_toEndOf="@id/pattern_lock_view"
+            app:layout_constraintStart_toStartOf="@id/pattern_lock_view"
+            app:layout_constraintTop_toTopOf="@id/pattern_lock_view">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/vertical_line_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent=".164" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/vertical_line_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent=".499" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/vertical_line_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent=".836" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/horizontal_line_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_percent=".164" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/horizontal_line_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_percent=".499" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/horizontal_line_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_percent=".836" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/graphic_dot_bg"
+                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_1"
+                app:layout_constraintEnd_toEndOf="@id/vertical_line_1"
+                app:layout_constraintStart_toStartOf="@id/vertical_line_1"
+                app:layout_constraintTop_toTopOf="@id/horizontal_line_1" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/graphic_dot_bg"
+                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_1"
+                app:layout_constraintEnd_toEndOf="@id/vertical_line_2"
+                app:layout_constraintStart_toStartOf="@id/vertical_line_2"
+                app:layout_constraintTop_toTopOf="@id/horizontal_line_1" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/graphic_dot_bg"
+                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_1"
+                app:layout_constraintEnd_toEndOf="@id/vertical_line_3"
+                app:layout_constraintStart_toStartOf="@id/vertical_line_3"
+                app:layout_constraintTop_toTopOf="@id/horizontal_line_1" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/graphic_dot_bg"
+                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_2"
+                app:layout_constraintEnd_toEndOf="@id/vertical_line_1"
+                app:layout_constraintStart_toStartOf="@id/vertical_line_1"
+                app:layout_constraintTop_toTopOf="@id/horizontal_line_2" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/graphic_dot_bg"
+                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_2"
+                app:layout_constraintEnd_toEndOf="@id/vertical_line_2"
+                app:layout_constraintStart_toStartOf="@id/vertical_line_2"
+                app:layout_constraintTop_toTopOf="@id/horizontal_line_2" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/graphic_dot_bg"
+                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_2"
+                app:layout_constraintEnd_toEndOf="@id/vertical_line_3"
+                app:layout_constraintStart_toStartOf="@id/vertical_line_3"
+                app:layout_constraintTop_toTopOf="@id/horizontal_line_2" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/graphic_dot_bg"
+                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_3"
+                app:layout_constraintEnd_toEndOf="@id/vertical_line_1"
+                app:layout_constraintStart_toStartOf="@id/vertical_line_1"
+                app:layout_constraintTop_toTopOf="@id/horizontal_line_3" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/graphic_dot_bg"
+                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_3"
+                app:layout_constraintEnd_toEndOf="@id/vertical_line_2"
+                app:layout_constraintStart_toStartOf="@id/vertical_line_2"
+                app:layout_constraintTop_toTopOf="@id/horizontal_line_3" />
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/graphic_dot_bg"
+                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_3"
+                app:layout_constraintEnd_toEndOf="@id/vertical_line_3"
+                app:layout_constraintStart_toStartOf="@id/vertical_line_3"
+                app:layout_constraintTop_toTopOf="@id/horizontal_line_3" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.esom.bank.common.views.patternlock.PatternLockView
+            android:id="@+id/pattern_lock_view"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:plv_errorDotColor="@color/lock_pattern_error"
+            app:plv_errorDotRadiusRatio="0.19"
+            app:plv_errorDuration="900"
+            app:plv_errorLineColor="@color/lock_pattern_error"
+            app:plv_lineWidth="3dp"
+            app:plv_regularDotColor="@color/lock_pattern_dot"
+            app:plv_regularDotRadiusRatio="0.19"
+            app:plv_regularLineColor="@color/lock_pattern_selected"
+            app:plv_selectedDotColor="@color/lock_pattern_selected"
+            app:plv_selectedDotRadiusRatio="0.19" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/pattern_error_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="#EF6161"
+            app:cardCornerRadius="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pattern_lock_view">
+
+            <TextView
+                android:id="@+id/pattern_error_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="18dp"
+                android:paddingVertical="8dp"
+                android:text="@string/lock_wrong_password"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/auth_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_10dp"
-        android:paddingVertical="@dimen/_11dp"
+        android:layout_marginBottom="12dp"
         android:fontFamily="@font/mont_semibold"
         android:gravity="center"
         android:text="@string/cant_login"
         android:textColor="#E62324"
-        android:textSize="@dimen/_16sp"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@id/version_title" />
+
+    <TextView
+        android:id="@+id/version_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="@font/mont_semibold"
+        android:gravity="center"
+        android:text="@string/version_title"
+        android:textColor="#B2B2B2"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

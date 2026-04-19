@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
+import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
@@ -20,13 +21,17 @@ import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentAuthBinding
 import com.esom.bank.screens.main.MainViewModel
+import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AuthFragment : Fragment() {
     private lateinit var binding: FragmentAuthBinding
 
     private val model: MainViewModel by activityViewModels()
+    @Inject
+    lateinit var pinLocalDataSource: PinLocalDataSource
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -74,7 +79,11 @@ class AuthFragment : Fragment() {
                 }
 
                 is UiState.Error -> {
-                    binding.root.showErrorSnackbar(it.message)
+                    if(it.message == getString(R.string.logged_out)) {
+                        binding.root.showErrorSnackbar(getString(R.string.invalid_login_or_password))
+                    } else {
+                        binding.root.showErrorSnackbar(it.message)
+                    }
                     binding.logInText.isVisible = true
                     binding.indicator.isVisible = false
                 }
@@ -82,16 +91,26 @@ class AuthFragment : Fragment() {
                 is UiState.Success -> {
                     binding.logInText.isVisible = true
                     binding.indicator.isVisible = false
-
-                    findNavController().popBackStack()
-                    findNavController().navigate(NavGraphDirections.startMainFragment())
+                    navigateToLockFlow()
                 }
             }
         }
 
         if (model.isAuthenticated()) {
-            findNavController().popBackStack()
-            findNavController().navigate(NavGraphDirections.startMainFragment())
+            navigateToLockFlow()
+        }
+    }
+
+    private fun navigateToLockFlow() {
+        if (findNavController().currentDestination?.id != R.id.authFragment) return
+
+        if (pinLocalDataSource.hasLock()) {
+            findNavController().navigate(NavGraphDirections.startLogInFragment())
+        } else {
+            findNavController().navigate(
+                R.id.startPinCreateFragment,
+                bundleOf("fromSettings" to false)
+            )
         }
     }
 }

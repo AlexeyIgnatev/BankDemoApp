@@ -23,7 +23,7 @@ data class TransactionModel(
 fun TransactionDto?.toModel(): TransactionModel? =
     this?.let {
         TransactionModel(
-            transactionId = it.transactionId,
+            transactionId = it.transactionId ?: it.id,
             currencyEnum = it.currencyEnum,
             type = it.type,
             conversionSide = it.conversionSide,

@@ -8,6 +8,8 @@ import com.google.gson.annotations.SerializedName
 data class TransactionDto(
     @SerializedName("transaction_id")
     val transactionId: Long?,
+    @SerializedName("id")
+    val id: Long? = null,
     @SerializedName("currency")
     val currencyEnum: CurrencyEnum?,
     @SerializedName("type")

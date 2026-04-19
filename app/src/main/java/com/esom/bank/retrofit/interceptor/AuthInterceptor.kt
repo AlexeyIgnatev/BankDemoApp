@@ -4,9 +4,11 @@ import android.util.Base64
 import android.util.Log
 import com.esom.bank.retrofit.exception.NotLoggedInException
 import com.esom.bank.screens.auth.data.AuthLocalDataSource
+import okhttp3.Credentials
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.net.HttpURLConnection
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 
@@ -26,10 +28,11 @@ class AuthInterceptor @Inject constructor(
 
         if (login != null && password != null) {
             Log.e("login+passowrd", "$login $password")
-            request = request.newBuilder().header(
-                AUTH_HEADER,
-                "Basic ${Base64.encodeToString("$login:$password".toByteArray(), Base64.NO_WRAP)}"
-            ).build()
+            val auth = Credentials.basic(login, password, StandardCharsets.UTF_8)
+
+            request = request.newBuilder()
+                .header("Authorization", auth)
+                .build()
         }
         val response = chain.proceed(request)
 

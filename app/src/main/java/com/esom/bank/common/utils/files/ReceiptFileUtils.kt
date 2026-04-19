@@ -2,13 +2,22 @@ package com.esom.bank.common.utils.files
 
 import android.content.ContentValues
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import android.text.TextPaint
+import android.text.TextUtils
+import androidx.core.content.res.ResourcesCompat
+import com.esom.bank.R
 import com.esom.bank.screens.history.model.ReceiptModel
-import org.w3c.dom.Document
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -16,76 +25,265 @@ import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
-import java.util.zip.ZipOutputStream
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.OutputKeys
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 
 object ReceiptFileUtils {
     private const val TEMPLATE_ASSET_NAME = "receipt_template.docx"
-    private const val DOCUMENT_XML_ENTRY = "word/document.xml"
-    private const val DOCX_MIME_TYPE =
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    private const val WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    private const val LOGO_MEDIA_ENTRY = "word/media/image1.jpeg"
+    private const val SEAL_MEDIA_ENTRY = "word/media/image4.jpeg"
+    private const val JPEG_MIME_TYPE = "image/jpeg"
 
-    private const val STATUS_INDEX_1 = 5
-    private const val STATUS_INDEX_2 = 6
-    private const val AMOUNT_INDEX = 7
-    private const val OPERATION_TEXT_START_INDEX = 8
-    private const val OPERATION_TEXT_END_INDEX = 14
-    private const val DATE_INDEX = 23
-    private const val TIME_INDEX = 24
-    private const val FEE_VALUE_INDEX = 25
-    private const val FEE_SPACE_INDEX = 26
-    private const val FEE_CURRENCY_INDEX = 27
-    private const val ACCOUNT_DETAILS_INDEX = 28
-    private const val PAID_FROM_ACCOUNT_INDEX = 29
-    private const val RECEIPT_NUMBER_INDEX = 30
-    private const val RECIPIENT_START_INDEX = 31
-    private const val RECIPIENT_END_INDEX = 35
+    private const val OUTPUT_WIDTH = 1240
+    private const val OUTPUT_HEIGHT = 1754
 
     fun saveReceiptToDownloads(context: Context, receipt: ReceiptModel): Uri {
-        val docxData = buildReceiptDocx(context, receipt)
+        val imageData = buildReceiptJpeg(context, receipt)
         val fileName = buildFileName(receipt.receiptNumber)
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            saveWithMediaStore(context, fileName, docxData)
+            saveWithMediaStore(context, fileName, imageData)
         } else {
-            saveLegacy(fileName, docxData)
+            saveLegacy(fileName, imageData)
         }
     }
 
-    private fun buildReceiptDocx(context: Context, receipt: ReceiptModel): ByteArray {
+    private fun buildReceiptJpeg(context: Context, receipt: ReceiptModel): ByteArray {
+        val bitmap = buildReceiptBitmap(context, receipt)
         val output = ByteArrayOutputStream()
+        val compressed = bitmap.compress(Bitmap.CompressFormat.JPEG, 95, output)
+        bitmap.recycle()
+        if (!compressed) {
+            throw IllegalStateException("Failed to encode receipt image")
+        }
+        return output.toByteArray()
+    }
 
-        ZipInputStream(context.assets.open(TEMPLATE_ASSET_NAME)).use { zipInput ->
-            ZipOutputStream(output).use { zipOutput ->
-                var entry = zipInput.nextEntry
-                while (entry != null) {
-                    val entryData = readCurrentEntryBytes(zipInput)
-                    val updatedData = if (entry.name == DOCUMENT_XML_ENTRY) {
-                        updateDocumentXml(entryData, receipt)
-                    } else {
-                        entryData
-                    }
+    private fun buildReceiptBitmap(context: Context, receipt: ReceiptModel): Bitmap {
+        val bitmap = Bitmap.createBitmap(OUTPUT_WIDTH, OUTPUT_HEIGHT, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.WHITE)
 
-                    val newEntry = ZipEntry(entry.name)
-                    zipOutput.putNextEntry(newEntry)
-                    if (updatedData.isNotEmpty()) {
-                        zipOutput.write(updatedData)
-                    }
-                    zipOutput.closeEntry()
-                    zipInput.closeEntry()
-                    entry = zipInput.nextEntry
-                }
-            }
+        val regularTypeface = loadTypeface(context, R.font.mont_regular, Typeface.SANS_SERIF)
+        val mediumTypeface = loadTypeface(context, R.font.mont_medium, Typeface.DEFAULT_BOLD)
+        val boldTypeface = loadTypeface(context, R.font.mont_bold, Typeface.DEFAULT_BOLD)
+
+        drawHeader(canvas, context, boldTypeface)
+        drawStatusChip(canvas, receipt, mediumTypeface)
+        drawAmount(canvas, receipt, boldTypeface, regularTypeface)
+        drawDetails(canvas, receipt, mediumTypeface, regularTypeface)
+        drawSeal(canvas, context, receipt, mediumTypeface)
+
+        return bitmap
+    }
+
+    private fun drawHeader(canvas: Canvas, context: Context, titleTypeface: Typeface) {
+        val logoBitmap = readMediaBitmapFromTemplate(context, LOGO_MEDIA_ENTRY)
+        if (logoBitmap != null) {
+            val logoRect = RectF(88f, 80f, 188f, 180f)
+            canvas.drawBitmap(logoBitmap, null, logoRect, null)
+            logoBitmap.recycle()
         }
 
-        return output.toByteArray()
+        val titlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#B52F26")
+            textSize = 50f
+            typeface = titleTypeface
+        }
+        val subtitlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#D46B69")
+            textSize = 34f
+            typeface = titleTypeface
+        }
+
+        canvas.drawText("Finance", 214f, 126f, titlePaint)
+        canvas.drawText("CreditBank", 214f, 170f, subtitlePaint)
+    }
+
+    private fun drawStatusChip(
+        canvas: Canvas,
+        receipt: ReceiptModel,
+        typeface: Typeface
+    ) {
+        val chipRect = RectF(700f, 84f, 1160f, 226f)
+        val borderColor = if (receipt.successful) Color.parseColor("#2AC450") else Color.parseColor("#D94747")
+        val fillColor = if (receipt.successful) Color.parseColor("#D9F5E2") else Color.parseColor("#FBE3E3")
+
+        val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            color = fillColor
+        }
+        val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 6f
+            color = borderColor
+        }
+        canvas.drawRoundRect(chipRect, 44f, 44f, fillPaint)
+        canvas.drawRoundRect(chipRect, 44f, 44f, borderPaint)
+
+        val iconCenterX = chipRect.left + 62f
+        val iconCenterY = chipRect.centerY()
+        val iconPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 8f
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+            color = borderColor
+        }
+
+        if (receipt.successful) {
+            canvas.drawLine(iconCenterX - 16f, iconCenterY + 2f, iconCenterX - 2f, iconCenterY + 18f, iconPaint)
+            canvas.drawLine(iconCenterX - 2f, iconCenterY + 18f, iconCenterX + 26f, iconCenterY - 14f, iconPaint)
+        } else {
+            canvas.drawLine(iconCenterX - 20f, iconCenterY - 18f, iconCenterX + 20f, iconCenterY + 18f, iconPaint)
+            canvas.drawLine(iconCenterX + 20f, iconCenterY - 18f, iconCenterX - 20f, iconCenterY + 18f, iconPaint)
+        }
+
+        val statusText = if (receipt.successful) "Проведено" else "Не проведено"
+        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = borderColor
+            textSize = 44f
+            this.typeface = typeface
+        }
+
+        val maxTextWidth = chipRect.width() - 144f
+        while (textPaint.measureText(statusText) > maxTextWidth && textPaint.textSize > 30f) {
+            textPaint.textSize -= 1f
+        }
+        val textY = chipRect.centerY() + textPaint.textSize / 3f
+        canvas.drawText(statusText, chipRect.left + 116f, textY, textPaint)
+    }
+
+    private fun drawAmount(
+        canvas: Canvas,
+        receipt: ReceiptModel,
+        amountTypeface: Typeface,
+        textTypeface: Typeface
+    ) {
+        val amountPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#1C1C1C")
+            textSize = 82f
+            typeface = amountTypeface
+        }
+        val currency = formatCurrencyForDocument(receipt.currency)
+        val amountText = "${formatNumber(receipt.amount)} $currency"
+        val amountWidth = amountPaint.measureText(amountText)
+        canvas.drawText(amountText, (OUTPUT_WIDTH - amountWidth) / 2f, 350f, amountPaint)
+
+        val operationPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#727272")
+            textSize = 42f
+            typeface = textTypeface
+        }
+        val operationText = resolveOperationText(receipt)
+        val maxWidth = OUTPUT_WIDTH - 180f
+        val operationSingleLine = TextUtils.ellipsize(
+            operationText,
+            operationPaint,
+            maxWidth,
+            TextUtils.TruncateAt.END
+        ).toString()
+        val operationWidth = operationPaint.measureText(operationSingleLine)
+        canvas.drawText(operationSingleLine, (OUTPUT_WIDTH - operationWidth) / 2f, 430f, operationPaint)
+    }
+
+    private fun drawDetails(
+        canvas: Canvas,
+        receipt: ReceiptModel,
+        labelTypeface: Typeface,
+        valueTypeface: Typeface
+    ) {
+        val labelPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#727272")
+            textSize = 34f
+            typeface = labelTypeface
+        }
+        val valuePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#1C1C1C")
+            textSize = 40f
+            typeface = valueTypeface
+            textAlign = Paint.Align.RIGHT
+        }
+        val dividerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#EDEDED")
+            strokeWidth = 2f
+        }
+
+        val (dateText, timeText) = formatDateAndTime(receipt.createdAt)
+        val feeText = "${formatNumber(receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
+        val rows = listOf(
+            "Дата и время" to "$dateText $timeText",
+            "Комиссия" to feeText,
+            "Реквизиты счета" to receipt.accountDetails,
+            "Получатель" to receipt.recipientFullName,
+            "Оплачено со счета" to receipt.paidFromAccount,
+            "Номер квитанции" to receipt.receiptNumber
+        )
+
+        val leftX = 90f
+        val rightX = OUTPUT_WIDTH - 90f
+        val valueMaxWidth = rightX - leftX
+        var y = 560f
+
+        rows.forEach { (label, rawValue) ->
+            val value = TextUtils.ellipsize(
+                rawValue.ifBlank { "-" },
+                valuePaint,
+                valueMaxWidth,
+                TextUtils.TruncateAt.END
+            ).toString()
+
+            canvas.drawText(label, leftX, y, labelPaint)
+            canvas.drawText(value, rightX, y + 52f, valuePaint)
+            canvas.drawLine(leftX, y + 84f, rightX, y + 84f, dividerPaint)
+            y += 150f
+        }
+    }
+
+    private fun drawSeal(
+        canvas: Canvas,
+        context: Context,
+        receipt: ReceiptModel,
+        typeface: Typeface
+    ) {
+        val sealBitmap = readMediaBitmapFromTemplate(context, SEAL_MEDIA_ENTRY)
+        if (sealBitmap == null) return
+
+        val sealRect = RectF(830f, 1090f, 1170f, 1430f)
+        canvas.drawBitmap(sealBitmap, null, sealRect, null)
+        sealBitmap.recycle()
+
+        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#1C1C1C")
+            textSize = 56f
+            this.typeface = typeface
+            textAlign = Paint.Align.CENTER
+        }
+        val receiptText = TextUtils.ellipsize(
+            receipt.receiptNumber.ifBlank { "-" },
+            textPaint,
+            sealRect.width() - 26f,
+            TextUtils.TruncateAt.END
+        ).toString()
+        canvas.drawText(receiptText, sealRect.centerX(), sealRect.centerY() + 22f, textPaint)
+    }
+
+    private fun loadTypeface(context: Context, fontRes: Int, fallback: Typeface): Typeface {
+        return ResourcesCompat.getFont(context, fontRes) ?: fallback
+    }
+
+    private fun readMediaBitmapFromTemplate(context: Context, entryName: String): Bitmap? {
+        ZipInputStream(context.assets.open(TEMPLATE_ASSET_NAME)).use { zipInput ->
+            var entry = zipInput.nextEntry
+            while (entry != null) {
+                if (entry.name == entryName) {
+                    val bytes = readCurrentEntryBytes(zipInput)
+                    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                }
+                zipInput.closeEntry()
+                entry = zipInput.nextEntry
+            }
+        }
+        return null
     }
 
     private fun readCurrentEntryBytes(zipInput: ZipInputStream): ByteArray {
@@ -101,57 +299,14 @@ object ReceiptFileUtils {
         return entryOutput.toByteArray()
     }
 
-    private fun updateDocumentXml(originalXml: ByteArray, receipt: ReceiptModel): ByteArray {
-        val document = parseXml(originalXml)
-        val textNodes = document.getElementsByTagNameNS(WORD_NS, "t")
-
-        if (textNodes.length <= RECIPIENT_END_INDEX) {
-            throw IllegalStateException("Unsupported receipt template format")
-        }
-
-        fun setText(index: Int, value: String) {
-            textNodes.item(index)?.textContent = value
-        }
-
-        val statusText = if (receipt.successful) "Проведено" else "Не проведено"
-        setText(STATUS_INDEX_1, statusText)
-        setText(STATUS_INDEX_2, statusText)
-
-        setText(AMOUNT_INDEX, formatNumber(receipt.amount))
-
-        setText(OPERATION_TEXT_START_INDEX, resolveOperationText(receipt))
-        for (index in (OPERATION_TEXT_START_INDEX + 1)..OPERATION_TEXT_END_INDEX) {
-            setText(index, "")
-        }
-
-        val (dateText, timeText) = formatDateAndTime(receipt.createdAt)
-        setText(DATE_INDEX, dateText)
-        setText(TIME_INDEX, timeText)
-
-        setText(FEE_VALUE_INDEX, formatNumber(receipt.fee))
-        setText(FEE_SPACE_INDEX, " ")
-        setText(FEE_CURRENCY_INDEX, formatCurrencyForDocument(receipt.currency))
-
-        setText(ACCOUNT_DETAILS_INDEX, receipt.accountDetails)
-        setText(PAID_FROM_ACCOUNT_INDEX, receipt.paidFromAccount)
-        setText(RECEIPT_NUMBER_INDEX, receipt.receiptNumber)
-
-        setText(RECIPIENT_START_INDEX, receipt.recipientFullName)
-        for (index in (RECIPIENT_START_INDEX + 1)..RECIPIENT_END_INDEX) {
-            setText(index, "")
-        }
-
-        return toByteArray(document)
-    }
-
     private fun resolveOperationText(receipt: ReceiptModel): String {
         if (receipt.type.equals("CONVERSION", ignoreCase = true)) {
-            return "Конвертация средств"
+            return "Конвертация средств."
         }
         return if (isCryptoWalletAccount(receipt.accountDetails)) {
             "Перевод по адресу кошелька."
         } else {
-            "Перевод по номеру телефона"
+            "Перевод по номеру телефона."
         }
     }
 
@@ -185,23 +340,6 @@ object ReceiptFileUtils {
         }
     }
 
-    private fun parseXml(xml: ByteArray): Document {
-        val factory = DocumentBuilderFactory.newInstance()
-        factory.isNamespaceAware = true
-        val builder = factory.newDocumentBuilder()
-        return builder.parse(ByteArrayInputStream(xml))
-    }
-
-    private fun toByteArray(document: Document): ByteArray {
-        val output = ByteArrayOutputStream()
-        val transformer = TransformerFactory.newInstance().newTransformer().apply {
-            setOutputProperty(OutputKeys.ENCODING, "UTF-8")
-            setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no")
-        }
-        transformer.transform(DOMSource(document), StreamResult(output))
-        return output.toByteArray()
-    }
-
     private fun buildFileName(receiptNumber: String): String {
         val base = if (receiptNumber.isBlank()) {
             "receipt_${System.currentTimeMillis()}"
@@ -209,14 +347,18 @@ object ReceiptFileUtils {
             receiptNumber
         }
         val sanitized = base.replace(Regex("[^A-Za-z0-9._-]"), "_")
-        return if (sanitized.endsWith(".docx", ignoreCase = true)) sanitized else "$sanitized.docx"
+        return if (sanitized.endsWith(".jpg", ignoreCase = true) || sanitized.endsWith(".jpeg", ignoreCase = true)) {
+            sanitized
+        } else {
+            "$sanitized.jpg"
+        }
     }
 
     private fun saveWithMediaStore(context: Context, fileName: String, data: ByteArray): Uri {
         val resolver = context.contentResolver
         val contentValues = ContentValues().apply {
             put(MediaStore.Downloads.DISPLAY_NAME, fileName)
-            put(MediaStore.Downloads.MIME_TYPE, DOCX_MIME_TYPE)
+            put(MediaStore.Downloads.MIME_TYPE, JPEG_MIME_TYPE)
             put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
             put(MediaStore.Downloads.IS_PENDING, 1)
         }

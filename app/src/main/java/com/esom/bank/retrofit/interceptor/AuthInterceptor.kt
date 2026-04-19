@@ -1,6 +1,7 @@
 package com.esom.bank.retrofit.interceptor
 
 import android.util.Base64
+import android.util.Log
 import com.esom.bank.retrofit.exception.NotLoggedInException
 import com.esom.bank.screens.auth.data.AuthLocalDataSource
 import okhttp3.Interceptor
@@ -24,6 +25,7 @@ class AuthInterceptor @Inject constructor(
         val password = authLocalDataSource.getPassword()
 
         if (login != null && password != null) {
+            Log.e("login+passowrd", "$login $password")
             request = request.newBuilder().header(
                 AUTH_HEADER,
                 "Basic ${Base64.encodeToString("$login:$password".toByteArray(), Base64.NO_WRAP)}"

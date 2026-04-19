@@ -161,7 +161,7 @@ object ReceiptFileUtils {
     ) {
         val amountPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#1C1C1C")
-            textSize = 82f
+            textSize = 74f
             typeface = amountTypeface
         }
         val currency = formatCurrencyForDocument(receipt.currency)
@@ -171,7 +171,7 @@ object ReceiptFileUtils {
 
         val operationPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#727272")
-            textSize = 42f
+            textSize = 34f
             typeface = textTypeface
         }
         val operationText = resolveOperationText(receipt)
@@ -194,12 +194,12 @@ object ReceiptFileUtils {
     ) {
         val labelPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#727272")
-            textSize = 34f
+            textSize = 28f
             typeface = labelTypeface
         }
         val valuePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#1C1C1C")
-            textSize = 40f
+            textSize = 31f
             typeface = valueTypeface
             textAlign = Paint.Align.RIGHT
         }
@@ -210,18 +210,20 @@ object ReceiptFileUtils {
 
         val (dateText, timeText) = formatDateAndTime(receipt.createdAt)
         val feeText = "${formatNumber(receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
+        val recipientValue = sanitizeOneLineValue(receipt.recipientFullName)
         val rows = listOf(
             "Дата и время" to "$dateText $timeText",
             "Комиссия" to feeText,
-            "Реквизиты счета" to receipt.accountDetails,
-            "Получатель" to receipt.recipientFullName,
-            "Оплачено со счета" to receipt.paidFromAccount,
-            "Номер квитанции" to receipt.receiptNumber
+            "Реквизиты счета" to sanitizeOneLineValue(receipt.accountDetails),
+            "Получатель" to recipientValue,
+            "Оплачено со счета" to sanitizeOneLineValue(receipt.paidFromAccount),
+            "Номер квитанции" to sanitizeOneLineValue(receipt.receiptNumber)
         )
 
         val leftX = 90f
         val rightX = OUTPUT_WIDTH - 90f
-        val valueMaxWidth = rightX - leftX
+        val valueColumnLeft = 530f
+        val valueMaxWidth = rightX - valueColumnLeft
         var y = 560f
 
         rows.forEach { (label, rawValue) ->
@@ -233,9 +235,9 @@ object ReceiptFileUtils {
             ).toString()
 
             canvas.drawText(label, leftX, y, labelPaint)
-            canvas.drawText(value, rightX, y + 52f, valuePaint)
-            canvas.drawLine(leftX, y + 84f, rightX, y + 84f, dividerPaint)
-            y += 150f
+            canvas.drawText(value, rightX, y, valuePaint)
+            canvas.drawLine(leftX, y + 36f, rightX, y + 36f, dividerPaint)
+            y += 112f
         }
     }
 
@@ -248,13 +250,13 @@ object ReceiptFileUtils {
         val sealBitmap = readMediaBitmapFromTemplate(context, SEAL_MEDIA_ENTRY)
         if (sealBitmap == null) return
 
-        val sealRect = RectF(830f, 1090f, 1170f, 1430f)
+        val sealRect = RectF(760f, 1180f, 1100f, 1520f)
         canvas.drawBitmap(sealBitmap, null, sealRect, null)
         sealBitmap.recycle()
 
         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#1C1C1C")
-            textSize = 56f
+            textSize = 48f
             this.typeface = typeface
             textAlign = Paint.Align.CENTER
         }
@@ -265,6 +267,13 @@ object ReceiptFileUtils {
             TextUtils.TruncateAt.END
         ).toString()
         canvas.drawText(receiptText, sealRect.centerX(), sealRect.centerY() + 22f, textPaint)
+    }
+
+    private fun sanitizeOneLineValue(value: String): String {
+        return value
+            .replace(Regex("[\\r\\n\\t]+"), " ")
+            .replace(Regex("\\s{2,}"), " ")
+            .trim()
     }
 
     private fun loadTypeface(context: Context, fontRes: Int, fallback: Typeface): Typeface {

@@ -15,12 +15,15 @@ data class ReceiptResponseDto(
     val createdAt: Long?,
     @SerializedName("fee")
     val fee: Double?,
-    @SerializedName("account_details")
+    @SerializedName(value = "account_details", alternate = ["account", "to_account", "requisites"])
     val accountDetails: String?,
-    @SerializedName("recipient_full_name")
+    @SerializedName(
+        value = "recipient_full_name",
+        alternate = ["recipient_name", "recipient", "recipientFullName"]
+    )
     val recipientFullName: String?,
-    @SerializedName("paid_from_account")
+    @SerializedName(value = "paid_from_account", alternate = ["from_account", "source_account"])
     val paidFromAccount: String?,
-    @SerializedName("receipt_number")
+    @SerializedName(value = "receipt_number", alternate = ["receipt_id", "receiptId", "id"])
     val receiptNumber: String?
 )

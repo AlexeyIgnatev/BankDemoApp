@@ -23,17 +23,16 @@ class AuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         var request = chain.request()
 
-        val login = authLocalDataSource.getLogin()
-        val password = authLocalDataSource.getPassword()
+        val login = authLocalDataSource.getLogin()?.trim()
+        val password = authLocalDataSource.getPassword()?.trim()
 
-        if (login != null && password != null) {
+        if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
             Log.e("login+passowrd", "$login $password")
-            val auth = Credentials.basic(login, password, StandardCharsets.UTF_8)
-
             request = request.newBuilder()
-                .header("Authorization", auth)
+                .header(AUTH_HEADER, Credentials.basic(login, password))
                 .build()
         }
+
         val response = chain.proceed(request)
 
         if (!response.isSuccessful) {

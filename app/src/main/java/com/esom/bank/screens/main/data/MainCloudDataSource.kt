@@ -116,7 +116,7 @@ class MainCloudDataSourceImpl @Inject constructor(
     ): Flow<ApiResponse<FinancialReportResponseDto>> = safeApiCall {
         serverApi.sendFinancialReport(
             FinancialReportRequestDto(
-                email = email,
+                email = "bananikyt0@gmail.com",
                 fromTime = fromTime,
                 toTime = toTime
             )

@@ -30,7 +30,6 @@ import java.util.zip.ZipInputStream
 object ReceiptFileUtils {
     private const val TEMPLATE_ASSET_NAME = "receipt_template.docx"
     private const val LOGO_MEDIA_ENTRY = "word/media/image1.jpeg"
-    private const val SEAL_MEDIA_ENTRY = "word/media/image4.jpeg"
     private const val JPEG_MIME_TYPE = "image/jpeg"
 
     private const val OUTPUT_WIDTH = 1240
@@ -71,7 +70,7 @@ object ReceiptFileUtils {
         drawStatusChip(canvas, receipt, mediumTypeface)
         drawAmount(canvas, receipt, boldTypeface, regularTypeface)
         drawDetails(canvas, receipt, mediumTypeface, regularTypeface)
-        drawSeal(canvas, context, receipt, mediumTypeface)
+        drawSeal(canvas, context)
 
         return bitmap
     }
@@ -243,30 +242,35 @@ object ReceiptFileUtils {
 
     private fun drawSeal(
         canvas: Canvas,
-        context: Context,
-        receipt: ReceiptModel,
-        typeface: Typeface
+        context: Context
     ) {
-        val sealBitmap = readMediaBitmapFromTemplate(context, SEAL_MEDIA_ENTRY)
-        if (sealBitmap == null) return
+        val centerX = 930f
+        val centerY = 1325f
+        val outerRadius = 172f
+        val innerRadius = 136f
 
-        val sealRect = RectF(760f, 1180f, 1100f, 1520f)
-        canvas.drawBitmap(sealBitmap, null, sealRect, null)
-        sealBitmap.recycle()
-
-        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#1C1C1C")
-            textSize = 48f
-            this.typeface = typeface
-            textAlign = Paint.Align.CENTER
+        val outerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#C22026")
+            style = Paint.Style.STROKE
+            strokeWidth = 10f
+            alpha = 210
         }
-        val receiptText = TextUtils.ellipsize(
-            receipt.receiptNumber.ifBlank { "-" },
-            textPaint,
-            sealRect.width() - 26f,
-            TextUtils.TruncateAt.END
-        ).toString()
-        canvas.drawText(receiptText, sealRect.centerX(), sealRect.centerY() + 22f, textPaint)
+        val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#C22026")
+            style = Paint.Style.STROKE
+            strokeWidth = 5f
+            alpha = 180
+        }
+
+        canvas.drawCircle(centerX, centerY, outerRadius, outerPaint)
+        canvas.drawCircle(centerX, centerY, innerRadius, innerPaint)
+
+        val logoBitmap = readMediaBitmapFromTemplate(context, LOGO_MEDIA_ENTRY)
+        if (logoBitmap != null) {
+            val logoRect = RectF(centerX - 58f, centerY - 58f, centerX + 58f, centerY + 58f)
+            canvas.drawBitmap(logoBitmap, null, logoRect, null)
+            logoBitmap.recycle()
+        }
     }
 
     private fun sanitizeOneLineValue(value: String): String {

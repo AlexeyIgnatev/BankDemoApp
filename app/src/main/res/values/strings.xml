@@ -174,4 +174,6 @@
     <string name="available_title">Доступно: %s</string>
     <string name="receive_title">Получить</string>
     <string name="all">Все</string>
+    <string name="yes">Да</string>
+    <string name="want_receipt_trans">Хотите сделать квитанцию по переводу?</string>
 </resources>

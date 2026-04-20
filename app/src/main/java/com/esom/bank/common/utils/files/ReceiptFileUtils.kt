@@ -244,33 +244,12 @@ object ReceiptFileUtils {
         canvas: Canvas,
         context: Context
     ) {
-        val centerX = 930f
-        val centerY = 1325f
-        val outerRadius = 172f
-        val innerRadius = 136f
+        val sealBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.receipt_stamp_clean)
+            ?: return
 
-        val outerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#C22026")
-            style = Paint.Style.STROKE
-            strokeWidth = 10f
-            alpha = 210
-        }
-        val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#C22026")
-            style = Paint.Style.STROKE
-            strokeWidth = 5f
-            alpha = 180
-        }
-
-        canvas.drawCircle(centerX, centerY, outerRadius, outerPaint)
-        canvas.drawCircle(centerX, centerY, innerRadius, innerPaint)
-
-        val logoBitmap = readMediaBitmapFromTemplate(context, LOGO_MEDIA_ENTRY)
-        if (logoBitmap != null) {
-            val logoRect = RectF(centerX - 58f, centerY - 58f, centerX + 58f, centerY + 58f)
-            canvas.drawBitmap(logoBitmap, null, logoRect, null)
-            logoBitmap.recycle()
-        }
+        val sealRect = RectF(760f, 1140f, 1100f, 1468f)
+        canvas.drawBitmap(sealBitmap, null, sealRect, null)
+        sealBitmap.recycle()
     }
 
     private fun sanitizeOneLineValue(value: String): String {

@@ -419,8 +419,7 @@ class WalletFragment : Fragment() {
             Log.e("totalBalanceInSoms", wallet.balance.toString() + " " + wallet.buyRate.toString())
             totalBalanceInSoms += balanceInSoms
         }
-        binding.totalWaste.text = totalBalanceInSoms.format(2).trimEnd('0')
-            .trimEnd('.').ifEmpty { "0" }
+        binding.totalWaste.text = totalBalanceInSoms.format(2)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

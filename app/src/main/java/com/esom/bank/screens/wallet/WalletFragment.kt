@@ -416,6 +416,7 @@ class WalletFragment : Fragment() {
         var totalBalanceInSoms = 0.0
         wallets.forEach { wallet ->
             val balanceInSoms = wallet.balance * wallet.buyRate
+            Log.e("totalBalanceInSoms", wallet.balance.toString() + " " + wallet.buyRate.toString())
             totalBalanceInSoms += balanceInSoms
         }
         binding.totalWaste.text = totalBalanceInSoms.format(2).trimEnd('0')

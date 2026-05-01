@@ -21,7 +21,7 @@ class ChatAdapter() : ListAdapter<ChatAdapter.MessageItem, RecyclerView.ViewHold
         private const val TYPE_RECEIVER = 2
     }
 
-    private val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+    private val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("ru", "RU"))
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     fun submitSupportMessages(supportMessages: List<SupportModel>) {

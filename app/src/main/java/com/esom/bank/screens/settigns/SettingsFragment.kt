@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -101,9 +102,18 @@ class SettingsFragment : Fragment() {
         binding.helpBtn.setOnClickListener {
             findParentNavController().navigate(NavGraphDirections.startChatFragment())
         }
+
+        binding.callBtn.setOnClickListener {
+            val intent = Intent(Intent.ACTION_DIAL).apply {
+                data = Uri.parse("tel:$PERSONAL_MANAGER_PHONE")
+            }
+            startActivity(intent)
+        }
     }
 
     companion object {
+        private const val PERSONAL_MANAGER_PHONE = "+996555123456"
+
         fun String.formatPhone(): String {
             val mask: Mask = MaskImpl(PHONE_NUMBER, true)
             mask.insertFront(replace(" ", "").replace("+996", ""))

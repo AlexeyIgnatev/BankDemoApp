@@ -1,6 +1,5 @@
 package com.esom.bank.screens.chat.dto
 
-import com.esom.bank.screens.chat.enums.SupportRole
 import com.google.gson.annotations.SerializedName
 
 data class SupportDto(
@@ -9,7 +8,7 @@ data class SupportDto(
     @SerializedName("text")
     val text: String,
     @SerializedName("role")
-    val role: SupportRole,
+    val role: String,
     @SerializedName("created_at")
     val createdAt: Long
 )

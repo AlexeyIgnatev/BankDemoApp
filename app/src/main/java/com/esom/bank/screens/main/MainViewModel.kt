@@ -51,7 +51,7 @@ class MainViewModel @Inject constructor(
     private val _messages = MutableLiveData<UiState<List<SupportModel>>>()
     val messages: LiveData<UiState<List<SupportModel>>> = _messages
 
-    private val _sendMessage = MutableLiveData<UiState<SupportModel>>()
+    private val _sendMessage = SingleLiveEvent<UiState<SupportModel>>()
     val sendMessage: LiveData<UiState<SupportModel>> =_sendMessage
 
     private val _notifications = MutableLiveData<UiState<List<NotificationModel>>>()
@@ -205,11 +205,13 @@ class MainViewModel @Inject constructor(
     }
 
     fun getMessages() {
+        _messages.value = UiState.Loading()
         mainRepository.getMessages().onEach {
             _messages.value = it
         }.launchIn(viewModelScope)
     }
     fun sendMessage(text: String) {
+        _sendMessage.value = UiState.Loading()
         mainRepository.sendMessage(text).onEach {
             _sendMessage.value = it
         }.launchIn(viewModelScope)

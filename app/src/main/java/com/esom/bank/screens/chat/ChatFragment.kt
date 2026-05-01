@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
@@ -45,6 +46,8 @@ class ChatFragment : Fragment() {
             insets
         }
 
+        binding.messages.adapter = adapter
+
         binding.swipeRefreshLayout.setOnRefreshListener {
             refreshMessages()
         }
@@ -53,25 +56,33 @@ class ChatFragment : Fragment() {
             findNavController().popBackStack()
         }
 
+        observeMessages()
         loadMessages()
 
-        binding.messages.adapter = adapter
-
         binding.sendBtn.setOnClickListener {
-            if (binding.messageInput.text.isNullOrEmpty())
-                binding.root.showErrorSnackbar(getString(R.string.enter_message))
-            else {
-                model.sendMessage(binding.messageInput.text.toString())
-                binding.messageInput.setText("")
+            sendMessage()
+        }
+
+        binding.messageInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                sendMessage()
+                true
+            } else {
+                false
             }
         }
     }
 
     private fun loadMessages() {
         model.getMessages()
+    }
+
+    private fun observeMessages() {
         model.messages.observe(viewLifecycleOwner) {
             when (it) {
-                is UiState.Loading -> {}
+                is UiState.Loading -> {
+                    binding.swipeRefreshLayout.isRefreshing = true
+                }
                 is UiState.Error -> {
                     binding.swipeRefreshLayout.isRefreshing = false
                     binding.root.showErrorSnackbar(it.message)
@@ -79,19 +90,22 @@ class ChatFragment : Fragment() {
                 is UiState.Success -> {
                     binding.swipeRefreshLayout.isRefreshing = false
                     adapter.submitSupportMessages(it.data)
+                    scrollToLastMessage()
                 }
             }
         }
 
         model.sendMessage.observe(viewLifecycleOwner) {
             when (it) {
-                is UiState.Loading -> {}
+                is UiState.Loading -> {
+                    setSendingEnabled(false)
+                }
                 is UiState.Error -> {
-                    binding.swipeRefreshLayout.isRefreshing = false
+                    setSendingEnabled(true)
                     binding.root.showErrorSnackbar(it.message)
                 }
                 is UiState.Success -> {
-                    binding.swipeRefreshLayout.isRefreshing = false
+                    setSendingEnabled(true)
                     model.getMessages()
                 }
             }
@@ -100,5 +114,31 @@ class ChatFragment : Fragment() {
 
     private fun refreshMessages() {
         model.getMessages()
+    }
+
+    private fun sendMessage() {
+        if (!binding.sendBtn.isEnabled) return
+
+        val message = binding.messageInput.text?.toString()?.trim().orEmpty()
+        if (message.isEmpty()) {
+            binding.root.showErrorSnackbar(getString(R.string.enter_message))
+        } else {
+            model.sendMessage(message)
+            binding.messageInput.setText("")
+        }
+    }
+
+    private fun setSendingEnabled(enabled: Boolean) {
+        binding.sendBtn.isEnabled = enabled
+        binding.sendBtn.alpha = if (enabled) 1f else 0.5f
+    }
+
+    private fun scrollToLastMessage() {
+        binding.messages.post {
+            val lastPosition = adapter.itemCount - 1
+            if (lastPosition >= 0) {
+                binding.messages.scrollToPosition(lastPosition)
+            }
+        }
     }
 }

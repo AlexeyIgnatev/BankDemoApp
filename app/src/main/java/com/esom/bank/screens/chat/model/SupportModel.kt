@@ -18,7 +18,7 @@ data class SupportModel(
 fun SupportDto.toModel(): SupportModel = SupportModel(
     id = id,
     text = text,
-    role = role,
+    role = SupportRole.fromRaw(role),
     createdAt = createdAt
 )
 

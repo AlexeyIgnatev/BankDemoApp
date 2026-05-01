@@ -24,24 +24,20 @@ class ChatAdapter() : ListAdapter<ChatAdapter.MessageItem, RecyclerView.ViewHold
     private val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
     private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
 
-    // Функция для преобразования SupportModel в MessageItem
     fun submitSupportMessages(supportMessages: List<SupportModel>) {
         val items = mutableListOf<MessageItem>()
         var lastDate = ""
 
-        // Сортируем по времени (старые сверху)
         val sortedMessages = supportMessages.sortedBy { it.createdAt }
 
         sortedMessages.forEach { supportMessage ->
             val currentDate = dateFormat.format(Date(supportMessage.createdAt))
 
-            // Добавляем дату если она изменилась
             if (currentDate != lastDate) {
                 items.add(MessageItem.Date(currentDate))
                 lastDate = currentDate
             }
 
-            // Добавляем сообщение
             val message = Message(
                 message = supportMessage.text,
                 time = timeFormat.format(Date(supportMessage.createdAt)),

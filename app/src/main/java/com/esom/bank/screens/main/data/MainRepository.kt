@@ -84,8 +84,10 @@ interface MainRepository {
 
     fun isPushNotificationsEnabled(): Boolean
     fun setPushNotificationsEnabled(enabled: Boolean)
+    fun syncPushNotificationsEnabled(enabled: Boolean): Flow<UiState<Unit>>
     fun getFcmToken(): String?
     fun setFcmToken(token: String?)
+    fun sendFcmToken(token: String): Flow<UiState<Unit>>
     fun getNextNotificationId(): Int
 
     fun clearAllLocalData()
@@ -281,11 +283,35 @@ class MainRepositoryImpl @Inject constructor(
         messagingLocalDataSource.setPushNotificationsEnabled(enabled)
     }
 
+    override fun syncPushNotificationsEnabled(enabled: Boolean): Flow<UiState<Unit>> = flow {
+        messagingLocalDataSource.setPushNotificationsEnabled(enabled)
+        emitAll(
+            mainCloudDataSource.updatePushSettings(enabled).map { response ->
+                when (response) {
+                    is ApiResponse.Success -> UiState.Success(Unit)
+                    is ApiResponse.Error -> UiState.Error(response.toString(context))
+                }
+            }
+        )
+    }
+
     override fun getFcmToken(): String? =
         messagingLocalDataSource.getFcmToken()
 
     override fun setFcmToken(token: String?) {
         messagingLocalDataSource.setFcmToken(token)
+    }
+
+    override fun sendFcmToken(token: String): Flow<UiState<Unit>> = flow {
+        messagingLocalDataSource.setFcmToken(token)
+        emitAll(
+            mainCloudDataSource.sendFcmToken(token).map { response ->
+                when (response) {
+                    is ApiResponse.Success -> UiState.Success(Unit)
+                    is ApiResponse.Error -> UiState.Error(response.toString(context))
+                }
+            }
+        )
     }
 
     override fun getNextNotificationId(): Int =

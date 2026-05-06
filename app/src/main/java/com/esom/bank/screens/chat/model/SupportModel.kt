@@ -10,6 +10,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class SupportModel(
     val id: Int,
+    val ticketId: Int?,
     val text: String,
     val role: SupportRole,
     val createdAt: Long
@@ -17,6 +18,7 @@ data class SupportModel(
 
 fun SupportDto.toModel(): SupportModel = SupportModel(
     id = id,
+    ticketId = ticketId,
     text = text,
     role = SupportRole.fromRaw(role),
     createdAt = createdAt

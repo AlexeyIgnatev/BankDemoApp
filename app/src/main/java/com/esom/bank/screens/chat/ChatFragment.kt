@@ -9,6 +9,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
@@ -18,6 +21,8 @@ import com.esom.bank.databinding.FragmentChatBinding
 import com.esom.bank.screens.chat.adapter.ChatAdapter
 import com.esom.bank.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ChatFragment : Fragment() {
@@ -58,6 +63,7 @@ class ChatFragment : Fragment() {
 
         observeMessages()
         loadMessages()
+        startMessagesPolling()
 
         binding.sendBtn.setOnClickListener {
             sendMessage()
@@ -116,6 +122,17 @@ class ChatFragment : Fragment() {
         model.getMessages()
     }
 
+    private fun startMessagesPolling() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    delay(MESSAGES_POLLING_INTERVAL_MS)
+                    model.getMessages(showLoading = false)
+                }
+            }
+        }
+    }
+
     private fun sendMessage() {
         if (!binding.sendBtn.isEnabled) return
 
@@ -140,5 +157,9 @@ class ChatFragment : Fragment() {
                 binding.messages.scrollToPosition(lastPosition)
             }
         }
+    }
+
+    companion object {
+        private const val MESSAGES_POLLING_INTERVAL_MS = 5_000L
     }
 }

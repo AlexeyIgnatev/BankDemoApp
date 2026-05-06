@@ -179,7 +179,7 @@ class SettingsFragment : Fragment() {
     private fun refreshFcmToken() {
         FirebaseMessaging.getInstance().token
             .addOnSuccessListener { token ->
-                model.setFcmToken(token)
+                model.sendFcmToken(token)
             }
             .addOnFailureListener { error ->
                 Log.e(TAG, "Unable to get FCM token", error)

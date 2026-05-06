@@ -41,12 +41,12 @@ class ChatAdapter() : ListAdapter<ChatAdapter.MessageItem, RecyclerView.ViewHold
             val message = Message(
                 message = supportMessage.text,
                 time = timeFormat.format(Date(supportMessage.createdAt)),
-                name = if (supportMessage.role == SupportRole.ASSISTANT) "Поддержка" else ""
+                name = if (supportMessage.role != SupportRole.USER) "Поддержка" else ""
             )
 
             when (supportMessage.role) {
                 SupportRole.USER -> items.add(MessageItem.SenderMessage(message))
-                SupportRole.ASSISTANT -> items.add(MessageItem.ReceiverMessage(message))
+                SupportRole.ADMIN, SupportRole.ASSISTANT -> items.add(MessageItem.ReceiverMessage(message))
             }
         }
 

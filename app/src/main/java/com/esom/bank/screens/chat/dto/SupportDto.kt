@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class SupportDto(
     @SerializedName("id")
     val id: Int,
+    @SerializedName("ticket_id")
+    val ticketId: Int?,
     @SerializedName("text")
     val text: String,
     @SerializedName("role")

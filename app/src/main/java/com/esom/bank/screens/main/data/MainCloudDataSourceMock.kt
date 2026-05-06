@@ -184,44 +184,51 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
         val messages = listOf(
             SupportDto(
                 id = 1,
+                ticketId = 45,
                 text = "Здравствуйте! У меня вопрос по переводу средств.",
                 role = SupportRole.USER.name,
                 createdAt = getTimestamp(2, 15) // 15 дней назад
             ),
             SupportDto(
                 id = 2,
+                ticketId = 45,
                 text = "Добрый день! Чем могу помочь? Опишите, пожалуйста, вашу проблему подробнее.",
                 role = SupportRole.ASSISTANT.name,
                 createdAt = getTimestamp(2, 15, 5) // 15 дней назад + 5 минут
             ),
             SupportDto(
                 id = 3,
+                ticketId = 45,
                 text = "Я пытался перевести USDT на другой кошелек, но транзакция висит в статусе 'В обработке' уже 2 часа.",
                 role = SupportRole.USER.name,
                 createdAt = getTimestamp(2, 15, 10)
             ),
             SupportDto(
                 id = 4,
+                ticketId = 45,
                 text = "Проверил вашу транзакцию. Это нормально для сети TRC20, иногда требуется до 4 часов. Если статус не изменится через 2 часа, напишите мне.",
-                role = SupportRole.ASSISTANT.name,
+                role = SupportRole.ADMIN.name,
                 createdAt = getTimestamp(2, 15, 15)
             ),
             SupportDto(
                 id = 5,
+                ticketId = 45,
                 text = "Спасибо! Транзакция прошла успешно.",
                 role = SupportRole.USER.name,
                 createdAt = getTimestamp(1, 5) // 5 дней назад
             ),
             SupportDto(
                 id = 6,
+                ticketId = 46,
                 text = "Как узнать курс обмена ESOM на USDT?",
                 role = SupportRole.USER.name,
                 createdAt = getTimestamp(0, 1) // 1 день назад
             ),
             SupportDto(
                 id = 7,
+                ticketId = 46,
                 text = "Текущий курс ESOM/USDT вы можете посмотреть в разделе 'Кошельки'. На сегодня это 1 ESOM = 0.85 USDT.",
-                role = SupportRole.ASSISTANT.name,
+                role = SupportRole.ADMIN.name,
                 createdAt = getTimestamp(0, 1, 30)
             )
         )
@@ -231,6 +238,7 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
     override fun sendMessage(text: String): Flow<ApiResponse<SupportDto>> = flow {
         val newMessage = SupportDto(
             id = (8..1000).random(),
+            ticketId = 46,
             text = text,
             role = SupportRole.USER.name,
             createdAt = System.currentTimeMillis()
@@ -309,6 +317,14 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                 code = 200
             )
         )
+    }
+
+    override fun sendFcmToken(token: String): Flow<ApiResponse<Unit>> = flow {
+        emit(ApiResponse.Success(Unit, code = 200))
+    }
+
+    override fun updatePushSettings(pushEnabled: Boolean): Flow<ApiResponse<Unit>> = flow {
+        emit(ApiResponse.Success(Unit, code = 200))
     }
 
     private fun getTimestamp(monthsAgo: Int, daysAgo: Int, minutesAgo: Int = 0): Long {

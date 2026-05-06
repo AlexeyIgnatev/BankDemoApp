@@ -20,11 +20,14 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.esom.bank.screens.chat.enums.SupportRole
 import com.esom.bank.screens.chat.model.SupportModel
 import com.esom.bank.screens.history.pagingsource.TransactionsPagingSource
 import com.esom.bank.screens.main.model.FeeModel
 import com.esom.bank.screens.notification.model.NotificationModel
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.Flow
+import kotlin.math.abs
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -66,6 +69,10 @@ class MainViewModel @Inject constructor(
     private val _pushNotificationsEnabled = MutableLiveData<Boolean>()
     val pushNotificationsEnabled: LiveData<Boolean> = _pushNotificationsEnabled
 
+    private val pendingMessages = mutableListOf<SupportModel>()
+    private var cachedMessages: List<SupportModel> = emptyList()
+    private var nextPendingMessageId = -1
+
     fun clearAllDataAndNavigate() {
         _myData.value = UiState.Loading()
         _swapRes.value = UiState.Loading()
@@ -88,6 +95,9 @@ class MainViewModel @Inject constructor(
         _myData.value = UiState.Loading()
         mainRepository.authenticate(login, password).onEach {
             _myData.value = it
+            if (it is UiState.Success) {
+                refreshAndSendFcmToken()
+            }
         }.launchIn(viewModelScope)
     }
 
@@ -207,16 +217,59 @@ class MainViewModel @Inject constructor(
         mainRepository.setToTime(time)
     }
 
-    fun getMessages() {
-        _messages.value = UiState.Loading()
-        mainRepository.getMessages().onEach {
-            _messages.value = it
+    fun getMessages(showLoading: Boolean = true) {
+        if (showLoading) {
+            _messages.value = UiState.Loading()
+        }
+        mainRepository.getMessages().onEach { state ->
+            when (state) {
+                is UiState.Loading -> if (showLoading) _messages.value = state
+                is UiState.Error -> if (showLoading) _messages.value = state
+                is UiState.Success -> {
+                    cachedMessages = mergeWithPendingMessages(state.data)
+                    _messages.value = UiState.Success(cachedMessages)
+                }
+            }
         }.launchIn(viewModelScope)
     }
+
     fun sendMessage(text: String) {
+        val pendingMessage = SupportModel(
+            id = nextPendingMessageId--,
+            ticketId = null,
+            text = text,
+            role = SupportRole.USER,
+            createdAt = System.currentTimeMillis()
+        )
+
+        pendingMessages.add(pendingMessage)
+        cachedMessages = mergeWithPendingMessages(cachedMessages)
+        _messages.value = UiState.Success(cachedMessages)
         _sendMessage.value = UiState.Loading()
-        mainRepository.sendMessage(text).onEach {
-            _sendMessage.value = it
+
+        mainRepository.sendMessage(text).onEach { state ->
+            when (state) {
+                is UiState.Loading -> _sendMessage.value = state
+                is UiState.Error -> {
+                    pendingMessages.removeAll { it.id == pendingMessage.id }
+                    cachedMessages = cachedMessages.filterNot { it.id == pendingMessage.id }
+                    cachedMessages = mergeWithPendingMessages(cachedMessages)
+                    _messages.value = UiState.Success(cachedMessages)
+                    _sendMessage.value = state
+                }
+                is UiState.Success -> {
+                    pendingMessages.removeAll {
+                        it.id == pendingMessage.id || it.isSameSentMessage(state.data)
+                    }
+                    cachedMessages = cachedMessages.filterNot {
+                        it.id == pendingMessage.id || it.isSameSentMessage(state.data)
+                    }
+                    cachedMessages = mergeMessages(cachedMessages + state.data)
+                    _messages.value = UiState.Success(cachedMessages)
+                    _sendMessage.value = state
+                    getMessages(showLoading = false)
+                }
+            }
         }.launchIn(viewModelScope)
     }
     fun loadNotifications() {
@@ -246,6 +299,7 @@ class MainViewModel @Inject constructor(
     fun setPushNotificationsEnabled(enabled: Boolean) {
         mainRepository.setPushNotificationsEnabled(enabled)
         _pushNotificationsEnabled.value = enabled
+        mainRepository.syncPushNotificationsEnabled(enabled).launchIn(viewModelScope)
     }
 
     fun getFcmToken(): String? =
@@ -253,5 +307,43 @@ class MainViewModel @Inject constructor(
 
     fun setFcmToken(token: String?) {
         mainRepository.setFcmToken(token)
+    }
+
+    fun sendFcmToken(token: String?) {
+        if (token.isNullOrBlank()) return
+        mainRepository.sendFcmToken(token).launchIn(viewModelScope)
+    }
+
+    fun refreshAndSendFcmToken() {
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token ->
+                sendFcmToken(token)
+            }
+    }
+
+    private fun mergeWithPendingMessages(remoteMessages: List<SupportModel>): List<SupportModel> {
+        pendingMessages.removeAll { pendingMessage ->
+            remoteMessages.any { remoteMessage -> pendingMessage.isSameSentMessage(remoteMessage) }
+        }
+        return mergeMessages(remoteMessages + pendingMessages)
+    }
+
+    private fun mergeMessages(messages: List<SupportModel>): List<SupportModel> {
+        return messages
+            .distinctBy { message ->
+                if (message.id > 0) "server:${message.id}" else "pending:${message.id}"
+            }
+            .sortedBy { it.createdAt }
+    }
+
+    private fun SupportModel.isSameSentMessage(other: SupportModel): Boolean {
+        return role == SupportRole.USER &&
+            other.role == SupportRole.USER &&
+            text == other.text &&
+            abs(createdAt - other.createdAt) <= PENDING_MESSAGE_MATCH_WINDOW_MS
+    }
+
+    companion object {
+        private const val PENDING_MESSAGE_MATCH_WINDOW_MS = 5 * 60 * 1000L
     }
 }

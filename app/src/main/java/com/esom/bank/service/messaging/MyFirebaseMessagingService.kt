@@ -22,6 +22,10 @@ import com.esom.bank.screens.main.data.MainRepository
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.launchIn
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -29,6 +33,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     @Inject
     lateinit var mainRepository: MainRepository
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
@@ -55,7 +60,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(TAG, "onNewToken: $token")
-        mainRepository.setFcmToken(token)
+        mainRepository.sendFcmToken(token).launchIn(serviceScope)
     }
 
     private fun handleDataMessage(data: Map<String, String>) {

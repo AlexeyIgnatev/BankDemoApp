@@ -12,6 +12,8 @@ import com.esom.bank.screens.history.dto.ReceiptResponseDto
 import com.esom.bank.screens.history.dto.TransactionDto
 import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.main.dto.FeeDto
+import com.esom.bank.screens.main.dto.FcmTokenDto
+import com.esom.bank.screens.main.dto.PushSettingsDto
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.SwapDto
 import com.esom.bank.screens.main.dto.TransferDto
@@ -42,6 +44,8 @@ interface MainCloudDataSource {
         fromTime: Long? = null,
         toTime: Long? = null
     ): Flow<ApiResponse<FinancialReportResponseDto>>
+    fun sendFcmToken(token: String): Flow<ApiResponse<Unit>>
+    fun updatePushSettings(pushEnabled: Boolean): Flow<ApiResponse<Unit>>
 }
 
 class MainCloudDataSourceImpl @Inject constructor(
@@ -121,5 +125,13 @@ class MainCloudDataSourceImpl @Inject constructor(
                 toTime = toTime
             )
         )
+    }
+
+    override fun sendFcmToken(token: String): Flow<ApiResponse<Unit>> = safeUnitApiCall {
+        serverApi.sendFcmToken(FcmTokenDto(token = token))
+    }
+
+    override fun updatePushSettings(pushEnabled: Boolean): Flow<ApiResponse<Unit>> = safeUnitApiCall {
+        serverApi.updatePushSettings(PushSettingsDto(pushEnabled = pushEnabled))
     }
 }

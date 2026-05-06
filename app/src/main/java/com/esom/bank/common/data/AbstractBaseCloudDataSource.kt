@@ -59,4 +59,41 @@ abstract class AbstractBaseCloudDataSource {
             emit(ApiResponse.Error(R.string.something_went_wrong))
         }
     }
+
+    fun safeUnitApiCall(apiToBeCalled: suspend () -> Response<*>): Flow<ApiResponse<Unit>> = flow {
+        try {
+            val response = apiToBeCalled()
+
+            if (response.isSuccessful) {
+                emit(ApiResponse.Success(data = Unit, code = response.code()))
+            } else {
+                val errorData = try {
+                    Gson().fromJson(
+                        response.errorBody()?.string(), ErrorResponse::class.java
+                    )
+                } catch (e: Exception) {
+                    null
+                }
+                emit(
+                    ApiResponse.Error(
+                        R.string.something_went_wrong,
+                        data = errorData,
+                        code = response.code()
+                    )
+                )
+            }
+        } catch (e: NotLoggedInException) {
+            e.printStackTrace()
+            emit(ApiResponse.Error(R.string.logged_out))
+        } catch (e: HttpException) {
+            e.printStackTrace()
+            emit(ApiResponse.Error(R.string.server_error))
+        } catch (e: IOException) {
+            e.printStackTrace()
+            emit(ApiResponse.Error(R.string.check_internet))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(ApiResponse.Error(R.string.something_went_wrong))
+        }
+    }
 }

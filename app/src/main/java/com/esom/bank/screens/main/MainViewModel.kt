@@ -63,6 +63,9 @@ class MainViewModel @Inject constructor(
     private val _financialReport = SingleLiveEvent<UiState<Unit>>()
     val financialReport: LiveData<UiState<Unit>> = _financialReport
 
+    private val _pushNotificationsEnabled = MutableLiveData<Boolean>()
+    val pushNotificationsEnabled: LiveData<Boolean> = _pushNotificationsEnabled
+
     fun clearAllDataAndNavigate() {
         _myData.value = UiState.Loading()
         _swapRes.value = UiState.Loading()
@@ -231,5 +234,24 @@ class MainViewModel @Inject constructor(
         mainRepository.sendFinancialReport(email, fromTime, toTime).onEach {
             _financialReport.value = it
         }.launchIn(viewModelScope)
+    }
+
+    fun loadPushNotificationsEnabled() {
+        _pushNotificationsEnabled.value = mainRepository.isPushNotificationsEnabled()
+    }
+
+    fun isPushNotificationsEnabled(): Boolean =
+        mainRepository.isPushNotificationsEnabled()
+
+    fun setPushNotificationsEnabled(enabled: Boolean) {
+        mainRepository.setPushNotificationsEnabled(enabled)
+        _pushNotificationsEnabled.value = enabled
+    }
+
+    fun getFcmToken(): String? =
+        mainRepository.getFcmToken()
+
+    fun setFcmToken(token: String?) {
+        mainRepository.setFcmToken(token)
     }
 }

@@ -15,6 +15,7 @@ import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.FeeModel
 import com.esom.bank.screens.main.model.UserModel
 import com.esom.bank.screens.main.model.toModel
+import com.esom.bank.screens.messaging.data.MessagingLocalDataSource
 import com.esom.bank.screens.notification.model.NotificationModel
 import com.esom.bank.screens.notification.model.toModel
 import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
@@ -81,6 +82,12 @@ interface MainRepository {
         toTime: Long? = null
     ): Flow<UiState<Unit>>
 
+    fun isPushNotificationsEnabled(): Boolean
+    fun setPushNotificationsEnabled(enabled: Boolean)
+    fun getFcmToken(): String?
+    fun setFcmToken(token: String?)
+    fun getNextNotificationId(): Int
+
     fun clearAllLocalData()
 }
 
@@ -89,7 +96,8 @@ class MainRepositoryImpl @Inject constructor(
     private val mainCloudDataSource: MainCloudDataSource,
     private val authLocalDataSource: AuthLocalDataSource,
     private val historyLocalDataSource: HistoryLocalDataSource,
-    private val pinLocalDataSource: PinLocalDataSource
+    private val pinLocalDataSource: PinLocalDataSource,
+    private val messagingLocalDataSource: MessagingLocalDataSource
 ) : MainRepository {
     override fun isAuthenticated(): Boolean =
         authLocalDataSource.getLogin() != null && authLocalDataSource.getPassword() != null
@@ -266,10 +274,28 @@ class MainRepositoryImpl @Inject constructor(
             }
         }
 
+    override fun isPushNotificationsEnabled(): Boolean =
+        messagingLocalDataSource.isPushNotificationsEnabled()
+
+    override fun setPushNotificationsEnabled(enabled: Boolean) {
+        messagingLocalDataSource.setPushNotificationsEnabled(enabled)
+    }
+
+    override fun getFcmToken(): String? =
+        messagingLocalDataSource.getFcmToken()
+
+    override fun setFcmToken(token: String?) {
+        messagingLocalDataSource.setFcmToken(token)
+    }
+
+    override fun getNextNotificationId(): Int =
+        messagingLocalDataSource.getNextNotificationId()
+
     override fun clearAllLocalData() {
         authLocalDataSource.clearAuthData()
         historyLocalDataSource.clearAllHistoryData()
         pinLocalDataSource.clearLock()
+        messagingLocalDataSource.clearMessagingData()
     }
 
 }

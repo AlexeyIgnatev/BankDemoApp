@@ -114,15 +114,7 @@
                 android:layout_height="@dimen/_71dp"
                 android:background="#FFFFFF"
                 app:layout_constraintBottom_toBottomOf="parent">
-                <ImageView
-                    android:id="@+id/file_btn"
-                    android:layout_width="@dimen/_36dp"
-                    android:layout_height="@dimen/_36dp"
-                    android:src="@drawable/file_icon"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:layout_marginStart="@dimen/_16dp"/>
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/message_input"
                     android:layout_width="@dimen/_0dp"
@@ -138,7 +130,7 @@
                     android:layout_marginVertical="@dimen/_16dp"
                     android:layout_marginHorizontal="@dimen/_10dp"
                     android:background="@drawable/message_input_background"
-                    app:layout_constraintStart_toEndOf="@id/file_btn"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/send_btn"/>
                 <ImageView
                     android:id="@+id/send_btn"
@@ -150,18 +142,6 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     android:layout_marginEnd="@dimen/_16dp"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <ImageView
-                android:layout_width="@dimen/_40dp"
-                android:layout_height="@dimen/_40dp"
-                android:scaleType="centerCrop"
-                android:scaleY="1.5"
-                android:scaleX="1.5"
-                android:src="@drawable/call_icon"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/message_layout"
-                android:layout_marginEnd="@dimen/_13dp"
-                android:layout_marginBottom="@dimen/_10dp"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

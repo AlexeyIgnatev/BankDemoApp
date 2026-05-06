@@ -1,15 +1,20 @@
 package com.esom.bank.screens.settigns
 
+import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -27,6 +32,7 @@ import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentSettingsBinding
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import ru.tinkoff.decoro.Mask
 import ru.tinkoff.decoro.MaskImpl
@@ -39,6 +45,16 @@ class SettingsFragment : Fragment() {
     private lateinit var binding: FragmentSettingsBinding
 
     private val model: MainViewModel by activityViewModels()
+
+    private var ignorePushSwitchChanges = false
+
+    private val notificationsPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        model.setPushNotificationsEnabled(granted)
+        setPushSwitchChecked(granted)
+        if (granted) refreshFcmToken()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,6 +72,8 @@ class SettingsFragment : Fragment() {
             )
             insets
         }
+
+        setupPushSwitch()
 
         binding.financeBtn.setOnClickListener {
             model.sendFinancialReport()
@@ -111,7 +129,65 @@ class SettingsFragment : Fragment() {
         }
     }
 
+    private fun setupPushSwitch() {
+        binding.pushSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (ignorePushSwitchChanges) return@setOnCheckedChangeListener
+            handlePushSwitchChanged(isChecked)
+        }
+
+        model.pushNotificationsEnabled.observe(viewLifecycleOwner) { enabled ->
+            setPushSwitchChecked(enabled && hasNotificationPermission())
+        }
+        model.loadPushNotificationsEnabled()
+    }
+
+    private fun handlePushSwitchChanged(enabled: Boolean) {
+        if (!enabled) {
+            model.setPushNotificationsEnabled(false)
+            return
+        }
+
+        if (!hasNotificationPermission()) {
+            requestNotificationPermission()
+            return
+        }
+
+        model.setPushNotificationsEnabled(true)
+        refreshFcmToken()
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationsPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    private fun hasNotificationPermission(): Boolean {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun setPushSwitchChecked(checked: Boolean) {
+        ignorePushSwitchChanges = true
+        binding.pushSwitch.isChecked = checked
+        ignorePushSwitchChanges = false
+    }
+
+    private fun refreshFcmToken() {
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token ->
+                model.setFcmToken(token)
+            }
+            .addOnFailureListener { error ->
+                Log.e(TAG, "Unable to get FCM token", error)
+            }
+    }
+
     companion object {
+        private const val TAG = "SettingsFragment"
         private const val PERSONAL_MANAGER_PHONE = "+996555123456"
 
         fun String.formatPhone(): String {

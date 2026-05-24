@@ -146,12 +146,12 @@ class TransferFragment : Fragment() {
 
     private fun updateContactType() {
         setContactHint()
+        binding.contact.setText("")
         if (isToPhoneNumber) {
             applyPhoneMask()
         } else {
             removePhoneMask()
         }
-        binding.contact.setText("")
         updateCommissionAndTotal(binding.sumInput.text.toString())
     }
 
@@ -253,8 +253,12 @@ class TransferFragment : Fragment() {
     }
 
     private fun toggleCurrency(currency: CurrencyEnum) {
+        val wasToPhoneNumber = isToPhoneNumber
         currentFromCurrency = currency
         isToPhoneNumber = currency in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)
+        if (wasToPhoneNumber != isToPhoneNumber) {
+            binding.contact.setText("")
+        }
         updateCurrencyIcon(currency)
         updateWalletBalances()
         updateCommissionAndTotal(binding.sumInput.text.toString())

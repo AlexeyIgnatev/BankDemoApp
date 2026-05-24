@@ -9,13 +9,14 @@ import android.widget.EditText
 const val KYRGYZ_PHONE_PREFIX = "+996 "
 private const val KYRGYZ_PHONE_PREFIX_DIGITS = "996"
 private const val KYRGYZ_LOCAL_PHONE_DIGITS = 9
-private const val KYRGYZ_PHONE_MASK_MAX_LENGTH = 18
+private const val PHONE_MAX_LENGTH = 25
+private const val MIN_PHONE_DIGITS = 10
 
 fun EditText.applyKyrgyzPhoneMask(
     onPhoneChanged: ((isComplete: Boolean) -> Unit)? = null
 ): TextWatcher {
     inputType = InputType.TYPE_CLASS_PHONE
-    filters = arrayOf(InputFilter.LengthFilter(KYRGYZ_PHONE_MASK_MAX_LENGTH))
+    filters = arrayOf(InputFilter.LengthFilter(PHONE_MAX_LENGTH))
 
     val watcher = object : TextWatcher {
         private var isFormatting = false
@@ -27,37 +28,61 @@ fun EditText.applyKyrgyzPhoneMask(
         override fun afterTextChanged(s: Editable?) {
             if (isFormatting) return
 
-            val formatted = s.formatAsKyrgyzPhone()
-            isFormatting = true
-            if (s.toString() != formatted) {
-                setText(formatted)
+            val current = s?.toString().orEmpty()
+            if (shouldApplyKyrgyzFormat(current)) {
+                val formatted = current.formatAsKyrgyzPhone()
+                isFormatting = true
+                if (current != formatted) {
+                    setText(formatted)
+                }
+                setSelection(text?.length ?: 0)
+                isFormatting = false
             }
-            setSelection(text?.length ?: 0)
-            isFormatting = false
 
-            onPhoneChanged?.invoke(text.isCompleteKyrgyzPhone())
+            onPhoneChanged?.invoke(text.isValidPhoneInput())
         }
     }
 
     addTextChangedListener(watcher)
-    setText(text.formatAsKyrgyzPhone())
+    if (text.isNullOrBlank()) {
+        setText(KYRGYZ_PHONE_PREFIX.trim())
+    }
     setSelection(text?.length ?: 0)
-    onPhoneChanged?.invoke(text.isCompleteKyrgyzPhone())
+    onPhoneChanged?.invoke(text.isValidPhoneInput())
     return watcher
 }
 
 fun CharSequence?.kyrgyzPhoneDigits(): String {
-    return KYRGYZ_PHONE_PREFIX_DIGITS + kyrgyzLocalPhoneDigits()
+    return this.phoneForApi()
 }
 
 fun CharSequence?.isCompleteKyrgyzPhone(): Boolean {
-    return kyrgyzLocalPhoneDigits().length == KYRGYZ_LOCAL_PHONE_DIGITS
+    return this.isValidPhoneInput()
+}
+
+fun CharSequence?.isValidPhoneInput(): Boolean {
+    val raw = this?.toString()?.trim().orEmpty()
+    val digits = raw.filter { it.isDigit() }
+    return digits.length >= MIN_PHONE_DIGITS && (raw.startsWith("+") || digits.isNotEmpty())
+}
+
+fun CharSequence?.phoneForApi(): String {
+    val raw = this?.toString()?.trim().orEmpty()
+    val digits = raw.filter { it.isDigit() }
+    return if (raw.startsWith("+")) "+$digits" else digits
+}
+
+private fun shouldApplyKyrgyzFormat(value: String): Boolean {
+    if (value.isBlank()) return false
+    val digits = value.filter { it.isDigit() }
+    return value.startsWith("+996") || digits.startsWith(KYRGYZ_PHONE_PREFIX_DIGITS)
 }
 
 private fun CharSequence?.formatAsKyrgyzPhone(): String {
     val digits = kyrgyzLocalPhoneDigits()
     return buildString {
-        append(KYRGYZ_PHONE_PREFIX)
+        append(KYRGYZ_PHONE_PREFIX.trim())
+        if (digits.isNotEmpty()) append(' ')
         when {
             digits.length <= 3 -> append(digits)
             else -> {

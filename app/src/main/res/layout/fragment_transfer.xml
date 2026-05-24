@@ -285,6 +285,7 @@
                 android:letterSpacing="-0.01"
                 android:textSize="@dimen/_18sp"
                 android:hint="0"
+                android:inputType="number"
                 android:fontFamily="@font/mont_semibold"
                 app:layout_constraintTop_toBottomOf="@id/sum_title"
                 android:layout_marginHorizontal="@dimen/_20dp"/>

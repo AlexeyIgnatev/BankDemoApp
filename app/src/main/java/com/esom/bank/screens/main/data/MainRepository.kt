@@ -195,7 +195,9 @@ class MainRepositoryImpl @Inject constructor(
     ): Flow<UiState<ReceiptModel>> =
         mainCloudDataSource.receipt(transactionId, conversionSide).map { response ->
             when (response) {
-                is ApiResponse.Success -> return@map UiState.Success(response.data.toModel())
+                is ApiResponse.Success -> {
+                    return@map UiState.Success(response.data.toModel(conversionSide))
+                }
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
             }
         }

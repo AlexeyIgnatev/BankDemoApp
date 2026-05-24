@@ -100,7 +100,7 @@
         android:fontFamily="@font/mont_medium"
         android:hint="@string/phone_registration_hint"
         android:imeOptions="actionDone"
-        android:inputType="number"
+        android:inputType="phone"
         android:maxLines="1"
         android:textColor="@color/black"
         android:textColorHint="#B2B2B2"

@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricManager
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
@@ -32,12 +33,14 @@ import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentSettingsBinding
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
+import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import ru.tinkoff.decoro.Mask
 import ru.tinkoff.decoro.MaskImpl
 import ru.tinkoff.decoro.slots.PredefinedSlots
 import ru.tinkoff.decoro.slots.Slot
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -47,6 +50,10 @@ class SettingsFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
 
     private var ignorePushSwitchChanges = false
+    private var ignoreBioSwitchChanges = false
+
+    @Inject
+    lateinit var pinLocalDataSource: PinLocalDataSource
 
     private val notificationsPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -74,6 +81,7 @@ class SettingsFragment : Fragment() {
         }
 
         setupPushSwitch()
+        setupBioSwitch()
 
         binding.financeBtn.setOnClickListener {
             model.sendFinancialReport()
@@ -141,6 +149,35 @@ class SettingsFragment : Fragment() {
         model.loadPushNotificationsEnabled()
     }
 
+    private fun setupBioSwitch() {
+        val bioEnabled = pinLocalDataSource.isBio() && isBiometricAvailable()
+        if (pinLocalDataSource.isBio() && !bioEnabled) {
+            pinLocalDataSource.setBio(false)
+        }
+        setBioSwitchChecked(bioEnabled)
+
+        binding.bioSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (ignoreBioSwitchChanges) return@setOnCheckedChangeListener
+            handleBioSwitchChanged(isChecked)
+        }
+    }
+
+    private fun handleBioSwitchChanged(enabled: Boolean) {
+        if (!enabled) {
+            pinLocalDataSource.setBio(false)
+            return
+        }
+
+        if (!isBiometricAvailable()) {
+            pinLocalDataSource.setBio(false)
+            setBioSwitchChecked(false)
+            binding.root.showErrorSnackbar(getString(R.string.biometric_unavailable))
+            return
+        }
+
+        pinLocalDataSource.setBio(true)
+    }
+
     private fun handlePushSwitchChanged(enabled: Boolean) {
         if (!enabled) {
             model.setPushNotificationsEnabled(false)
@@ -174,6 +211,19 @@ class SettingsFragment : Fragment() {
         ignorePushSwitchChanges = true
         binding.pushSwitch.isChecked = checked
         ignorePushSwitchChanges = false
+    }
+
+    private fun setBioSwitchChecked(checked: Boolean) {
+        ignoreBioSwitchChanges = true
+        binding.bioSwitch.isChecked = checked
+        ignoreBioSwitchChanges = false
+    }
+
+    private fun isBiometricAvailable(): Boolean {
+        val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or
+            BiometricManager.Authenticators.BIOMETRIC_WEAK
+        return BiometricManager.from(requireContext()).canAuthenticate(authenticators) ==
+            BiometricManager.BIOMETRIC_SUCCESS
     }
 
     private fun refreshFcmToken() {

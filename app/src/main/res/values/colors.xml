@@ -84,4 +84,6 @@
     <color name="lock_pattern_error">#EF6161</color>
     <color name="lock_pattern_dot">#C2C2C2</color>
     <color name="lock_pattern_bg">#E4E4E4</color>
+    <color name="transaction_income">#38C72E</color>
+    <color name="transaction_expense">#1D1D1B</color>
 </resources>

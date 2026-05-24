@@ -17,6 +17,7 @@ import android.text.TextPaint
 import android.text.TextUtils
 import androidx.core.content.res.ResourcesCompat
 import com.esom.bank.R
+import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.model.ReceiptModel
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -209,13 +210,18 @@ object ReceiptFileUtils {
 
         val (dateText, timeText) = formatDateAndTime(receipt.createdAt)
         val feeText = "${formatNumber(receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
+        val creditedAmountText =
+            "${formatNumber(receipt.amount - receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
+        val accountDetailsValue = sanitizeOneLineValue(resolveAccountDetailsForReceipt(receipt))
         val recipientValue = sanitizeOneLineValue(receipt.recipientFullName)
+        val paidFromAccountValue = sanitizeOneLineValue(resolvePaidFromAccountForReceipt(receipt))
         val rows = listOf(
             "Дата и время" to "$dateText $timeText",
             "Комиссия" to feeText,
-            "Реквизиты счета" to sanitizeOneLineValue(receipt.accountDetails),
+            "\u0421\u0443\u043c\u043c\u0430 \u043a \u0437\u0430\u0447\u0438\u0441\u043b\u0435\u043d\u0438\u044e" to creditedAmountText,
+            "Реквизиты счета" to accountDetailsValue,
             "Получатель" to recipientValue,
-            "Оплачено со счета" to sanitizeOneLineValue(receipt.paidFromAccount),
+            "Оплачено со счета" to paidFromAccountValue,
             "Номер квитанции" to sanitizeOneLineValue(receipt.receiptNumber)
         )
 
@@ -302,6 +308,55 @@ object ReceiptFileUtils {
         }
     }
 
+    private fun resolveAccountDetailsForReceipt(receipt: ReceiptModel): String {
+        if (!receipt.type.equals("CONVERSION", ignoreCase = true)) {
+            return receipt.accountDetails
+        }
+
+        return when (receipt.conversionSide) {
+            ConversionSide.IN -> firstNotBlank(
+                receipt.absToAccount,
+                receipt.absAccount,
+                receipt.accountDetails
+            )
+            ConversionSide.OUT -> firstNotBlank(
+                receipt.accountDetails,
+                receipt.absToAccount,
+                receipt.absAccount
+            )
+            null -> firstNotBlank(
+                receipt.accountDetails,
+                receipt.absToAccount,
+                receipt.absAccount
+            )
+        }
+    }
+
+    private fun resolvePaidFromAccountForReceipt(receipt: ReceiptModel): String {
+        val rawValue = if (receipt.type.equals("CONVERSION", ignoreCase = true) &&
+            receipt.conversionSide == ConversionSide.OUT
+        ) {
+            firstNotBlank(receipt.absFromAccount, receipt.absAccount, receipt.paidFromAccount)
+        } else {
+            firstNotBlank(receipt.paidFromAccount, receipt.absFromAccount, receipt.absAccount)
+        }
+        return formatPaidFromAccount(rawValue)
+    }
+
+    private fun formatPaidFromAccount(value: String): String {
+        val sanitized = sanitizeOneLineValue(value)
+        if (sanitized.isBlank() || sanitized == "-") return "-"
+        if (sanitized.contains("*")) return sanitized
+
+        val compact = sanitized.replace(" ", "")
+        if (compact.length <= 8) return sanitized
+        return "****${compact.takeLast(8)}"
+    }
+
+    private fun firstNotBlank(vararg values: String): String {
+        return values.firstOrNull { it.isNotBlank() } ?: ""
+    }
+
     private fun isCryptoWalletAccount(accountDetails: String): Boolean {
         val normalized = accountDetails.replace(" ", "")
         if (normalized.isBlank() || normalized.startsWith("*")) return false
@@ -321,7 +376,8 @@ object ReceiptFileUtils {
     }
 
     private fun formatNumber(value: Double): String {
-        return BigDecimal(value.toString()).stripTrailingZeros().toPlainString()
+        val scaled = BigDecimal(value.toString()).setScale(2, java.math.RoundingMode.HALF_UP)
+        return scaled.toPlainString().replace('.', ',')
     }
 
     private fun formatCurrencyForDocument(currency: String): String {

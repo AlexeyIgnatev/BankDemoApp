@@ -1,7 +1,6 @@
 package com.esom.bank.screens.transfer
 
 import android.os.Bundle
-import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
@@ -20,7 +19,10 @@ import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
 import com.esom.bank.common.utils.formatBalanceNew
+import com.esom.bank.common.utils.views.applyKyrgyzPhoneMask
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
+import com.esom.bank.common.utils.views.isCompleteKyrgyzPhone
+import com.esom.bank.common.utils.views.kyrgyzPhoneDigits
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentTransferBinding
@@ -338,68 +340,15 @@ class TransferFragment : Fragment() {
 
     private fun applyPhoneMask() {
         val editText = binding.contact
-        editText.setText("")
-        editText.inputType = InputType.TYPE_CLASS_PHONE
+        phoneMaskWatcher?.let { editText.removeTextChangedListener(it) }
+        phoneMaskWatcher = null
 
+        editText.setText("")
         editText.setHorizontallyScrolling(false)
         editText.isSingleLine = false
         editText.maxLines = 3
 
-        phoneMaskWatcher?.let { editText.removeTextChangedListener(it) }
-
-        val watcher = object : TextWatcher {
-            private var isEditing = false
-            private var lastLength = 0
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                lastLength = s?.length ?: 0
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-            override fun afterTextChanged(s: Editable?) {
-                if (isEditing) return
-                isEditing = true
-
-                val currentText = s.toString()
-
-                if (currentText.length < lastLength) {
-                    isEditing = false
-                    return
-                }
-
-                var digits = currentText.filter { it.isDigit() }
-                if (digits.startsWith("996")) digits = digits.removePrefix("996")
-                if (digits.length > 9) digits = digits.substring(0, 9)
-
-                val builder = StringBuilder()
-                if (digits.isNotEmpty()) builder.append("+996 ")
-                if (digits.length >= 3) {
-                    builder.append("(")
-                    builder.append(digits.substring(0, 3))
-                    builder.append(") ")
-                } else {
-                    builder.append(digits)
-                }
-                if (digits.length > 3) {
-                    val end = minOf(6, digits.length)
-                    builder.append(digits.substring(3, end))
-                    if (digits.length >= 6) builder.append("-")
-                }
-                if (digits.length > 6) builder.append(digits.substring(6))
-
-                editText.removeTextChangedListener(this)
-                editText.setText(builder.toString())
-                editText.text?.let {
-                    editText.setSelection(it.length)
-                }
-                editText.addTextChangedListener(this)
-                isEditing = false
-            }
-        }
-
-        editText.addTextChangedListener(watcher)
-        phoneMaskWatcher = watcher
+        phoneMaskWatcher = editText.applyKyrgyzPhoneMask()
     }
 
     private fun removePhoneMask() {
@@ -440,7 +389,7 @@ class TransferFragment : Fragment() {
 
         when {
             isToPhoneNumber -> {
-                if (contactInfo.isEmpty() || contactInfo.filter { it.isDigit() }.length < 10) {
+                if (!contactInfo.isCompleteKyrgyzPhone()) {
                     binding.root.showErrorSnackbar("Введите корректный номер телефона")
                     return
                 }
@@ -467,7 +416,7 @@ class TransferFragment : Fragment() {
             return
         }
 
-        val phone = if (isToPhoneNumber) contactInfo.filter { it.isDigit() } else null
+        val phone = if (isToPhoneNumber) contactInfo.kyrgyzPhoneDigits() else null
         val address = if (!isToPhoneNumber) contactInfo else null
 
         if (model.transferRes.value !is UiState.Loading) {

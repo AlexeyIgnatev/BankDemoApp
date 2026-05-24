@@ -34,6 +34,7 @@
     <string name="use_bio_opinion">Вы будете автоматически входить без ввода пароля</string>
     <string name="use_only_password">Я хочу использовать только пароль</string>
     <string name="use_bio">Использовать биометрию</string>
+    <string name="biometric_unavailable">Биометрия недоступна или не настроена на устройстве</string>
     <string name="welcome_title">Добро пожаловать, \n%s!</string>
     <string name="notification">Уведомление</string>
     <string name="total_balance">Общий баланс</string>

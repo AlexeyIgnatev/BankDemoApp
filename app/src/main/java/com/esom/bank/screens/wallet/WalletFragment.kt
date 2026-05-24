@@ -64,7 +64,6 @@ class WalletFragment : Fragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.dataLayout.doOnApplyWindowInsets { view, insets, rect ->
             view.updatePadding(
                 top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top

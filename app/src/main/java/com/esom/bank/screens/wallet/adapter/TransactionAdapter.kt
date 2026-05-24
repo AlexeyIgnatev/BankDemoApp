@@ -2,7 +2,6 @@ package com.esom.bank.screens.wallet.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -21,7 +20,6 @@ class TransactionAdapter(
     private val onTransactionClick: ((TransactionModel) -> Unit)? = null
 ) :
     ListAdapter<TransactionModel, TransactionAdapter.TransactionViewHolder>(TransactionDiffCallback()) {
-
     inner class TransactionViewHolder(private val binding: ItemTransactionBinding) :
         RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
@@ -44,6 +42,7 @@ class TransactionAdapter(
                     CurrencyEnum.USDT_TRC20 -> R.string.convert_usdt
                     else -> R.string.transfer_usdt
                 }
+
                 TransactionEnum.INCOME -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.income_som
                     CurrencyEnum.ESOM -> R.string.income_digital
@@ -52,6 +51,7 @@ class TransactionAdapter(
                     CurrencyEnum.USDT_TRC20 -> R.string.income_usdt
                     else -> R.string.transfer_usdt
                 }
+
                 TransactionEnum.EXPENSE -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.expense_som
                     CurrencyEnum.ESOM -> R.string.expense_digital
@@ -60,6 +60,7 @@ class TransactionAdapter(
                     CurrencyEnum.USDT_TRC20 -> R.string.expense_usdt
                     else -> R.string.transfer_usdt
                 }
+
                 TransactionEnum.INFLOW -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.inflow_som
                     CurrencyEnum.ESOM -> R.string.inflow_digital
@@ -68,6 +69,7 @@ class TransactionAdapter(
                     CurrencyEnum.USDT_TRC20 -> R.string.inflow_usdt
                     else -> R.string.transfer_usdt
                 }
+
                 TransactionEnum.TRANSFER -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.transfer_som
                     CurrencyEnum.ESOM -> R.string.transfer_digital
@@ -83,14 +85,20 @@ class TransactionAdapter(
             binding.title.text = context.getString(stringResId)
 
             val (sign, color) = when (item.type) {
-                TransactionEnum.INCOME, TransactionEnum.INFLOW -> "+" to "#38C72E"
-                TransactionEnum.EXPENSE, TransactionEnum.TRANSFER -> "-" to "#1D1D1B"
-                TransactionEnum.CONVERSION -> "" to "#1D1D1B"
-                else -> "" to "#1D1D1B"
+                TransactionEnum.INCOME, TransactionEnum.INFLOW -> "+" to binding.root.context.getColor(
+                    R.color.transaction_income
+                )
+
+                TransactionEnum.EXPENSE, TransactionEnum.TRANSFER -> "-" to binding.root.context.getColor(
+                    R.color.transaction_expense
+                )
+
+                TransactionEnum.CONVERSION -> "" to binding.root.context.getColor(R.color.transaction_expense)
+                else -> "" to binding.root.context.getColor(R.color.transaction_expense)
             }
 
-            binding.sum.setTextColor(Color.parseColor(color))
-            binding.somIcon.setColorFilter(Color.parseColor(color))
+            binding.sum.setTextColor(color)
+            binding.somIcon.setColorFilter(color)
             val formatted = "%.6f".format(item.amount)
                 .trimEnd('0')
                 .trimEnd('.', ',')
@@ -120,7 +128,7 @@ class TransactionAdapter(
 class TransactionDiffCallback : DiffUtil.ItemCallback<TransactionModel>() {
     override fun areItemsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean {
         return oldItem.transactionId == newItem.transactionId &&
-            oldItem.createdAt == newItem.createdAt
+                oldItem.createdAt == newItem.createdAt
     }
 
     override fun areContentsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean {

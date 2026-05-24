@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
@@ -32,6 +34,7 @@ class LogInFragment : Fragment() {
     private var pinCode = ""
     private val maxPinLength = 4
     private var currentMode: LockType = LockType.PIN
+    private var biometricPromptShown = false
 
     @Inject
     lateinit var localDataSource: PinLocalDataSource
@@ -150,6 +153,48 @@ class LogInFragment : Fragment() {
         binding.patternErrorCard.isVisible = false
         pinCode = ""
         updatePinDots()
+        showBiometricPromptIfEnabled()
+    }
+
+    private fun showBiometricPromptIfEnabled() {
+        if (biometricPromptShown || !localDataSource.isBio()) return
+        if (!isBiometricAvailable()) {
+            localDataSource.setBio(false)
+            return
+        }
+
+        biometricPromptShown = true
+        val prompt = BiometricPrompt(
+            this,
+            ContextCompat.getMainExecutor(requireContext()),
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(
+                    result: BiometricPrompt.AuthenticationResult
+                ) {
+                    super.onAuthenticationSucceeded(result)
+                    onUnlockSuccess()
+                }
+            }
+        )
+
+        prompt.authenticate(
+            BiometricPrompt.PromptInfo.Builder()
+                .setTitle(getString(R.string.bio_log_in))
+                .setSubtitle(getString(R.string.use_bio_for_log_in).replace("\n", " "))
+                .setNegativeButtonText(getString(R.string.use_only_password))
+                .setAllowedAuthenticators(biometricAuthenticators())
+                .build()
+        )
+    }
+
+    private fun isBiometricAvailable(): Boolean {
+        return BiometricManager.from(requireContext()).canAuthenticate(biometricAuthenticators()) ==
+            BiometricManager.BIOMETRIC_SUCCESS
+    }
+
+    private fun biometricAuthenticators(): Int {
+        return BiometricManager.Authenticators.BIOMETRIC_STRONG or
+            BiometricManager.Authenticators.BIOMETRIC_WEAK
     }
 
     private fun showPinError(message: String) {

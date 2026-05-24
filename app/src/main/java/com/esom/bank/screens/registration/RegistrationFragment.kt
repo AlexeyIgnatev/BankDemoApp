@@ -11,11 +11,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
-import androidx.core.widget.addTextChangedListener
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
+import com.esom.bank.common.utils.views.applyKyrgyzPhoneMask
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
+import com.esom.bank.common.utils.views.isCompleteKyrgyzPhone
 import com.esom.bank.databinding.FragmentRegistrationBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -46,19 +47,10 @@ class RegistrationFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        binding.phoneInput.addTextChangedListener {
-            if (it != null) {
-                if(it.isEmpty()) {
-                    binding.nextBtn.isClickable = false
-                    binding.nextBtn.setCardBackgroundColor(Color.parseColor("#B2B2B2"))
-                    binding.nextBtnShadow.visibility = View.GONE
-                } else {
-                    binding.nextBtn.isClickable = true
-                    binding.nextBtn.setCardBackgroundColor(Color.parseColor("#E62324"))
-                    binding.nextBtnShadow.visibility = View.VISIBLE
-                }
-            }
+        binding.phoneInput.applyKyrgyzPhoneMask {
+            updateNextButtonState(binding.phoneInput.text.isCompleteKyrgyzPhone())
         }
+        updateNextButtonState(binding.phoneInput.text.isCompleteKyrgyzPhone())
 
         val fulltext = getString(R.string.privacy_policy_confirmed)
         val endText = getString(R.string.user_agreement)
@@ -82,5 +74,13 @@ class RegistrationFragment : Fragment() {
         binding.nextBtn.setOnClickListener {
             findNavController().navigate(NavGraphDirections.startSmsFragment())
         }
+    }
+
+    private fun updateNextButtonState(enabled: Boolean) {
+        binding.nextBtn.isClickable = enabled
+        binding.nextBtn.setCardBackgroundColor(
+            Color.parseColor(if (enabled) "#E62324" else "#B2B2B2")
+        )
+        binding.nextBtnShadow.visibility = if (enabled) View.VISIBLE else View.GONE
     }
 }

@@ -173,6 +173,10 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                     accountDetails = "996557501281",
                     recipientFullName = "Мирлан Т. у.",
                     paidFromAccount = "****1234",
+                    conversionSide = conversionSide,
+                    absAccount = "ABS-40602810200000001234",
+                    absFromAccount = "ABS-40702810900000005678",
+                    absToAccount = "ABS-40817810900000004321",
                     receiptNumber = "TX-$transactionId-${System.currentTimeMillis()}"
                 ),
                 code = 200

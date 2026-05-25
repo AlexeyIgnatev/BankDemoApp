@@ -212,9 +212,19 @@ object ReceiptFileUtils {
         val feeText = "${formatNumber(receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
         val creditedAmountText =
             "${formatNumber(receipt.amount - receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
-        val accountDetailsValue = sanitizeOneLineValue(resolveAccountDetailsForReceipt(receipt))
+        val accountDetailsValue = sanitizeOneLineValue(
+            formatAccountWithVisibleTail(
+                primaryValue = resolveAccountDetailsForReceipt(receipt),
+                fallbackValue = firstNotBlank(receipt.absToAccount, receipt.absAccount)
+            )
+        )
         val recipientValue = sanitizeOneLineValue(receipt.recipientFullName)
-        val paidFromAccountValue = sanitizeOneLineValue(resolvePaidFromAccountForReceipt(receipt))
+        val paidFromAccountValue = sanitizeOneLineValue(
+            formatAccountWithVisibleTail(
+                primaryValue = resolvePaidFromAccountForReceipt(receipt),
+                fallbackValue = firstNotBlank(receipt.absFromAccount, receipt.absAccount)
+            )
+        )
         val rows = listOf(
             "Дата и время" to "$dateText $timeText",
             "Комиссия" to feeText,
@@ -344,6 +354,22 @@ object ReceiptFileUtils {
 
     private fun firstNotBlank(vararg values: String): String {
         return values.firstOrNull { it.isNotBlank() } ?: ""
+    }
+
+    private fun formatAccountWithVisibleTail(primaryValue: String, fallbackValue: String): String {
+        val primary = sanitizeOneLineValue(primaryValue)
+        val fallback = sanitizeOneLineValue(fallbackValue)
+
+        val candidate = if (primary.contains("*") && fallback.isNotBlank()) fallback else primary
+        if (candidate.isBlank()) return "-"
+
+        val compact = candidate.replace(" ", "")
+        if (compact.length <= 8) return compact
+
+        val visibleLength = if (compact.length >= 8) 8 else 6
+        val tail = compact.takeLast(visibleLength)
+        val hiddenCount = (compact.length - visibleLength).coerceAtLeast(0)
+        return "${"*".repeat(hiddenCount)}$tail"
     }
 
     private fun isCryptoWalletAccount(accountDetails: String): Boolean {

@@ -36,6 +36,7 @@ import com.esom.bank.screens.history.model.ReceiptModel
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
+import com.esom.bank.screens.main.enums.CurrencyEnum
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -311,18 +312,84 @@ class HistoryFragment : Fragment() {
     }
 
     private fun handleReceiptResult(receipt: ReceiptModel) {
+        val receiptForDisplay = enrichReceiptWithUserAccounts(receipt)
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
             ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             ) != android.content.pm.PackageManager.PERMISSION_GRANTED
         ) {
-            pendingReceiptToSave = receipt
+            pendingReceiptToSave = receiptForDisplay
             writeStoragePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             return
         }
 
-        saveReceiptToDownloads(receipt)
+        saveReceiptToDownloads(receiptForDisplay)
+    }
+
+    private fun enrichReceiptWithUserAccounts(receipt: ReceiptModel): ReceiptModel {
+        val user = (model.myData.value as? UiState.Success)?.data ?: return receipt
+
+        fun walletAddress(currency: CurrencyEnum?): String {
+            return user.wallets.firstOrNull { it.currency == currency }?.address.orEmpty()
+        }
+
+        fun currencyByName(name: String): CurrencyEnum? {
+            return CurrencyEnum.values().firstOrNull { it.name.equals(name, ignoreCase = true) }
+        }
+
+        fun firstNotBlank(vararg values: String): String {
+            return values.firstOrNull { it.isNotBlank() } ?: ""
+        }
+
+        fun looksMasked(value: String): Boolean {
+            val compact = value.replace(" ", "")
+            val visible = compact.count { it != '*' }
+            return compact.contains('*') || visible <= 4
+        }
+
+        val receiptCurrency = currencyByName(receipt.currency)
+        val transactionCurrency = selectedTransaction?.currencyEnum
+        val somAddress = walletAddress(CurrencyEnum.SOM)
+        val esomAddress = walletAddress(CurrencyEnum.ESOM)
+        val fallbackByCurrency = walletAddress(receiptCurrency)
+        val fallbackByTransaction = walletAddress(transactionCurrency)
+        val fallbackPhone = user.phone
+
+        val sourceFallback = firstNotBlank(
+            fallbackByTransaction,
+            fallbackByCurrency,
+            esomAddress,
+            somAddress,
+            fallbackPhone
+        )
+
+        val targetFallback = if (receipt.type.equals("CONVERSION", ignoreCase = true)) {
+            when (receipt.conversionSide?.name) {
+                "IN" -> firstNotBlank(somAddress, fallbackByCurrency, fallbackPhone)
+                "OUT" -> firstNotBlank(esomAddress, fallbackByCurrency, fallbackPhone)
+                else -> firstNotBlank(fallbackByCurrency, fallbackPhone)
+            }
+        } else {
+            firstNotBlank(fallbackByCurrency, fallbackPhone)
+        }
+
+        val paidFrom = if (looksMasked(receipt.paidFromAccount)) {
+            firstNotBlank(sourceFallback, receipt.paidFromAccount)
+        } else {
+            receipt.paidFromAccount
+        }
+
+        val accountDetails = if (looksMasked(receipt.accountDetails)) {
+            firstNotBlank(targetFallback, receipt.accountDetails)
+        } else {
+            receipt.accountDetails
+        }
+
+        return receipt.copy(
+            paidFromAccount = paidFrom,
+            accountDetails = accountDetails
+        )
     }
 
     private fun saveReceiptToDownloads(receipt: ReceiptModel) {

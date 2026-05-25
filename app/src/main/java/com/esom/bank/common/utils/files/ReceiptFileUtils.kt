@@ -333,24 +333,13 @@ object ReceiptFileUtils {
     }
 
     private fun resolvePaidFromAccountForReceipt(receipt: ReceiptModel): String {
-        val rawValue = if (receipt.type.equals("CONVERSION", ignoreCase = true) &&
+        return if (receipt.type.equals("CONVERSION", ignoreCase = true) &&
             receipt.conversionSide == ConversionSide.OUT
         ) {
             firstNotBlank(receipt.absFromAccount, receipt.absAccount, receipt.paidFromAccount)
         } else {
             firstNotBlank(receipt.paidFromAccount, receipt.absFromAccount, receipt.absAccount)
         }
-        return formatPaidFromAccount(rawValue)
-    }
-
-    private fun formatPaidFromAccount(value: String): String {
-        val sanitized = sanitizeOneLineValue(value)
-        if (sanitized.isBlank() || sanitized == "-") return "-"
-        if (sanitized.contains("*")) return sanitized
-
-        val compact = sanitized.replace(" ", "")
-        if (compact.length <= 8) return sanitized
-        return "****${compact.takeLast(8)}"
     }
 
     private fun firstNotBlank(vararg values: String): String {

@@ -214,15 +214,27 @@ object ReceiptFileUtils {
             "${formatNumber(receipt.amount - receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
         val accountDetailsValue = sanitizeOneLineValue(
             formatAccountWithVisibleTail(
-                primaryValue = resolveAccountDetailsForReceipt(receipt),
-                fallbackValue = firstNotBlank(receipt.absToAccount, receipt.absAccount)
+                pickBestAccountCandidate(
+                    resolveAccountDetailsForReceipt(receipt),
+                    receipt.accountDetails,
+                    receipt.absToAccount,
+                    receipt.absAccount,
+                    receipt.paidFromAccount,
+                    receipt.absFromAccount
+                )
             )
         )
         val recipientValue = sanitizeOneLineValue(receipt.recipientFullName)
         val paidFromAccountValue = sanitizeOneLineValue(
             formatAccountWithVisibleTail(
-                primaryValue = resolvePaidFromAccountForReceipt(receipt),
-                fallbackValue = firstNotBlank(receipt.absFromAccount, receipt.absAccount)
+                pickBestAccountCandidate(
+                    resolvePaidFromAccountForReceipt(receipt),
+                    receipt.paidFromAccount,
+                    receipt.absFromAccount,
+                    receipt.absAccount,
+                    receipt.accountDetails,
+                    receipt.absToAccount
+                )
             )
         )
         val rows = listOf(
@@ -356,20 +368,32 @@ object ReceiptFileUtils {
         return values.firstOrNull { it.isNotBlank() } ?: ""
     }
 
-    private fun formatAccountWithVisibleTail(primaryValue: String, fallbackValue: String): String {
-        val primary = sanitizeOneLineValue(primaryValue)
-        val fallback = sanitizeOneLineValue(fallbackValue)
-
-        val candidate = if (primary.contains("*") && fallback.isNotBlank()) fallback else primary
+    private fun formatAccountWithVisibleTail(rawValue: String): String {
+        val candidate = sanitizeOneLineValue(rawValue)
         if (candidate.isBlank()) return "-"
 
-        val compact = candidate.replace(" ", "")
+        val compact = candidate.replace(" ", "").replace("-", "")
         if (compact.length <= 8) return compact
 
-        val visibleLength = if (compact.length >= 8) 8 else 6
+        val visibleLength = 8
         val tail = compact.takeLast(visibleLength)
         val hiddenCount = (compact.length - visibleLength).coerceAtLeast(0)
         return "${"*".repeat(hiddenCount)}$tail"
+    }
+
+    private fun pickBestAccountCandidate(vararg rawValues: String): String {
+        return rawValues
+            .map { sanitizeOneLineValue(it) }
+            .filter { it.isNotBlank() }
+            .maxByOrNull { accountCandidateScore(it) }
+            .orEmpty()
+    }
+
+    private fun accountCandidateScore(value: String): Int {
+        val compact = value.replace(" ", "").replace("-", "")
+        val visibleChars = compact.count { it != '*' }
+        val starPenalty = compact.count { it == '*' } * 2
+        return visibleChars * 10 + compact.length - starPenalty
     }
 
     private fun isCryptoWalletAccount(accountDetails: String): Boolean {

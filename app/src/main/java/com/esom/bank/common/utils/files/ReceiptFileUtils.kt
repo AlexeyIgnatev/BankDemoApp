@@ -254,11 +254,18 @@ object ReceiptFileUtils {
         var y = 560f
 
         rows.forEach { (label, rawValue) ->
+            val truncateAt = if (
+                rawValue == accountDetailsValue || rawValue == paidFromAccountValue
+            ) {
+                TextUtils.TruncateAt.START
+            } else {
+                TextUtils.TruncateAt.END
+            }
             val value = TextUtils.ellipsize(
                 rawValue.ifBlank { "-" },
                 valuePaint,
                 valueMaxWidth,
-                TextUtils.TruncateAt.END
+                truncateAt
             ).toString()
 
             canvas.drawText(label, leftX, y, labelPaint)

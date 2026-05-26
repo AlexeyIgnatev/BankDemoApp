@@ -77,6 +77,7 @@ class SwapFragment : Fragment() {
 
         updateBalanceDisplay()
         updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+        model.getSettings()
     }
 
     private fun setupQuickAmounts() {
@@ -295,6 +296,24 @@ class SwapFragment : Fragment() {
                 }
 
                 else -> Unit
+            }
+        }
+
+        model.settings.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Success -> {
+                    Log.d(
+                        TAG,
+                        "Settings loaded: esom_som_conversion_fee_pct=${state.data.esomSomConversionFeePct}"
+                    )
+                    updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+                }
+                is UiState.Error -> {
+                    Log.e(TAG, "Settings load error: ${state.message}")
+                }
+                is UiState.Loading -> {
+                    Log.d(TAG, "Settings loading...")
+                }
             }
         }
     }
@@ -718,18 +737,29 @@ class SwapFragment : Fragment() {
     }
 
     private fun getSomEsomFeePercent(): Double {
-        val settings = (model.settings.value as? UiState.Success)?.data ?: return 0.0
+        val settingsState = model.settings.value
+        if (settingsState !is UiState.Success) {
+            Log.w(TAG, "Fee percent requested but settings are not ready: state=$settingsState")
+            return 0.0
+        }
+        val settings = settingsState.data
         return settings.esomSomConversionFeePct
     }
 
     private fun calculateFee(amount: Double): Double {
-        val settings = (model.settings.value as? UiState.Success)?.data ?: return 0.0
+        val settingsState = model.settings.value
+        if (settingsState !is UiState.Success) {
+            Log.w(TAG, "calculateFee: settings are not ready, returning 0. amount=$amount")
+            return 0.0
+        }
+        val settings = settingsState.data
+        val feePercent = settings.esomSomConversionFeePct
         return when {
             currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM ->
-                amount * (settings.esomSomConversionFeePct / 100.0)
+                amount * (feePercent / 100.0)
 
             currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM ->
-                amount * (settings.esomSomConversionFeePct / 100.0)
+                amount * (feePercent / 100.0)
 
             else -> 0.0
         }

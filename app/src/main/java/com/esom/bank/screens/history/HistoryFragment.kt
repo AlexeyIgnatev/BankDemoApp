@@ -31,6 +31,7 @@ import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentHistoryBinding
 import com.esom.bank.screens.history.adapter.HistoryAdapter
 import com.esom.bank.screens.history.dialog.ReceiptConfirmDialogFragment
+import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.ReceiptModel
 import com.esom.bank.screens.history.model.TransactionModel
@@ -302,29 +303,27 @@ class HistoryFragment : Fragment() {
             return
         }
 
-        val conversionSide = if (transaction.type == TransactionEnum.CONVERSION) {
-            transaction.conversionSide
-        } else {
-            null
+        val conversionSide = when (transaction.type) {
+            TransactionEnum.INCOME -> ConversionSide.OUT
+            else -> null
         }
 
         model.receipt(transactionId, conversionSide)
     }
 
     private fun handleReceiptResult(receipt: ReceiptModel) {
-        val receiptForDisplay = enrichReceiptWithUserAccounts(receipt)
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
             ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             ) != android.content.pm.PackageManager.PERMISSION_GRANTED
         ) {
-            pendingReceiptToSave = receiptForDisplay
+            pendingReceiptToSave = receipt
             writeStoragePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             return
         }
 
-        saveReceiptToDownloads(receiptForDisplay)
+        saveReceiptToDownloads(receipt)
     }
 
     private fun enrichReceiptWithUserAccounts(receipt: ReceiptModel): ReceiptModel {

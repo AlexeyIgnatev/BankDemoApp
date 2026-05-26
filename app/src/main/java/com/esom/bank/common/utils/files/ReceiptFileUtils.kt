@@ -282,7 +282,8 @@ object ReceiptFileUtils {
         val sealBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.receipt_stamp_clean)
             ?: return
 
-        val sealRect = RectF(760f, 1140f, 1100f, 1468f)
+        // Keep stamp below details block so it does not overlap receipt number row.
+        val sealRect = RectF(760f, 1320f, 1100f, 1650f)
         canvas.drawBitmap(sealBitmap, null, sealRect, null)
         sealBitmap.recycle()
     }

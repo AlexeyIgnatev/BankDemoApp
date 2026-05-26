@@ -312,18 +312,19 @@ class HistoryFragment : Fragment() {
     }
 
     private fun handleReceiptResult(receipt: ReceiptModel) {
+        val enrichedReceipt = enrichReceiptWithUserAccounts(receipt)
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
             ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             ) != android.content.pm.PackageManager.PERMISSION_GRANTED
         ) {
-            pendingReceiptToSave = receipt
+            pendingReceiptToSave = enrichedReceipt
             writeStoragePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             return
         }
 
-        saveReceiptToDownloads(receipt)
+        saveReceiptToDownloads(enrichedReceipt)
     }
 
     private fun enrichReceiptWithUserAccounts(receipt: ReceiptModel): ReceiptModel {
@@ -355,22 +356,22 @@ class HistoryFragment : Fragment() {
         val fallbackByTransaction = walletAddress(transactionCurrency)
         val fallbackPhone = user.phone
 
-        val sourceFallback = firstNotBlank(
-            fallbackByTransaction,
-            fallbackByCurrency,
-            esomAddress,
-            somAddress,
-            fallbackPhone
-        )
-
-        val targetFallback = if (receipt.type.equals("CONVERSION", ignoreCase = true)) {
-            when (receipt.conversionSide?.name) {
-                "IN" -> firstNotBlank(somAddress, fallbackByCurrency, fallbackPhone)
-                "OUT" -> firstNotBlank(esomAddress, fallbackByCurrency, fallbackPhone)
-                else -> firstNotBlank(fallbackByCurrency, fallbackPhone)
-            }
+        val sourceFallback = if (receipt.type.equals("CONVERSION", ignoreCase = true) &&
+            receipt.conversionSide == ConversionSide.OUT
+        ) {
+            // SOM -> ESOM: in "Оплачено со счета" must show debited ABS account.
+            firstNotBlank(receipt.absFromAccount, receipt.absAccount, fallbackPhone, fallbackByTransaction, fallbackByCurrency, somAddress, esomAddress)
         } else {
-            firstNotBlank(fallbackByCurrency, fallbackPhone)
+            firstNotBlank(receipt.absFromAccount, receipt.absAccount, fallbackPhone, fallbackByTransaction, fallbackByCurrency, esomAddress, somAddress)
+        }
+
+        val targetFallback = if (receipt.type.equals("CONVERSION", ignoreCase = true) &&
+            receipt.conversionSide == ConversionSide.IN
+        ) {
+            // ESOM -> SOM: in "Реквизиты счета" must show credited ABS account.
+            firstNotBlank(receipt.absToAccount, receipt.absAccount, fallbackPhone, fallbackByCurrency, fallbackByTransaction, somAddress, esomAddress)
+        } else {
+            firstNotBlank(receipt.absToAccount, receipt.absAccount, fallbackPhone, fallbackByCurrency, fallbackByTransaction, somAddress, esomAddress)
         }
 
         val paidFrom = if (looksMasked(receipt.paidFromAccount)) {

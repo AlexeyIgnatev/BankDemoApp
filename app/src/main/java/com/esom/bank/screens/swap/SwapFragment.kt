@@ -676,7 +676,7 @@ class SwapFragment : Fragment() {
         if (receivedAmount <= 0.0) return 0.0
 
         return if (isSomToEsomConversion()) {
-            val feePercent = getSomEsomFeePercent().toDouble()
+            val feePercent = getSomEsomFeePercent()
             val multiplier = 1.0 - feePercent / 100.0
             if (multiplier <= 0.0) 0.0 else receivedAmount / multiplier
         } else {
@@ -717,8 +717,8 @@ class SwapFragment : Fragment() {
         return value.replace(",", ".").toDoubleOrNull() ?: 0.0
     }
 
-    private fun getSomEsomFeePercent(): Int {
-        val settings = (model.settings.value as? UiState.Success)?.data ?: return 0
+    private fun getSomEsomFeePercent(): Double {
+        val settings = (model.settings.value as? UiState.Success)?.data ?: return 0.0
         return settings.esomSomConversionFeePct
     }
 

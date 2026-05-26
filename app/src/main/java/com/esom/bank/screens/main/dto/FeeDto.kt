@@ -8,7 +8,7 @@ data class FeeDto(
     @SerializedName("esom_per_usd")
     val esomPerUsd: Int,
     @SerializedName("esom_som_conversion_fee_pct")
-    val esomSomConversionFeePct: Int,
+    val esomSomConversionFeePct: Double,
     @SerializedName("btc_trade_fee_pct")
     val btcTradeFeePct: Double,
     @SerializedName("eth_trade_fee_pct")

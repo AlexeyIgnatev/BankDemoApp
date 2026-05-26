@@ -35,7 +35,7 @@ fun UserDto.toModel() = UserModel(
 data class FeeModel(
     val id: Int,
     val esomPerUsd: Int,
-    val esomSomConversionFeePct: Int,
+    val esomSomConversionFeePct: Double,
     val btcTradeFeePct: Double,
     val ethTradeFeePct: Double,
     val usdtTradeFeePct: Double,

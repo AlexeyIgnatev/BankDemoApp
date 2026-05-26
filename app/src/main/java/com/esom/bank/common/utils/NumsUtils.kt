@@ -1,10 +1,16 @@
 package com.esom.bank.common.utils
 
+import java.math.BigDecimal
+import java.math.RoundingMode
+
 fun Double.format(digits: Int = 6) =
     "%.${digits}f".format(this).replace(",", ".").removeTrailingZeros()
 
 fun Double.formatBalanceNew(): String {
-    val formatted = format(6)
+    val formatted = BigDecimal.valueOf(this)
+        .setScale(6, RoundingMode.DOWN)
+        .stripTrailingZeros()
+        .toPlainString()
 
     if ("." !in formatted) {
         return formatted

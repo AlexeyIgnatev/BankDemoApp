@@ -403,7 +403,11 @@ class SwapFragment : Fragment() {
     }
 
     private fun updateCommissionTitles() {
-        binding.comissionTitle.text = getCurrencyName(currentFromCurrency)
+        binding.comissionTitle.text = if (isSomToEsomConversion()) {
+            getCurrencyName(currentFromCurrency)
+        } else {
+            getCurrencyName(currentToCurrency)
+        }
         binding.secondTitle.text = getCurrencyName(currentToCurrency)
     }
 
@@ -655,7 +659,7 @@ class SwapFragment : Fragment() {
     ) {
         val actualFromAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
         val actualConvertedAmount = convertedAmount ?: calculateReceivedFromSend(actualFromAmount)
-        val fee = calculateFee(actualFromAmount)
+        val fee = calculateFeePreview(actualFromAmount)
 
         binding.thirdValue.text = formatAmount(fee)
         binding.comissionValue.text = formatAmount(actualFromAmount)
@@ -674,39 +678,40 @@ class SwapFragment : Fragment() {
     }
 
     private fun calculateReceivedFromSend(fromAmount: Double): Double {
-        val fee = calculateFee(fromAmount)
-        val amountAfterFee = (fromAmount - fee).coerceAtLeast(0.0)
-
-        return if (isSomToEsomConversion()) {
-            amountAfterFee
-        } else {
-            val exchangeRate = getExchangeRate()
-            if (exchangeRate == 0.0) return 0.0
-
-            if (currentFromCurrency == CurrencyEnum.SOM || currentFromCurrency == CurrencyEnum.ESOM) {
-                amountAfterFee / exchangeRate
-            } else {
-                amountAfterFee * exchangeRate
-            }
+        if (fromAmount <= 0.0) return 0.0
+        if (isSomToEsomConversion()) {
+            val fee = calculateSomEsomFee(fromAmount)
+            return (fromAmount - fee).coerceAtLeast(0.0)
         }
+
+        val grossOut = convertWithoutFee(fromAmount)
+        val feePct = getTradeFeePercentForPair(currentFromCurrency, currentToCurrency)
+        val feeOut = grossOut * (feePct / 100.0)
+        return (grossOut - feeOut).coerceAtLeast(0.0)
     }
 
     private fun calculateSendFromReceived(receivedAmount: Double): Double {
         if (receivedAmount <= 0.0) return 0.0
 
         return if (isSomToEsomConversion()) {
-            val feePercent = getSomEsomFeePercent()
-            val multiplier = 1.0 - feePercent / 100.0
-            if (multiplier <= 0.0) 0.0 else receivedAmount / multiplier
-        } else {
-            val exchangeRate = getExchangeRate()
-            if (exchangeRate == 0.0) return 0.0
+            val settings = (model.settings.value as? UiState.Success)?.data ?: return 0.0
+            val feePercent = settings.esomSomConversionFeePct.coerceAtLeast(0.0)
+            val minFee = settings.esomSomConversionFeeMin.coerceAtLeast(0.0)
+            val p = feePercent / 100.0
 
-            if (currentFromCurrency == CurrencyEnum.SOM || currentFromCurrency == CurrencyEnum.ESOM) {
-                receivedAmount * exchangeRate
+            val byPercent = if (p < 1.0) receivedAmount / (1.0 - p) else Double.POSITIVE_INFINITY
+            val feeByPercent = byPercent * p
+            if (byPercent.isFinite() && feeByPercent >= minFee) {
+                byPercent
             } else {
-                receivedAmount / exchangeRate
+                receivedAmount + minFee
             }
+        } else {
+            val feePct = getTradeFeePercentForPair(currentFromCurrency, currentToCurrency)
+            val multiplier = 1.0 - feePct / 100.0
+            if (multiplier <= 0.0) return 0.0
+            val grossOut = receivedAmount / multiplier
+            invertConvertWithoutFee(grossOut)
         }
     }
 
@@ -736,41 +741,82 @@ class SwapFragment : Fragment() {
         return value.replace(",", ".").toDoubleOrNull() ?: 0.0
     }
 
-    private fun getSomEsomFeePercent(): Double {
-        val settingsState = model.settings.value
-        if (settingsState !is UiState.Success) {
-            Log.w(TAG, "Fee percent requested but settings are not ready: state=$settingsState")
-            return 0.0
-        }
-        val settings = settingsState.data
-        return settings.esomSomConversionFeePct
-    }
-
-    private fun calculateFee(amount: Double): Double {
+    private fun calculateSomEsomFee(amount: Double): Double {
         val settingsState = model.settings.value
         if (settingsState !is UiState.Success) {
             Log.w(TAG, "calculateFee: settings are not ready, returning 0. amount=$amount")
             return 0.0
         }
         val settings = settingsState.data
-        val feePercent = settings.esomSomConversionFeePct
-        return when {
-            currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM ->
-                amount * (feePercent / 100.0)
+        val feePercent = settings.esomSomConversionFeePct.coerceAtLeast(0.0)
+        val minFee = settings.esomSomConversionFeeMin.coerceAtLeast(0.0)
+        val feeByPct = amount * (feePercent / 100.0)
+        return maxOf(feeByPct, minFee)
+    }
 
-            currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM ->
-                amount * (feePercent / 100.0)
+    private fun calculateFeePreview(fromAmount: Double): Double {
+        if (fromAmount <= 0.0) return 0.0
+        return if (isSomToEsomConversion()) {
+            calculateSomEsomFee(fromAmount)
+        } else {
+            val grossOut = convertWithoutFee(fromAmount)
+            val feePct = getTradeFeePercentForPair(currentFromCurrency, currentToCurrency)
+            grossOut * (feePct / 100.0)
+        }
+    }
 
+    private fun getTradeFeePercentForPair(from: CurrencyEnum, to: CurrencyEnum): Double {
+        val settings = (model.settings.value as? UiState.Success)?.data ?: return 0.0
+        fun feeForAsset(asset: CurrencyEnum): Double = when (asset) {
+            CurrencyEnum.BTC -> settings.btcTradeFeePct
+            CurrencyEnum.ETH -> settings.ethTradeFeePct
+            CurrencyEnum.USDT_TRC20 -> settings.usdtTradeFeePct
             else -> 0.0
         }
+        return when {
+            from == CurrencyEnum.ESOM || from == CurrencyEnum.SOM -> feeForAsset(to)
+            to == CurrencyEnum.ESOM || to == CurrencyEnum.SOM -> feeForAsset(from)
+            else -> maxOf(feeForAsset(from), feeForAsset(to))
+        }
+    }
+
+    private fun convertWithoutFee(fromAmount: Double): Double {
+        val exchangeRate = getExchangeRate()
+        if (exchangeRate == 0.0) return 0.0
+        return if (currentFromCurrency == CurrencyEnum.SOM || currentFromCurrency == CurrencyEnum.ESOM) {
+            fromAmount / exchangeRate
+        } else {
+            fromAmount * exchangeRate
+        }
+    }
+
+    private fun invertConvertWithoutFee(grossOut: Double): Double {
+        val exchangeRate = getExchangeRate()
+        if (exchangeRate == 0.0) return 0.0
+        return if (currentFromCurrency == CurrencyEnum.SOM || currentFromCurrency == CurrencyEnum.ESOM) {
+            grossOut * exchangeRate
+        } else {
+            grossOut / exchangeRate
+        }
+    }
+
+    private fun getEsomPerUsdOrNull(): Double? {
+        val settings = (model.settings.value as? UiState.Success)?.data ?: return null
+        val v = settings.esomPerUsd
+        return if (v > 0.0) v else null
     }
 
     private fun getExchangeRate(): Double {
         val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return 1.0
+        val esomPerUsd = getEsomPerUsdOrNull()
 
         return when {
             currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM -> 1.0
             currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM -> 1.0
+            (currentFromCurrency == CurrencyEnum.ESOM || currentFromCurrency == CurrencyEnum.SOM) &&
+                    currentToCurrency == CurrencyEnum.USDT_TRC20 -> esomPerUsd ?: 1.0
+            currentFromCurrency == CurrencyEnum.USDT_TRC20 &&
+                    (currentToCurrency == CurrencyEnum.ESOM || currentToCurrency == CurrencyEnum.SOM) -> esomPerUsd ?: 1.0
 
             (currentFromCurrency == CurrencyEnum.ESOM || currentFromCurrency == CurrencyEnum.SOM) &&
                     currentToCurrency != CurrencyEnum.ESOM && currentToCurrency != CurrencyEnum.SOM -> {

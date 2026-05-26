@@ -82,7 +82,7 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
             ApiResponse.Success(
                 FeeDto(
                     id = 1,
-                    esomPerUsd = 1,
+                    esomPerUsd = 1.0,
                     esomSomConversionFeePct = 3.0,
                     btcTradeFeePct = 0.5,
                     ethTradeFeePct = 0.5,

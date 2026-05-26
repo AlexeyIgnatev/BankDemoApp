@@ -34,7 +34,7 @@ fun UserDto.toModel() = UserModel(
 @Parcelize
 data class FeeModel(
     val id: Int,
-    val esomPerUsd: Int,
+    val esomPerUsd: Double,
     val esomSomConversionFeePct: Double,
     val btcTradeFeePct: Double,
     val ethTradeFeePct: Double,

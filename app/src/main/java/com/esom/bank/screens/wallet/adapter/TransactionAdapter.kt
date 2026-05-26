@@ -34,14 +34,7 @@ class TransactionAdapter(
             }
 
             val stringResId = when (item.type) {
-                TransactionEnum.CONVERSION -> when (item.currencyEnum) {
-                    CurrencyEnum.SOM -> R.string.convert_som
-                    CurrencyEnum.ESOM -> R.string.convert_digital
-                    CurrencyEnum.ETH -> R.string.convert_eth
-                    CurrencyEnum.BTC -> R.string.convert_bitcoin
-                    CurrencyEnum.USDT_TRC20 -> R.string.convert_usdt
-                    else -> R.string.transfer_usdt
-                }
+                TransactionEnum.CONVERSION -> R.string.convertation
 
                 TransactionEnum.INCOME -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.income_som
@@ -82,7 +75,19 @@ class TransactionAdapter(
                 null -> R.string.transfer_usdt
             }
 
-            binding.title.text = context.getString(stringResId)
+            val conversionTitle = when (item.currencyEnum) {
+                CurrencyEnum.SOM -> "Конвертация из Сом"
+                CurrencyEnum.ESOM -> "Конвертация из Салам"
+                CurrencyEnum.USDT_TRC20 -> "Конвертация из USDT"
+                CurrencyEnum.BTC -> "Конвертация из BTC"
+                CurrencyEnum.ETH -> "Конвертация из ETH"
+                null -> "Конвертация"
+            }
+            binding.title.text = if (item.type == TransactionEnum.CONVERSION) {
+                conversionTitle
+            } else {
+                context.getString(stringResId)
+            }
 
             val (sign, color) = when (item.type) {
                 TransactionEnum.INCOME, TransactionEnum.INFLOW -> "+" to binding.root.context.getColor(

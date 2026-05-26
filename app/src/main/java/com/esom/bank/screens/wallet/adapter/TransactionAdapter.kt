@@ -76,11 +76,11 @@ class TransactionAdapter(
             }
 
             val conversionTitle = when (item.currencyEnum) {
-                CurrencyEnum.SOM -> "Конвертация из Сом"
-                CurrencyEnum.ESOM -> "Конвертация из Салам"
-                CurrencyEnum.USDT_TRC20 -> "Конвертация из USDT"
-                CurrencyEnum.BTC -> "Конвертация из BTC"
-                CurrencyEnum.ETH -> "Конвертация из ETH"
+                CurrencyEnum.SOM -> "Конвертация в Сом"
+                CurrencyEnum.ESOM -> "Конвертация в Салам"
+                CurrencyEnum.USDT_TRC20 -> "Конвертация в USDT"
+                CurrencyEnum.BTC -> "Конвертация в BTC"
+                CurrencyEnum.ETH -> "Конвертация в ETH"
                 null -> "Конвертация"
             }
             binding.title.text = if (item.type == TransactionEnum.CONVERSION) {

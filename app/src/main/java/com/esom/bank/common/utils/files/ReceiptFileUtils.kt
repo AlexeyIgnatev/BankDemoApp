@@ -15,6 +15,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.text.TextPaint
 import android.text.TextUtils
+import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import com.esom.bank.R
 import com.esom.bank.screens.history.enums.ConversionSide
@@ -43,7 +44,7 @@ object ReceiptFileUtils {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             saveWithMediaStore(context, fileName, imageData)
         } else {
-            saveLegacy(fileName, imageData)
+            saveLegacy(context, fileName, imageData)
         }
     }
 
@@ -474,7 +475,7 @@ object ReceiptFileUtils {
     }
 
     @Suppress("DEPRECATION")
-    private fun saveLegacy(fileName: String, data: ByteArray): Uri {
+    private fun saveLegacy(context: Context, fileName: String, data: ByteArray): Uri {
         val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         if (!downloadsDir.exists()) {
             downloadsDir.mkdirs()
@@ -484,6 +485,10 @@ object ReceiptFileUtils {
             output.write(data)
             output.flush()
         }
-        return Uri.fromFile(file)
+        return FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
     }
 }

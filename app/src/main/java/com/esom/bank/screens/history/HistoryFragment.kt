@@ -27,7 +27,6 @@ import com.esom.bank.common.utils.files.ReceiptFileUtils
 import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
-import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentHistoryBinding
 import com.esom.bank.screens.history.adapter.HistoryAdapter
 import com.esom.bank.screens.history.dialog.ReceiptConfirmDialogFragment
@@ -395,11 +394,20 @@ class HistoryFragment : Fragment() {
     private fun saveReceiptToDownloads(receipt: ReceiptModel) {
         runCatching {
             ReceiptFileUtils.saveReceiptToDownloads(requireContext(), receipt)
-        }.onSuccess {
-            binding.root.showSuccessSnackbar("Квитанция в загрузках")
+        }.onSuccess { receiptUri ->
+            shareReceipt(receiptUri)
         }.onFailure { error ->
             binding.root.showErrorSnackbar(error.message ?: getString(R.string.something_went_wrong))
         }
+    }
+
+    private fun shareReceipt(receiptUri: android.net.Uri) {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/jpeg"
+            putExtra(Intent.EXTRA_STREAM, receiptUri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(Intent.createChooser(shareIntent, "Поделиться квитанцией"))
     }
 
     private fun loadTransactions() {

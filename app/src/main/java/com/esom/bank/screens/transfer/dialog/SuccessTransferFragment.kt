@@ -48,7 +48,7 @@ class SuccessTransferFragment : DialogFragment() {
         bindOperation(operation)
 
         binding.backBtn.setOnClickListener { dismiss() }
-        binding.backButton.setOnClickListener { dismiss() }
+        binding.cancelBtn.setOnClickListener { dismiss() }
         binding.shareBtn.setOnClickListener { shareOperation() }
     }
 

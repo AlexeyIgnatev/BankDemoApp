@@ -30,7 +30,7 @@ import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -238,24 +238,28 @@ class MainViewModel @Inject constructor(
     private fun findAndLoadLastSuccessReceipt(operation: SuccessOperationModel) {
         viewModelScope.launch {
             repeat(RECEIPT_LOOKUP_ATTEMPTS) { attempt ->
-                val historyState = mainRepository.history(
+                var historyState: UiState<List<TransactionModel?>>? = null
+                mainRepository.history(
                     currencyEnum = listOf(operation.currency),
                     fromTime = operation.createdAt - RECENT_RECEIPT_LOOKUP_WINDOW_MS,
                     toTime = System.currentTimeMillis() + RECENT_RECEIPT_LOOKUP_WINDOW_MS,
                     take = 20,
                     skip = 0
-                ).first()
+                ).collect { state ->
+                    historyState = state
+                }
 
-                if (historyState is UiState.Success) {
-                    val transaction = findBestReceiptTransaction(historyState.data, operation)
+                val state = historyState
+                if (state is UiState.Success) {
+                    val transaction = findBestReceiptTransaction(state.data, operation)
                     val transactionId = transaction?.transactionId
                     if (transactionId != null) {
                         updateLastSuccessOperationReceipt(transactionId, null)
                         loadLastSuccessReceipt(transactionId, operation.conversionSide)
                         return@launch
                     }
-                } else if (historyState is UiState.Error && attempt == RECEIPT_LOOKUP_ATTEMPTS - 1) {
-                    _lastSuccessReceipt.value = UiState.Error(historyState.message)
+                } else if (state is UiState.Error && attempt == RECEIPT_LOOKUP_ATTEMPTS - 1) {
+                    _lastSuccessReceipt.value = UiState.Error(state.message)
                     return@launch
                 }
 

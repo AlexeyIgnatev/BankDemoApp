@@ -1,10 +1,11 @@
-package com.esom.bank.common.data
+﻿package com.esom.bank.common.data
 
 import com.esom.bank.R
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.model.ErrorResponse
 import com.esom.bank.retrofit.exception.NotLoggedInException
 import com.google.gson.Gson
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
@@ -54,6 +55,8 @@ abstract class AbstractBaseCloudDataSource {
         } catch (e: IOException) {
             e.printStackTrace()
             emit(ApiResponse.Error(R.string.check_internet))
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             e.printStackTrace()
             emit(ApiResponse.Error(R.string.something_went_wrong))
@@ -91,6 +94,8 @@ abstract class AbstractBaseCloudDataSource {
         } catch (e: IOException) {
             e.printStackTrace()
             emit(ApiResponse.Error(R.string.check_internet))
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             e.printStackTrace()
             emit(ApiResponse.Error(R.string.something_went_wrong))

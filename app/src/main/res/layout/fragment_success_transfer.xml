@@ -136,14 +136,14 @@
             android:id="@+id/details_title"
             android:layout_width="@dimen/_0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_28dp"
             android:fontFamily="@font/mont_bold"
             android:text="@string/transaction_details"
             android:textColor="@color/title"
             android:textSize="@dimen/_18sp"
             app:layout_constraintEnd_toStartOf="@id/share_btn"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/drag_handle" />
+            app:layout_constraintTop_toTopOf="@id/share_btn"
+            app:layout_constraintBottom_toBottomOf="@id/share_btn"/>
 
         <ImageView
             android:id="@+id/share_btn"
@@ -154,7 +154,7 @@
             android:padding="@dimen/_12dp"
             android:src="@drawable/ic_share_success"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/details_title" />
+            app:layout_constraintTop_toBottomOf="@id/drag_handle"/>
 
         <TextView
             android:id="@+id/date_label"

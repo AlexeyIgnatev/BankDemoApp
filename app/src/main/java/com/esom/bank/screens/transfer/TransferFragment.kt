@@ -1,5 +1,8 @@
 package com.esom.bank.screens.transfer
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.text.TextWatcher
@@ -7,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -31,7 +35,17 @@ import com.esom.bank.screens.main.dialog.TransferConfirmationFragment
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.BinaryBitmap
+import com.google.zxing.DecodeHintType
+import com.google.zxing.MultiFormatReader
+import com.google.zxing.RGBLuminanceSource
+import com.google.zxing.common.HybridBinarizer
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 
 @AndroidEntryPoint
 class TransferFragment : Fragment() {
@@ -42,6 +56,23 @@ class TransferFragment : Fragment() {
     private var currentFromCurrency: CurrencyEnum = CurrencyEnum.ESOM
     private var isToPhoneNumber = false
     private val args: TransferFragmentArgs by navArgs()
+    private val qrCameraLauncher = registerForActivityResult(ScanContract()) { result ->
+        val content = result.contents
+        if (content.isNullOrBlank()) {
+            binding.root.showErrorSnackbar(getString(R.string.qr_scan_empty))
+        } else {
+            fillContactFromQr(content)
+        }
+    }
+    private val qrGalleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri == null) return@registerForActivityResult
+        val content = decodeQrFromImageUri(uri)
+        if (content.isNullOrBlank()) {
+            binding.root.showErrorSnackbar(getString(R.string.qr_scan_empty))
+        } else {
+            fillContactFromQr(content)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -88,6 +119,7 @@ class TransferFragment : Fragment() {
 
         binding.backBtn.setOnClickListener { findNavController().popBackStack() }
         binding.currentCurrencyLayout.setOnClickListener { toggleCurrencyPanel() }
+        binding.qrScanBtn.setOnClickListener { showQrSourceDialog() }
 
         binding.firstUsdtBtn.setOnClickListener { selectCurrency(CurrencyEnum.USDT_TRC20) }
         binding.firstBitcoinBtn.setOnClickListener { selectCurrency(CurrencyEnum.BTC) }
@@ -197,6 +229,98 @@ class TransferFragment : Fragment() {
         }
         updateCommissionAndTotal(binding.sumInput.text.toString())
     }
+
+    private fun showQrSourceDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.qr_scan_source_title)
+            .setItems(
+                arrayOf(
+                    getString(R.string.qr_scan_camera),
+                    getString(R.string.qr_scan_gallery)
+                )
+            ) { _, which ->
+                when (which) {
+                    0 -> startCameraQrScan()
+                    1 -> qrGalleryLauncher.launch("image/*")
+                }
+            }
+            .show()
+    }
+
+    private fun startCameraQrScan() {
+        val options = ScanOptions().apply {
+            setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+            setPrompt(getString(R.string.scan_qr))
+            setBeepEnabled(false)
+            setOrientationLocked(true)
+        }
+        qrCameraLauncher.launch(options)
+    }
+
+    private fun fillContactFromQr(rawContent: String) {
+        val contact = normalizeQrContact(rawContent)
+        if (contact.isBlank()) {
+            binding.root.showErrorSnackbar(getString(R.string.qr_scan_empty))
+            return
+        }
+        binding.contact.setText(contact)
+        binding.contact.setSelection(binding.contact.text?.length ?: 0)
+    }
+
+    private fun normalizeQrContact(rawContent: String): String {
+        val value = rawContent.trim()
+        val uri = runCatching { Uri.parse(value) }.getOrNull()
+        val scheme = uri?.scheme?.lowercase(Locale.US)
+        val queryContact = if (uri?.isHierarchical == true) {
+            firstNotBlank(
+                uri.getQueryParameter("address"),
+                uri.getQueryParameter("to"),
+                uri.getQueryParameter("phone")
+            )
+        } else {
+            ""
+        }
+        if (queryContact.isNotBlank()) return queryContact
+
+        return when (scheme) {
+            "bitcoin", "ethereum", "tron", "usdt", "tether", "tel" -> {
+                uri.schemeSpecificPart
+                    ?.removePrefix("//")
+                    ?.substringBefore("?")
+                    ?.substringBefore("&")
+                    ?.substringBefore("@")
+                    ?.trim()
+                    .orEmpty()
+            }
+            else -> value
+        }
+    }
+
+    private fun decodeQrFromImageUri(uri: Uri): String? {
+        val bitmap = requireContext().contentResolver.openInputStream(uri)?.use { input ->
+            BitmapFactory.decodeStream(input)
+        } ?: return null
+        return runCatching {
+            decodeQrFromBitmap(bitmap)
+        }.getOrNull().also {
+            bitmap.recycle()
+        }
+    }
+
+    private fun decodeQrFromBitmap(bitmap: Bitmap): String? {
+        val pixels = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        val source = RGBLuminanceSource(bitmap.width, bitmap.height, pixels)
+        val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
+        val hints = mapOf(
+            DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
+            DecodeHintType.TRY_HARDER to true
+        )
+        return MultiFormatReader().decode(binaryBitmap, hints).text
+    }
+
+    private fun firstNotBlank(vararg values: String?): String =
+        values.firstOrNull { !it.isNullOrBlank() }.orEmpty()
 
     private fun updateWalletBalances() {
         val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return

@@ -177,4 +177,18 @@
     <string name="all">Все</string>
     <string name="yes">Да</string>
     <string name="want_receipt_trans">Хотите сделать квитанцию по переводу?</string>
+    <string name="transfer_confirmation_title">Вы уверены, что хотите сделать перевод на сумму: %1$s, на счет: %2$?</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="payment_successful">Платеж успешно проведен</string>
+    <string name="transaction_details">Детали транзакции</string>
+    <string name="date_and_time">Дата и время</string>
+    <string name="receipt_number">Номер квитанции</string>
+    <string name="paid_from_account">Оплачено со счета</string>
+    <string name="recipient">Получатель</string>
+    <string name="total">Итого</string>
+    <string name="share_success_operation">Поделиться платежом</string>
+    <string name="success_share_text">Платеж успешно проведен\nОперация: %1$s\nСумма: %2$s\nДата и время: %3$s\nНомер квитанции: %4$s\nОплачено со счета: %5$s\nПолучатель: %6$s</string>
+    <string name="empty_value">-</string>
+    <string name="cancel">Отменить</string>
+    <string name="transfer_confirmation_message">Вы уверены, что хотите выполнить операцию на сумму %1$s на счет %2$s?</string>
 </resources>

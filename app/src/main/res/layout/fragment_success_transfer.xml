@@ -1,46 +1,234 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/_250dp"
+    android:layout_height="match_parent"
     android:background="@drawable/fail_success_background"
-    tools:ignore="MissingConstraints"
     tools:context=".screens.transfer.dialog.SuccessTransferFragment">
+
+    <ImageView
+        android:id="@+id/back_btn"
+        android:layout_width="@dimen/_48dp"
+        android:layout_height="@dimen/_48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/back"
+        android:padding="@dimen/_12dp"
+        android:src="@drawable/ic_back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/title" />
 
     <ImageView
         android:id="@+id/icon"
         android:layout_width="@dimen/_115dp"
         android:layout_height="@dimen/_115dp"
+        android:layout_marginTop="@dimen/_70dp"
         android:src="@drawable/success_icon"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/_14dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/success_title"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/_0dp"
         android:layout_height="wrap_content"
-        android:text="@string/success"
-        android:textColor="#535353"
-        android:textSize="@dimen/_36sp"
+        android:layout_marginHorizontal="@dimen/_24dp"
+        android:layout_marginTop="@dimen/_18dp"
         android:fontFamily="@font/mont_bold"
+        android:gravity="center"
+        android:text="@string/payment_successful"
+        android:textColor="@color/green"
+        android:textSize="@dimen/_16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/icon"
-        android:layout_marginTop="@dimen/_3dp"/>
+        app:layout_constraintTop_toBottomOf="@id/icon" />
+
     <TextView
-        android:id="@+id/opinion"
-        android:layout_width="wrap_content"
+        android:id="@+id/amount"
+        android:layout_width="@dimen/_0dp"
         android:layout_height="wrap_content"
-        android:text="@string/trans_complete"
-        android:textSize="@dimen/_16sp"
-        android:textColor="#808080"
-        android:fontFamily="@font/mont_regular"
-        app:layout_constraintTop_toBottomOf="@id/success_title"
+        android:layout_marginHorizontal="@dimen/_24dp"
+        android:layout_marginTop="@dimen/_10dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/mont_bold"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="@color/title"
+        android:textSize="@dimen/_34sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/success_title"
+        tools:text="- 180,00 С" />
+
+    <TextView
+        android:id="@+id/operation"
+        android:layout_width="@dimen/_0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_24dp"
+        android:layout_marginTop="@dimen/_8dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/mont_medium"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="@color/text_color_secondary"
+        android:textSize="@dimen/_15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/amount"
+        tools:text="Перевод" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/details_container"
+        android:layout_width="@dimen/_0dp"
+        android:layout_height="@dimen/_0dp"
+        android:layout_marginTop="@dimen/_30dp"
+        android:background="@drawable/success_details_background"
+        android:paddingHorizontal="@dimen/_18dp"
+        android:paddingTop="@dimen/_14dp"
+        android:paddingBottom="@dimen/_16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/operation">
+
+        <View
+            android:id="@+id/drag_handle"
+            android:layout_width="@dimen/_40dp"
+            android:layout_height="@dimen/_4dp"
+            android:alpha="0.5"
+            android:background="@drawable/success_drag_handle_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/details_title"
+            android:layout_width="@dimen/_0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_28dp"
+            android:fontFamily="@font/mont_bold"
+            android:text="@string/transaction_details"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_18sp"
+            app:layout_constraintEnd_toStartOf="@id/share_btn"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/drag_handle" />
+
+        <ImageView
+            android:id="@+id/share_btn"
+            android:layout_width="@dimen/_48dp"
+            android:layout_height="@dimen/_48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/share_success_operation"
+            android:padding="@dimen/_12dp"
+            android:src="@drawable/ic_share_success"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/details_title" />
+
+        <TextView
+            android:id="@+id/date_label"
+            style="@style/SuccessDetailsLabel"
+            android:layout_marginTop="@dimen/_28dp"
+            android:text="@string/date_and_time"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/details_title" />
+
+        <TextView
+            android:id="@+id/date_value"
+            style="@style/SuccessDetailsValue"
+            app:layout_constraintBaseline_toBaselineOf="@id/date_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/date_label"
+            tools:text="25.05.2026, 11:59" />
+
+        <TextView
+            android:id="@+id/receipt_label"
+            style="@style/SuccessDetailsLabel"
+            android:layout_marginTop="@dimen/_18dp"
+            android:text="@string/receipt_number"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/date_label" />
+
+        <TextView
+            android:id="@+id/receipt_value"
+            style="@style/SuccessDetailsValue"
+            app:layout_constraintBaseline_toBaselineOf="@id/receipt_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/receipt_label"
+            tools:text="TX123456789" />
+
+        <TextView
+            android:id="@+id/paid_from_label"
+            style="@style/SuccessDetailsLabel"
+            android:layout_marginTop="@dimen/_18dp"
+            android:text="@string/paid_from_account"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/receipt_label" />
+
+        <TextView
+            android:id="@+id/paid_from_value"
+            style="@style/SuccessDetailsValue"
+            app:layout_constraintBaseline_toBaselineOf="@id/paid_from_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/paid_from_label"
+            tools:text="1030520223465843" />
+
+        <TextView
+            android:id="@+id/recipient_label"
+            style="@style/SuccessDetailsLabel"
+            android:layout_marginTop="@dimen/_18dp"
+            android:text="@string/recipient"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/paid_from_label" />
+
+        <TextView
+            android:id="@+id/recipient_value"
+            style="@style/SuccessDetailsValue"
+            app:layout_constraintBaseline_toBaselineOf="@id/recipient_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/recipient_label"
+            tools:text="996555123456" />
+
+        <TextView
+            android:id="@+id/total_label"
+            style="@style/SuccessDetailsLabel"
+            android:layout_marginTop="@dimen/_18dp"
+            android:text="@string/total"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/recipient_label" />
+
+        <TextView
+            android:id="@+id/total_value"
+            style="@style/SuccessDetailsValue"
+            app:layout_constraintBaseline_toBaselineOf="@id/total_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/total_label"
+            tools:text="180,00 С" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_37dp"
+            android:background="@drawable/start_period_background"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="@dimen/_35dp">
+            <ImageButton
+                android:id="@+id/confirm_btn"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/back"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_16sp"
+                android:fontFamily="@font/mont_semibold"
+                android:gravity="center"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

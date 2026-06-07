@@ -5,6 +5,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
+import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
@@ -21,7 +23,9 @@ import com.esom.bank.common.utils.views.setOnUserTextChangeListener
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentSwapBinding
 import com.esom.bank.screens.main.MainViewModel
+import com.esom.bank.screens.main.dialog.TransferConfirmationFragment
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -40,6 +44,7 @@ class SwapFragment : Fragment() {
 
     companion object {
         private const val TAG = "SwapFragment"
+        private const val OPERATION_CONVERT = "convert"
     }
 
     override fun onCreateView(
@@ -67,6 +72,7 @@ class SwapFragment : Fragment() {
         initInitialIcons()
         setupQuickAmounts()
         setupClickListeners()
+        setupTransferConfirmationResultListener()
 
         if (binding.sum.text.isNullOrBlank()) {
             binding.sum.setText("0")
@@ -129,8 +135,44 @@ class SwapFragment : Fragment() {
         }
     }
 
+    private fun setupTransferConfirmationResultListener() {
+        parentFragmentManager.setFragmentResultListener(
+            TransferConfirmationFragment.RESULT_REQUEST_KEY,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            if (!bundle.getBoolean(TransferConfirmationFragment.CONFIRMED_KEY)) return@setFragmentResultListener
+            if (bundle.getString(TransferConfirmationFragment.OPERATION_KEY) != OPERATION_CONVERT) {
+                return@setFragmentResultListener
+            }
+
+            val fromCurrency = runCatching {
+                CurrencyEnum.valueOf(bundle.getString(TransferConfirmationFragment.FROM_CURRENCY_KEY).orEmpty())
+            }.getOrNull() ?: return@setFragmentResultListener
+            val toCurrency = runCatching {
+                CurrencyEnum.valueOf(bundle.getString(TransferConfirmationFragment.TO_CURRENCY_KEY).orEmpty())
+            }.getOrNull() ?: return@setFragmentResultListener
+            val amount = bundle.getDouble(TransferConfirmationFragment.AMOUNT_KEY)
+
+            model.setLastSuccessOperation(
+                SuccessOperationModel(
+                    amount = amount,
+                    currency = fromCurrency,
+                    operationTitle = bundle.getString(TransferConfirmationFragment.OPERATION_TITLE_KEY)
+                        ?: getString(R.string.convertation),
+                    paidFromAccount = bundle.getString(TransferConfirmationFragment.PAID_FROM_KEY).orEmpty(),
+                    recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty(),
+                    receiptNumber = ""
+                )
+            )
+            model.convert(fromCurrency, toCurrency, amount)
+        }
+    }
+
     private fun setupClickListeners() {
         binding.backBtn.setOnClickListener {
+            findNavController().popBackStack()
+        }
+        requireActivity().onBackPressedDispatcher.addCallback {
             findNavController().popBackStack()
         }
 
@@ -871,7 +913,40 @@ class SwapFragment : Fragment() {
         Log.d(TAG, "From: $currentFromCurrency, To: $currentToCurrency, Amount: $fromAmount")
         Log.d(TAG, "Курс: ${getExchangeRate()}")
 
-        model.convert(currentFromCurrency, currentToCurrency, fromAmount)
+        showConvertConfirmation(fromAmount)
+    }
+
+    private fun showConvertConfirmation(amount: Double) {
+        val amountText = "${amount.formatBalanceNew()} ${getCurrencyName(currentFromCurrency)}"
+        val target = getCurrencyName(currentToCurrency)
+        parentFragmentManager.setFragmentResult(
+            TransferConfirmationFragment.DATA_REQUEST_KEY,
+            bundleOf(
+                TransferConfirmationFragment.TITLE_KEY to getString(
+                    R.string.transfer_confirmation_message,
+                    amountText,
+                    target
+                ),
+                TransferConfirmationFragment.OPERATION_KEY to OPERATION_CONVERT,
+                TransferConfirmationFragment.AMOUNT_KEY to amount,
+                TransferConfirmationFragment.FROM_CURRENCY_KEY to currentFromCurrency.name,
+                TransferConfirmationFragment.TO_CURRENCY_KEY to currentToCurrency.name,
+                TransferConfirmationFragment.OPERATION_TITLE_KEY to getString(R.string.convertation),
+                TransferConfirmationFragment.PAID_FROM_KEY to getAccountForSuccess(currentFromCurrency),
+                TransferConfirmationFragment.RECIPIENT_KEY to getAccountForSuccess(currentToCurrency)
+            )
+        )
+        findNavController().navigate(NavGraphDirections.startTransferConfirmationFragment())
+    }
+
+    private fun getAccountForSuccess(currency: CurrencyEnum): String {
+        val user = (model.myData.value as? UiState.Success)?.data
+        val walletAddress = user?.wallets?.firstOrNull { it.currency == currency }?.address.orEmpty()
+        return when {
+            currency == CurrencyEnum.SOM -> user?.phone.orEmpty()
+            walletAddress.isNotBlank() -> walletAddress
+            else -> user?.phone.orEmpty()
+        }
     }
 
     private fun getCurrencyName(currency: CurrencyEnum): String = when (currency) {

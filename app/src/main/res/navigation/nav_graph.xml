@@ -247,4 +247,15 @@
         app:exitAnim="@anim/fade_out"
         app:popEnterAnim="@anim/fade_in"
         app:popExitAnim="@anim/fade_out"/>
+    <dialog
+        android:id="@+id/transferConfirmationFragment"
+        android:name="com.esom.bank.screens.main.dialog.TransferConfirmationFragment"
+        tools:layout="@layout/fragment_transfer_confirmation" />
+    <action
+        android:id="@+id/startTransferConfirmationFragment"
+        app:destination="@id/transferConfirmationFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
 </navigation>

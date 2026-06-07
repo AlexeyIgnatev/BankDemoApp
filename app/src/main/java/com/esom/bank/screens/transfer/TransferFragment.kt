@@ -3,10 +3,11 @@ package com.esom.bank.screens.transfer
 import android.os.Bundle
 import android.text.InputType
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
+import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
@@ -26,8 +27,10 @@ import com.esom.bank.common.utils.views.kyrgyzPhoneDigits
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentTransferBinding
+import com.esom.bank.screens.main.dialog.TransferConfirmationFragment
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -63,6 +66,9 @@ class TransferFragment : Fragment() {
             )
             insets
         }
+        requireActivity().onBackPressedDispatcher.addCallback {
+            findNavController().popBackStack()
+        }
 
         currentFromCurrency = args.currency
         isToPhoneNumber = currentFromCurrency in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)
@@ -90,6 +96,7 @@ class TransferFragment : Fragment() {
         binding.firstSomBtn.setOnClickListener { selectCurrency(CurrencyEnum.SOM) }
 
         binding.sendBtn.setOnClickListener { handleTransferButtonClick() }
+        setupTransferConfirmationResultListener()
 
         model.myData.observe(viewLifecycleOwner) {
             if (it is UiState.Success) {
@@ -123,6 +130,38 @@ class TransferFragment : Fragment() {
 
                 else -> {}
             }
+        }
+    }
+
+    private fun setupTransferConfirmationResultListener() {
+        parentFragmentManager.setFragmentResultListener(
+            TransferConfirmationFragment.RESULT_REQUEST_KEY,
+            viewLifecycleOwner
+        ) { _, bundle ->
+            if (!bundle.getBoolean(TransferConfirmationFragment.CONFIRMED_KEY)) return@setFragmentResultListener
+            if (bundle.getString(TransferConfirmationFragment.OPERATION_KEY) != OPERATION_TRANSFER) {
+                return@setFragmentResultListener
+            }
+
+            val amount = bundle.getDouble(TransferConfirmationFragment.AMOUNT_KEY)
+            val currencyName = bundle.getString(TransferConfirmationFragment.FROM_CURRENCY_KEY).orEmpty()
+            val currency = runCatching { CurrencyEnum.valueOf(currencyName) }.getOrNull()
+                ?: return@setFragmentResultListener
+            val phone = bundle.getString(TransferConfirmationFragment.PHONE_KEY).orEmpty()
+            val address = bundle.getString(TransferConfirmationFragment.ADDRESS_KEY)
+
+            model.setLastSuccessOperation(
+                SuccessOperationModel(
+                    amount = amount,
+                    currency = currency,
+                    operationTitle = bundle.getString(TransferConfirmationFragment.OPERATION_TITLE_KEY)
+                        ?: getString(R.string.transfer),
+                    paidFromAccount = bundle.getString(TransferConfirmationFragment.PAID_FROM_KEY).orEmpty(),
+                    recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty(),
+                    receiptNumber = ""
+                )
+            )
+            model.transferToUser(amount, phone, address, currency)
         }
     }
 
@@ -424,8 +463,60 @@ class TransferFragment : Fragment() {
         val address = if (!isToPhoneNumber) contactInfo else null
 
         if (model.transferRes.value !is UiState.Loading) {
-            model.transferToUser(sum, phone ?: "", address, currentFromCurrency)
+            val recipient = if (isToPhoneNumber) {
+                contactInfo
+            } else {
+                address.orEmpty()
+            }
+            showTransferConfirmation(
+                amount = sum,
+                phone = phone.orEmpty(),
+                address = address,
+                recipient = recipient
+            )
         }
+    }
+
+    private fun showTransferConfirmation(
+        amount: Double,
+        phone: String,
+        address: String?,
+        recipient: String
+    ) {
+        val amountText = "${amount.formatBalanceNew()} ${getCurrencyName(currentFromCurrency)}"
+        parentFragmentManager.setFragmentResult(
+            TransferConfirmationFragment.DATA_REQUEST_KEY,
+            bundleOf(
+                TransferConfirmationFragment.TITLE_KEY to getString(
+                    R.string.transfer_confirmation_message,
+                    amountText,
+                    recipient
+                ),
+                TransferConfirmationFragment.OPERATION_KEY to OPERATION_TRANSFER,
+                TransferConfirmationFragment.AMOUNT_KEY to amount,
+                TransferConfirmationFragment.FROM_CURRENCY_KEY to currentFromCurrency.name,
+                TransferConfirmationFragment.PHONE_KEY to phone,
+                TransferConfirmationFragment.ADDRESS_KEY to address,
+                TransferConfirmationFragment.OPERATION_TITLE_KEY to getString(R.string.transfer),
+                TransferConfirmationFragment.PAID_FROM_KEY to getCurrentUserAccountForSuccess(),
+                TransferConfirmationFragment.RECIPIENT_KEY to recipient
+            )
+        )
+        findNavController().navigate(NavGraphDirections.startTransferConfirmationFragment())
+    }
+
+    private fun getCurrentUserAccountForSuccess(): String {
+        val user = (model.myData.value as? UiState.Success)?.data
+        val walletAddress = user?.wallets?.firstOrNull { it.currency == currentFromCurrency }?.address.orEmpty()
+        return when {
+            currentFromCurrency == CurrencyEnum.SOM -> user?.phone.orEmpty()
+            walletAddress.isNotBlank() -> walletAddress
+            else -> user?.phone.orEmpty()
+        }
+    }
+
+    companion object {
+        private const val OPERATION_TRANSFER = "transfer"
     }
 
     private fun getCurrencyName(currency: CurrencyEnum): String = when (currency) {

@@ -25,6 +25,7 @@ import com.esom.bank.screens.chat.model.SupportModel
 import com.esom.bank.screens.history.pagingsource.TransactionsPagingSource
 import com.esom.bank.screens.main.model.FeeModel
 import com.esom.bank.screens.notification.model.NotificationModel
+import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.Flow
 import kotlin.math.abs
@@ -68,6 +69,9 @@ class MainViewModel @Inject constructor(
 
     private val _pushNotificationsEnabled = MutableLiveData<Boolean>()
     val pushNotificationsEnabled: LiveData<Boolean> = _pushNotificationsEnabled
+
+    private val _lastSuccessOperation = MutableLiveData<SuccessOperationModel?>()
+    val lastSuccessOperation: LiveData<SuccessOperationModel?> = _lastSuccessOperation
 
     private val pendingMessages = mutableListOf<SupportModel>()
     private var cachedMessages: List<SupportModel> = emptyList()
@@ -141,6 +145,10 @@ class MainViewModel @Inject constructor(
         mainRepository.transferToUser(amount, phone, address, currencyEnum).onEach {
             _transferRes.value = it
         }.launchIn(viewModelScope)
+    }
+
+    fun setLastSuccessOperation(operation: SuccessOperationModel) {
+        _lastSuccessOperation.value = operation
     }
     fun historyPaging(
         currencyEnum: List<CurrencyEnum>?,

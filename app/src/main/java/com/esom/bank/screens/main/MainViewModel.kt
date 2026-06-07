@@ -28,10 +28,7 @@ import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.notification.model.NotificationModel
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import com.google.firebase.messaging.FirebaseMessaging
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @HiltViewModel
@@ -56,8 +53,6 @@ class MainViewModel @Inject constructor(
     private val _receipt = SingleLiveEvent<UiState<ReceiptModel>>()
     val receipt: LiveData<UiState<ReceiptModel>> = _receipt
 
-    private val _recentReceiptTransaction = SingleLiveEvent<UiState<TransactionModel?>>()
-    val recentReceiptTransaction: LiveData<UiState<TransactionModel?>> = _recentReceiptTransaction
 
     private val _messages = MutableLiveData<UiState<List<SupportModel>>>()
     val messages: LiveData<UiState<List<SupportModel>>> = _messages
@@ -215,7 +210,7 @@ class MainViewModel @Inject constructor(
         if (transactionId != null) {
             loadLastSuccessReceipt(transactionId, current.conversionSide)
         } else {
-            findAndLoadLastSuccessReceipt(current)
+            _lastSuccessReceipt.value = UiState.Error(RECEIPT_OPERATION_NOT_FOUND)
         }
     }
 
@@ -231,90 +226,6 @@ class MainViewModel @Inject constructor(
                 }
                 is UiState.Error -> UiState.Error<ReceiptModel>(state.message)
                 is UiState.Loading -> UiState.Loading<ReceiptModel>()
-            }
-        }.launchIn(viewModelScope)
-    }
-
-    private fun findAndLoadLastSuccessReceipt(operation: SuccessOperationModel) {
-        viewModelScope.launch {
-            repeat(RECEIPT_LOOKUP_ATTEMPTS) { attempt ->
-                var historyState: UiState<List<TransactionModel?>>? = null
-                mainRepository.history(
-                    currencyEnum = listOf(operation.currency),
-                    fromTime = operation.createdAt - RECENT_RECEIPT_LOOKUP_WINDOW_MS,
-                    toTime = System.currentTimeMillis() + RECENT_RECEIPT_LOOKUP_WINDOW_MS,
-                    take = 20,
-                    skip = 0
-                ).collect { state ->
-                    historyState = state
-                }
-
-                val state = historyState
-                if (state is UiState.Success) {
-                    val transaction = findBestReceiptTransaction(state.data, operation)
-                    val transactionId = transaction?.transactionId
-                    if (transactionId != null) {
-                        updateLastSuccessOperationReceipt(transactionId, null)
-                        loadLastSuccessReceipt(transactionId, operation.conversionSide)
-                        return@launch
-                    }
-                } else if (state is UiState.Error && attempt == RECEIPT_LOOKUP_ATTEMPTS - 1) {
-                    _lastSuccessReceipt.value = UiState.Error(state.message)
-                    return@launch
-                }
-
-                delay(RECEIPT_LOOKUP_RETRY_DELAY_MS)
-            }
-
-            _lastSuccessReceipt.value = UiState.Error(RECEIPT_OPERATION_NOT_FOUND)
-        }
-    }
-
-    private fun findBestReceiptTransaction(
-        transactions: List<TransactionModel?>,
-        operation: SuccessOperationModel
-    ): TransactionModel? {
-        val operationAmount = abs(operation.amount)
-        return transactions
-            .filterNotNull()
-            .filter { it.transactionId != null }
-            .filter { it.successful != false }
-            .minByOrNull {
-                val amountDiff = abs(abs(it.amount ?: 0.0) - operationAmount)
-                val timeDiff = abs((it.createdAt ?: operation.createdAt) - operation.createdAt).toDouble()
-                amountDiff * RECEIPT_AMOUNT_SCORE_WEIGHT + timeDiff
-            }
-    }
-
-    fun findRecentTransactionForReceipt(
-        currency: CurrencyEnum,
-        amount: Double,
-        createdAt: Long
-    ) {
-        _recentReceiptTransaction.value = UiState.Loading()
-        val from = createdAt - RECENT_RECEIPT_LOOKUP_WINDOW_MS
-        val to = System.currentTimeMillis() + RECENT_RECEIPT_LOOKUP_WINDOW_MS
-        mainRepository.history(
-            currencyEnum = listOf(currency),
-            fromTime = from,
-            toTime = to,
-            take = 20,
-            skip = 0
-        ).onEach { state ->
-            _recentReceiptTransaction.value = when (state) {
-                is UiState.Success -> {
-                    val transaction = state.data
-                        .filterNotNull()
-                        .filter { it.transactionId != null }
-                        .minByOrNull {
-                            abs((it.amount ?: 0.0) - amount) +
-                                    abs((it.createdAt ?: createdAt) - createdAt).toDouble()
-                        }
-                    UiState.Success<TransactionModel?>(transaction)
-                }
-
-                is UiState.Error -> UiState.Error<TransactionModel?>(state.message)
-                is UiState.Loading -> UiState.Loading<TransactionModel?>()
             }
         }.launchIn(viewModelScope)
     }
@@ -484,10 +395,6 @@ class MainViewModel @Inject constructor(
 
     companion object {
         private const val PENDING_MESSAGE_MATCH_WINDOW_MS = 5 * 60 * 1000L
-        private const val RECENT_RECEIPT_LOOKUP_WINDOW_MS = 5 * 60 * 1000L
-        private const val RECEIPT_LOOKUP_ATTEMPTS = 5
-        private const val RECEIPT_LOOKUP_RETRY_DELAY_MS = 1_000L
-        private const val RECEIPT_AMOUNT_SCORE_WEIGHT = 1_000_000
         const val RECEIPT_OPERATION_NOT_FOUND = "receipt_operation_not_found"
     }
 }

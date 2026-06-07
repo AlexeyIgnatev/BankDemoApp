@@ -222,12 +222,13 @@ class MainViewModel @Inject constructor(
                         .filter { it.transactionId != null }
                         .minByOrNull {
                             abs((it.amount ?: 0.0) - amount) +
-                                abs((it.createdAt ?: createdAt) - createdAt).toDouble()
+                                    abs((it.createdAt ?: createdAt) - createdAt).toDouble()
                         }
-                    UiState.Success(transaction)
+                    UiState.Success<TransactionModel?>(transaction)
                 }
-                is UiState.Error -> state
-                is UiState.Loading -> state
+
+                is UiState.Error -> UiState.Error<TransactionModel?>(state.message)
+                is UiState.Loading -> UiState.Loading<TransactionModel?>()
             }
         }.launchIn(viewModelScope)
     }

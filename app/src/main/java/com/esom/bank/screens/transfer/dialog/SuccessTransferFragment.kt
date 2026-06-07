@@ -33,6 +33,7 @@ class SuccessTransferFragment : Fragment() {
     private lateinit var binding: FragmentSuccessTransferBinding
     private val model: MainViewModel by activityViewModels()
     private var operation: SuccessOperationModel? = null
+    private var shareAfterReceiptLoaded = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,40 +60,39 @@ class SuccessTransferFragment : Fragment() {
         binding.cancelBtn.setOnClickListener { findNavController().navigate(NavGraphDirections.startMainFragment()) }
         binding.shareBtn.setOnClickListener { requestReceiptForShare() }
 
-        model.receipt.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is UiState.Loading -> binding.shareBtn.isEnabled = false
-                is UiState.Error -> {
-                    binding.shareBtn.isEnabled = true
-                    binding.root.showErrorSnackbar(state.message)
-                }
-                is UiState.Success -> {
-                    binding.shareBtn.isEnabled = true
-                    shareReceiptPdf(state.data)
-                }
-            }
+        model.lastSuccessOperation.observe(viewLifecycleOwner) { state ->
+            operation = state ?: operation
+            bindOperation(operation)
         }
 
-        model.recentReceiptTransaction.observe(viewLifecycleOwner) { state ->
+        model.lastSuccessReceipt.observe(viewLifecycleOwner) { state ->
             when (state) {
-                is UiState.Loading -> binding.shareBtn.isEnabled = false
+                is UiState.Loading -> {
+                    binding.shareBtn.isEnabled = false
+                }
                 is UiState.Error -> {
                     binding.shareBtn.isEnabled = true
-                    binding.root.showErrorSnackbar(state.message)
+                    if (shareAfterReceiptLoaded) {
+                        shareAfterReceiptLoaded = false
+                        showReceiptError(state.message)
+                    }
                 }
                 is UiState.Success -> {
-                    val transactionId = state.data?.transactionId
-                    if (transactionId == null) {
-                        binding.shareBtn.isEnabled = true
-                        binding.root.showErrorSnackbar(getString(R.string.receipt_operation_not_found))
-                    } else {
-                        model.updateLastSuccessOperationReceipt(transactionId, null)
-                        operation = operation?.copy(transactionId = transactionId)
-                        model.receipt(transactionId, operation?.conversionSide)
+                    binding.shareBtn.isEnabled = true
+                    operation = operation?.copy(
+                        receiptNumber = state.data.receiptNumber,
+                        createdAt = state.data.createdAt
+                    )
+                    bindOperation(operation)
+                    if (shareAfterReceiptLoaded) {
+                        shareAfterReceiptLoaded = false
+                        shareReceiptPdf(state.data)
                     }
                 }
             }
         }
+
+        model.prepareReceiptForLastSuccessOperation()
     }
 
     private fun bindOperation(operation: SuccessOperationModel?) {
@@ -111,17 +111,13 @@ class SuccessTransferFragment : Fragment() {
     }
 
     private fun requestReceiptForShare() {
-        val data = operation ?: return
-        val transactionId = data.transactionId
-        if (transactionId == null) {
-            model.findRecentTransactionForReceipt(
-                currency = data.currency,
-                amount = data.amount,
-                createdAt = data.createdAt
-            )
-            return
+        val receipt = (model.lastSuccessReceipt.value as? UiState.Success)?.data
+        if (receipt != null) {
+            shareReceiptPdf(receipt)
+        } else {
+            shareAfterReceiptLoaded = true
+            model.prepareReceiptForLastSuccessOperation()
         }
-        model.receipt(transactionId, data.conversionSide)
     }
 
     private fun shareReceiptPdf(receipt: ReceiptModel) {
@@ -142,6 +138,15 @@ class SuccessTransferFragment : Fragment() {
                 getString(R.string.share_success_operation)
             )
         )
+    }
+
+    private fun showReceiptError(message: String) {
+        val errorMessage = if (message == MainViewModel.RECEIPT_OPERATION_NOT_FOUND) {
+            getString(R.string.receipt_operation_not_found)
+        } else {
+            message
+        }
+        binding.root.showErrorSnackbar(errorMessage)
     }
 
     private fun buildFallbackOperation(): SuccessOperationModel =

@@ -89,7 +89,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/success_title"
-        tools:text="- 180,00 С" />
+        tools:text="- 180,00 KGS" />
 
     <TextView
         android:id="@+id/operation"
@@ -106,7 +106,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/amount"
-        tools:text="Перевод" />
+        tools:text="Transfer" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/details_container"
@@ -131,6 +131,13 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/details_value_guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.46" />
 
         <TextView
             android:id="@+id/details_title"
@@ -159,94 +166,106 @@
         <TextView
             android:id="@+id/date_label"
             style="@style/SuccessDetailsLabel"
+            android:layout_width="@dimen/_0dp"
             android:layout_marginTop="@dimen/_28dp"
             android:text="@string/date_and_time"
+            app:layout_constraintEnd_toStartOf="@id/details_value_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/details_title" />
 
         <TextView
             android:id="@+id/date_value"
             style="@style/SuccessDetailsValue"
+            android:layout_marginStart="@dimen/_8dp"
             app:layout_constraintBaseline_toBaselineOf="@id/date_label"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/date_label"
+            app:layout_constraintStart_toEndOf="@id/details_value_guideline"
             tools:text="25.05.2026, 11:59" />
 
         <TextView
             android:id="@+id/receipt_label"
             style="@style/SuccessDetailsLabel"
+            android:layout_width="@dimen/_0dp"
             android:layout_marginTop="@dimen/_18dp"
             android:text="@string/receipt_number"
+            app:layout_constraintEnd_toStartOf="@id/details_value_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/date_label" />
 
         <TextView
             android:id="@+id/receipt_value"
             style="@style/SuccessDetailsValue"
-            android:layout_marginTop="@dimen/_6dp"
+            android:layout_marginStart="@dimen/_8dp"
             android:ellipsize="end"
             android:breakStrategy="simple"
             android:hyphenationFrequency="none"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/receipt_label"
+            app:layout_constraintStart_toEndOf="@id/details_value_guideline"
+            app:layout_constraintTop_toTopOf="@id/receipt_label"
             tools:text="TX123456789" />
 
         <TextView
             android:id="@+id/paid_from_label"
             style="@style/SuccessDetailsLabel"
+            android:layout_width="@dimen/_0dp"
             android:layout_marginTop="@dimen/_18dp"
             android:text="@string/paid_from_account"
+            app:layout_constraintEnd_toStartOf="@id/details_value_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/receipt_value" />
 
         <TextView
             android:id="@+id/paid_from_value"
             style="@style/SuccessDetailsValue"
-            android:layout_marginTop="@dimen/_6dp"
+            android:layout_marginStart="@dimen/_8dp"
             android:ellipsize="end"
             android:breakStrategy="simple"
             android:hyphenationFrequency="none"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/paid_from_label"
+            app:layout_constraintStart_toEndOf="@id/details_value_guideline"
+            app:layout_constraintTop_toTopOf="@id/paid_from_label"
             tools:text="0x0b3DFAd1774f4c16DdF5dF6d11C4DC46718ab2Fd" />
 
         <TextView
             android:id="@+id/recipient_label"
             style="@style/SuccessDetailsLabel"
+            android:layout_width="@dimen/_0dp"
             android:layout_marginTop="@dimen/_18dp"
             android:text="@string/recipient"
+            app:layout_constraintEnd_toStartOf="@id/details_value_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/paid_from_value" />
 
         <TextView
             android:id="@+id/recipient_value"
             style="@style/SuccessDetailsValue"
-            android:layout_marginTop="@dimen/_6dp"
+            android:layout_marginStart="@dimen/_8dp"
             android:ellipsize="end"
             android:breakStrategy="simple"
             android:hyphenationFrequency="none"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/recipient_label"
+            app:layout_constraintStart_toEndOf="@id/details_value_guideline"
+            app:layout_constraintTop_toTopOf="@id/recipient_label"
             tools:text="TAzegbepNRtfd3ZXZpbuLAUzTzuzWdejEc" />
 
         <TextView
             android:id="@+id/total_label"
             style="@style/SuccessDetailsLabel"
+            android:layout_width="@dimen/_0dp"
             android:layout_marginTop="@dimen/_18dp"
             android:text="@string/total"
+            app:layout_constraintEnd_toStartOf="@id/details_value_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/recipient_value" />
 
         <TextView
             android:id="@+id/total_value"
             style="@style/SuccessDetailsValue"
+            android:layout_marginStart="@dimen/_8dp"
             app:layout_constraintBaseline_toBaselineOf="@id/total_label"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/total_label"
-            tools:text="180,00 С" />
+            app:layout_constraintStart_toEndOf="@id/details_value_guideline"
+            tools:text="180,00 KGS" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

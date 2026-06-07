@@ -184,7 +184,7 @@
         app:popEnterAnim="@anim/fade_in"
         app:popExitAnim="@anim/fade_out" />
 
-    <dialog
+    <fragment
         android:id="@+id/successTransferFragment"
         android:name="com.esom.bank.screens.transfer.dialog.SuccessTransferFragment"
         tools:layout="@layout/fragment_success_transfer"/>

@@ -1,20 +1,18 @@
 package com.esom.bank.screens.transfer.dialog
 
-import android.content.DialogInterface
 import android.content.Intent
-import android.content.res.Resources
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import androidx.fragment.app.DialogFragment
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
+import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.databinding.FragmentSuccessTransferBinding
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
@@ -27,7 +25,7 @@ import java.util.Date
 import java.util.Locale
 
 @AndroidEntryPoint
-class SuccessTransferFragment : DialogFragment() {
+class SuccessTransferFragment : Fragment() {
     private lateinit var binding: FragmentSuccessTransferBinding
     private val model: MainViewModel by activityViewModels()
     private var operation: SuccessOperationModel? = null
@@ -43,26 +41,19 @@ class SuccessTransferFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupWindow()
+        binding.root.doOnApplyWindowInsets { view, compat, rect ->
+            view.updatePadding(
+                top = rect.top + compat.getInsets(WindowInsetsCompat.Type.systemBars()).top,
+                bottom = rect.bottom + compat.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+            )
+            compat
+        }
         operation = model.lastSuccessOperation.value ?: buildFallbackOperation()
         bindOperation(operation)
 
-        binding.backBtn.setOnClickListener { dismiss() }
-        binding.cancelBtn.setOnClickListener { dismiss() }
+        binding.backBtn.setOnClickListener { findNavController().navigate(NavGraphDirections.startMainFragment()) }
+        binding.cancelBtn.setOnClickListener { findNavController().navigate(NavGraphDirections.startMainFragment()) }
         binding.shareBtn.setOnClickListener { shareOperation() }
-    }
-
-    private fun setupWindow() {
-        dialog?.window?.let { window ->
-            val displayMetrics = Resources.getSystem().displayMetrics
-            val lp = WindowManager.LayoutParams().apply {
-                copyFrom(window.attributes)
-                width = displayMetrics.widthPixels
-                height = WindowManager.LayoutParams.MATCH_PARENT
-            }
-            window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            window.attributes = lp
-        }
     }
 
     private fun bindOperation(operation: SuccessOperationModel?) {
@@ -74,7 +65,8 @@ class SuccessTransferFragment : DialogFragment() {
         binding.operation.text = data.operationTitle
         binding.dateValue.text = dateTimeText
         binding.receiptValue.text = data.receiptNumber.ifBlank { getString(R.string.empty_value) }
-        binding.paidFromValue.text = data.paidFromAccount.ifBlank { getString(R.string.empty_value) }
+        binding.paidFromValue.text =
+            data.paidFromAccount.ifBlank { getString(R.string.empty_value) }
         binding.recipientValue.text = data.recipient.ifBlank { getString(R.string.empty_value) }
         binding.totalValue.text = amountText
     }
@@ -94,7 +86,12 @@ class SuccessTransferFragment : DialogFragment() {
             type = "text/plain"
             putExtra(Intent.EXTRA_TEXT, shareText)
         }
-        startActivity(Intent.createChooser(shareIntent, getString(R.string.share_success_operation)))
+        startActivity(
+            Intent.createChooser(
+                shareIntent,
+                getString(R.string.share_success_operation)
+            )
+        )
     }
 
     private fun buildFallbackOperation(): SuccessOperationModel =
@@ -124,10 +121,5 @@ class SuccessTransferFragment : DialogFragment() {
     private fun formatDateTime(timestamp: Long): String {
         val formatter = SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale("ru", "RU"))
         return formatter.format(Date(timestamp))
-    }
-
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        findNavController().navigate(NavGraphDirections.startMainFragment())
     }
 }

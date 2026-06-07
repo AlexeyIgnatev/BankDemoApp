@@ -15,6 +15,7 @@ import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.FeeModel
 import com.esom.bank.screens.main.model.UserModel
 import com.esom.bank.screens.main.model.toModel
+import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.messaging.data.MessagingLocalDataSource
 import com.esom.bank.screens.notification.model.NotificationModel
 import com.esom.bank.screens.notification.model.toModel
@@ -38,22 +39,22 @@ interface MainRepository {
         from: CurrencyEnum,
         to: CurrencyEnum,
         fromAmount: Double
-    ): Flow<UiState<Unit>>
+    ): Flow<UiState<StatusDto>>
 
     fun transferFromFiat(
         amount: Double,
-    ): Flow<UiState<Unit>>
+    ): Flow<UiState<StatusDto>>
 
     fun transferToFiat(
         amount: Double
-    ): Flow<UiState<Unit>>
+    ): Flow<UiState<StatusDto>>
 
     fun transferToUser(
         amount: Double,
         phone: String,
         address: String? = null,
         currencyEnum: CurrencyEnum
-    ): Flow<UiState<Unit>>
+    ): Flow<UiState<StatusDto>>
 
     fun history(
         currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
@@ -137,27 +138,27 @@ class MainRepositoryImpl @Inject constructor(
         from: CurrencyEnum,
         to: CurrencyEnum,
         fromAmount: Double
-    ): Flow<UiState<Unit>> =
+    ): Flow<UiState<StatusDto>> =
         mainCloudDataSource.convert(ConvertDto(from, to, fromAmount)).map {
             when (it) {
-                is ApiResponse.Success -> return@map UiState.Success(Unit)
+                is ApiResponse.Success -> return@map UiState.Success(it.data)
                 is ApiResponse.Error -> return@map UiState.Error(it.toString(context))
             }
         }
 
 
-    override fun transferFromFiat(amount: Double): Flow<UiState<Unit>> =
+    override fun transferFromFiat(amount: Double): Flow<UiState<StatusDto>> =
         mainCloudDataSource.fiatToCrypto(amount).map { response ->
             when (response) {
-                is ApiResponse.Success -> return@map UiState.Success(Unit)
+                is ApiResponse.Success -> return@map UiState.Success(response.data)
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
             }
         }
 
-    override fun transferToFiat(amount: Double): Flow<UiState<Unit>> =
+    override fun transferToFiat(amount: Double): Flow<UiState<StatusDto>> =
         mainCloudDataSource.cryptoToFiat(amount).map { response ->
             when (response) {
-                is ApiResponse.Success -> return@map UiState.Success(Unit)
+                is ApiResponse.Success -> return@map UiState.Success(response.data)
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
             }
         }
@@ -167,10 +168,10 @@ class MainRepositoryImpl @Inject constructor(
         phone: String,
         address: String?,
         currencyEnum: CurrencyEnum
-    ): Flow<UiState<Unit>> =
+    ): Flow<UiState<StatusDto>> =
         mainCloudDataSource.transfer(amount, phone, address, currencyEnum).map { response ->
             when (response) {
-                is ApiResponse.Success -> return@map UiState.Success(Unit)
+                is ApiResponse.Success -> return@map UiState.Success(response.data)
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
             }
         }

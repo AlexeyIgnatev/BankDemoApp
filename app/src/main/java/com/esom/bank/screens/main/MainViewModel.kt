@@ -24,6 +24,7 @@ import com.esom.bank.screens.chat.enums.SupportRole
 import com.esom.bank.screens.chat.model.SupportModel
 import com.esom.bank.screens.history.pagingsource.TransactionsPagingSource
 import com.esom.bank.screens.main.model.FeeModel
+import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.notification.model.NotificationModel
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import com.google.firebase.messaging.FirebaseMessaging
@@ -37,11 +38,11 @@ class MainViewModel @Inject constructor(
     private val _myData = MutableLiveData<UiState<UserModel>>()
     val myData: LiveData<UiState<UserModel>> = _myData
 
-    private val _swapRes = SingleLiveEvent<UiState<Unit>>()
-    val swapRes: LiveData<UiState<Unit>> = _swapRes
+    private val _swapRes = SingleLiveEvent<UiState<StatusDto>>()
+    val swapRes: LiveData<UiState<StatusDto>> = _swapRes
 
-    private val _transferRes = SingleLiveEvent<UiState<Unit>>()
-    val transferRes: LiveData<UiState<Unit>> = _transferRes
+    private val _transferRes = SingleLiveEvent<UiState<StatusDto>>()
+    val transferRes: LiveData<UiState<StatusDto>> = _transferRes
 
     private val _history = SingleLiveEvent<UiState<List<TransactionModel?>>>()
     val history: LiveData<UiState<List<TransactionModel?>>> = _history
@@ -51,6 +52,9 @@ class MainViewModel @Inject constructor(
 
     private val _receipt = SingleLiveEvent<UiState<ReceiptModel>>()
     val receipt: LiveData<UiState<ReceiptModel>> = _receipt
+
+    private val _recentReceiptTransaction = SingleLiveEvent<UiState<TransactionModel?>>()
+    val recentReceiptTransaction: LiveData<UiState<TransactionModel?>> = _recentReceiptTransaction
 
     private val _messages = MutableLiveData<UiState<List<SupportModel>>>()
     val messages: LiveData<UiState<List<SupportModel>>> = _messages
@@ -150,6 +154,14 @@ class MainViewModel @Inject constructor(
     fun setLastSuccessOperation(operation: SuccessOperationModel) {
         _lastSuccessOperation.value = operation
     }
+
+    fun updateLastSuccessOperationReceipt(transactionId: Long?, receiptNumber: String?) {
+        val current = _lastSuccessOperation.value ?: return
+        _lastSuccessOperation.value = current.copy(
+            transactionId = transactionId ?: current.transactionId,
+            receiptNumber = receiptNumber ?: current.receiptNumber
+        )
+    }
     fun historyPaging(
         currencyEnum: List<CurrencyEnum>?,
         fromTime: Long,
@@ -185,6 +197,38 @@ class MainViewModel @Inject constructor(
         _receipt.value = UiState.Loading()
         mainRepository.receipt(transactionId, conversionSide).onEach {
             _receipt.value = it
+        }.launchIn(viewModelScope)
+    }
+
+    fun findRecentTransactionForReceipt(
+        currency: CurrencyEnum,
+        amount: Double,
+        createdAt: Long
+    ) {
+        _recentReceiptTransaction.value = UiState.Loading()
+        val from = createdAt - RECENT_RECEIPT_LOOKUP_WINDOW_MS
+        val to = System.currentTimeMillis() + RECENT_RECEIPT_LOOKUP_WINDOW_MS
+        mainRepository.history(
+            currencyEnum = listOf(currency),
+            fromTime = from,
+            toTime = to,
+            take = 20,
+            skip = 0
+        ).onEach { state ->
+            _recentReceiptTransaction.value = when (state) {
+                is UiState.Success -> {
+                    val transaction = state.data
+                        .filterNotNull()
+                        .filter { it.transactionId != null }
+                        .minByOrNull {
+                            abs((it.amount ?: 0.0) - amount) +
+                                abs((it.createdAt ?: createdAt) - createdAt).toDouble()
+                        }
+                    UiState.Success(transaction)
+                }
+                is UiState.Error -> state
+                is UiState.Loading -> state
+            }
         }.launchIn(viewModelScope)
     }
 
@@ -353,5 +397,6 @@ class MainViewModel @Inject constructor(
 
     companion object {
         private const val PENDING_MESSAGE_MATCH_WINDOW_MS = 5 * 60 * 1000L
+        private const val RECENT_RECEIPT_LOOKUP_WINDOW_MS = 5 * 60 * 1000L
     }
 }

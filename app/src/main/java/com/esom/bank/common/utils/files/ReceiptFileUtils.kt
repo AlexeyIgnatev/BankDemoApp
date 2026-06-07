@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.net.Uri
@@ -33,6 +34,7 @@ object ReceiptFileUtils {
     private const val TEMPLATE_ASSET_NAME = "receipt_template.docx"
     private const val LOGO_MEDIA_ENTRY = "word/media/image1.jpeg"
     private const val JPEG_MIME_TYPE = "image/jpeg"
+    const val PDF_MIME_TYPE = "application/pdf"
 
     private const val OUTPUT_WIDTH = 1240
     private const val OUTPUT_HEIGHT = 1754
@@ -336,6 +338,42 @@ object ReceiptFileUtils {
             "Перевод по адресу кошелька."
         } else {
             "Перевод по номеру телефона."
+        }
+    }
+
+    fun createReceiptPdfForShare(context: Context, receipt: ReceiptModel): Uri {
+        val bitmap = buildReceiptBitmap(context, receipt)
+        val pdfDocument = PdfDocument()
+        return try {
+            val pageInfo = PdfDocument.PageInfo.Builder(
+                OUTPUT_WIDTH,
+                OUTPUT_HEIGHT,
+                1
+            ).create()
+            val page = pdfDocument.startPage(pageInfo)
+            page.canvas.drawBitmap(bitmap, 0f, 0f, null)
+            pdfDocument.finishPage(page)
+
+            val fileName = buildFileName(receipt.receiptNumber)
+                .replace(Regex("\\.(jpg|jpeg)$", RegexOption.IGNORE_CASE), ".pdf")
+            val receiptsDir = File(context.cacheDir, "shared_receipts")
+            if (!receiptsDir.exists()) {
+                receiptsDir.mkdirs()
+            }
+            val file = File(receiptsDir, fileName)
+            FileOutputStream(file).use { output ->
+                pdfDocument.writeTo(output)
+                output.flush()
+            }
+
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                file
+            )
+        } finally {
+            pdfDocument.close()
+            bitmap.recycle()
         }
     }
 

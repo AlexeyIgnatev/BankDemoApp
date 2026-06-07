@@ -100,15 +100,15 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
     }
 
     override fun convert(convert: ConvertDto): Flow<ApiResponse<StatusDto>> = flow {
-        emit(ApiResponse.Success(StatusDto("success"), 200))
+        emit(ApiResponse.Success(StatusDto("success", transactionId = 1L), 200))
     }
 
     override fun fiatToCrypto(amount: Double): Flow<ApiResponse<StatusDto>> = flow {
-        emit(ApiResponse.Success(StatusDto("success"), code = 200))
+        emit(ApiResponse.Success(StatusDto("success", transactionId = 2L), code = 200))
     }
 
     override fun cryptoToFiat(amount: Double): Flow<ApiResponse<StatusDto>> = flow {
-        emit(ApiResponse.Success(StatusDto("success"), code = 200))
+        emit(ApiResponse.Success(StatusDto("success", transactionId = 3L), code = 200))
     }
 
     override fun transfer(

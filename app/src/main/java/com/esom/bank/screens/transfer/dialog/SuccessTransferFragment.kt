@@ -12,8 +12,12 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
+import com.esom.bank.common.model.UiState
+import com.esom.bank.common.utils.files.ReceiptFileUtils
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
+import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentSuccessTransferBinding
+import com.esom.bank.screens.history.model.ReceiptModel
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
@@ -53,7 +57,42 @@ class SuccessTransferFragment : Fragment() {
 
         binding.backBtn.setOnClickListener { findNavController().navigate(NavGraphDirections.startMainFragment()) }
         binding.cancelBtn.setOnClickListener { findNavController().navigate(NavGraphDirections.startMainFragment()) }
-        binding.shareBtn.setOnClickListener { shareOperation() }
+        binding.shareBtn.setOnClickListener { requestReceiptForShare() }
+
+        model.receipt.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Loading -> binding.shareBtn.isEnabled = false
+                is UiState.Error -> {
+                    binding.shareBtn.isEnabled = true
+                    binding.root.showErrorSnackbar(state.message)
+                }
+                is UiState.Success -> {
+                    binding.shareBtn.isEnabled = true
+                    shareReceiptPdf(state.data)
+                }
+            }
+        }
+
+        model.recentReceiptTransaction.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Loading -> binding.shareBtn.isEnabled = false
+                is UiState.Error -> {
+                    binding.shareBtn.isEnabled = true
+                    binding.root.showErrorSnackbar(state.message)
+                }
+                is UiState.Success -> {
+                    val transactionId = state.data?.transactionId
+                    if (transactionId == null) {
+                        binding.shareBtn.isEnabled = true
+                        binding.root.showErrorSnackbar(getString(R.string.receipt_operation_not_found))
+                    } else {
+                        model.updateLastSuccessOperationReceipt(transactionId, null)
+                        operation = operation?.copy(transactionId = transactionId)
+                        model.receipt(transactionId, operation?.conversionSide)
+                    }
+                }
+            }
+        }
     }
 
     private fun bindOperation(operation: SuccessOperationModel?) {
@@ -71,20 +110,31 @@ class SuccessTransferFragment : Fragment() {
         binding.totalValue.text = amountText
     }
 
-    private fun shareOperation() {
+    private fun requestReceiptForShare() {
         val data = operation ?: return
-        val shareText = getString(
-            R.string.success_share_text,
-            data.operationTitle,
-            formatAmount(data.amount, data.currency),
-            formatDateTime(data.createdAt),
-            data.receiptNumber.ifBlank { getString(R.string.empty_value) },
-            data.paidFromAccount.ifBlank { getString(R.string.empty_value) },
-            data.recipient.ifBlank { getString(R.string.empty_value) }
-        )
+        val transactionId = data.transactionId
+        if (transactionId == null) {
+            model.findRecentTransactionForReceipt(
+                currency = data.currency,
+                amount = data.amount,
+                createdAt = data.createdAt
+            )
+            return
+        }
+        model.receipt(transactionId, data.conversionSide)
+    }
+
+    private fun shareReceiptPdf(receipt: ReceiptModel) {
+        val receiptUri = runCatching {
+            ReceiptFileUtils.createReceiptPdfForShare(requireContext(), receipt)
+        }.getOrElse { error ->
+            binding.root.showErrorSnackbar(error.message ?: getString(R.string.something_went_wrong))
+            return
+        }
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, shareText)
+            type = ReceiptFileUtils.PDF_MIME_TYPE
+            putExtra(Intent.EXTRA_STREAM, receiptUri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         startActivity(
             Intent.createChooser(

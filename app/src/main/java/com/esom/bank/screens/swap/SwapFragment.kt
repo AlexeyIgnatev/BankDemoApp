@@ -22,6 +22,7 @@ import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentSwapBinding
+import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.dialog.TransferConfirmationFragment
 import com.esom.bank.screens.main.enums.CurrencyEnum
@@ -161,7 +162,8 @@ class SwapFragment : Fragment() {
                         ?: getString(R.string.convertation),
                     paidFromAccount = bundle.getString(TransferConfirmationFragment.PAID_FROM_KEY).orEmpty(),
                     recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty(),
-                    receiptNumber = ""
+                    receiptNumber = "",
+                    conversionSide = getConversionSide(fromCurrency, toCurrency)
                 )
             )
             model.convert(fromCurrency, toCurrency, amount)
@@ -332,6 +334,10 @@ class SwapFragment : Fragment() {
 
                 is UiState.Success -> {
                     model.updateUserData()
+                    model.updateLastSuccessOperationReceipt(
+                        transactionId = it.data.transactionId,
+                        receiptNumber = it.data.receiptNumber
+                    )
                     findNavController().navigate(
                         NavGraphDirections.startSuccessTransferFragment()
                     )
@@ -948,6 +954,13 @@ class SwapFragment : Fragment() {
             else -> user?.phone.orEmpty()
         }
     }
+
+    private fun getConversionSide(from: CurrencyEnum, to: CurrencyEnum): ConversionSide? =
+        when {
+            from == CurrencyEnum.ESOM && to == CurrencyEnum.SOM -> ConversionSide.IN
+            from == CurrencyEnum.SOM && to == CurrencyEnum.ESOM -> ConversionSide.OUT
+            else -> null
+        }
 
     private fun getCurrencyName(currency: CurrencyEnum): String = when (currency) {
         CurrencyEnum.SOM -> "Сом"

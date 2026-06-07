@@ -3,4 +3,7 @@
     <external-path
         name="downloads"
         path="Download/" />
+    <cache-path
+        name="shared_receipts"
+        path="shared_receipts/" />
 </paths>

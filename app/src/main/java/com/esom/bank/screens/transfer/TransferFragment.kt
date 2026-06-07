@@ -123,6 +123,10 @@ class TransferFragment : Fragment() {
 
                 is UiState.Success -> {
                     model.updateUserData()
+                    model.updateLastSuccessOperationReceipt(
+                        transactionId = it.data.transactionId,
+                        receiptNumber = it.data.receiptNumber
+                    )
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
                     findNavController().navigate(NavGraphDirections.startSuccessTransferFragment())

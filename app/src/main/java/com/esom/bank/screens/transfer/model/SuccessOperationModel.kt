@@ -12,5 +12,6 @@ data class SuccessOperationModel(
     val receiptNumber: String,
     val transactionId: Long? = null,
     val conversionSide: ConversionSide? = null,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val loadReceiptAutomatically: Boolean = true
 )

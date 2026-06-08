@@ -9,20 +9,15 @@ import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 
 object QRCodeGenerator {
+    private const val APP_QR_PREFIX = "ESOM_BANK_QR"
+
     fun generateCryptoQRCodeWithScheme(
         address: String,
         currency: CurrencyEnum,
         width: Int = 600,
         height: Int = 600
     ): Bitmap {
-        val scheme = when (currency) {
-            CurrencyEnum.BTC -> "bitcoin"
-            CurrencyEnum.ETH -> "ethereum"
-            CurrencyEnum.USDT_TRC20 -> "tron"
-            else -> ""
-        }
-
-        val qrContent = if (scheme.isNotEmpty()) "$scheme:$address" else address
+        val qrContent = "$APP_QR_PREFIX|v=1|currency=${currency.name}|contact=$address"
         return generateRoundedQRCode(qrContent, width, height)
     }
 

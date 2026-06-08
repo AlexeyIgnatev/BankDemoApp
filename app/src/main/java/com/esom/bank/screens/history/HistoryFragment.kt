@@ -1,15 +1,11 @@
 package com.esom.bank.screens.history
 
-import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.os.Build
 import android.util.Log
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -23,20 +19,16 @@ import androidx.paging.PagingData
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
-import com.esom.bank.common.utils.files.ReceiptFileUtils
 import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentHistoryBinding
 import com.esom.bank.screens.history.adapter.HistoryAdapter
-import com.esom.bank.screens.history.dialog.ReceiptConfirmDialogFragment
-import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.enums.TransactionEnum
-import com.esom.bank.screens.history.model.ReceiptModel
 import com.esom.bank.screens.history.model.TransactionModel
+import com.esom.bank.screens.history.model.TransactionSuccessMapper
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
-import com.esom.bank.screens.main.enums.CurrencyEnum
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -49,19 +41,6 @@ class HistoryFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
 
     private lateinit var adapter: HistoryAdapter
-    private var selectedTransaction: TransactionModel? = null
-    private var pendingReceiptToSave: ReceiptModel? = null
-
-    private val writeStoragePermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            val pendingReceipt = pendingReceiptToSave
-            pendingReceiptToSave = null
-            if (granted && pendingReceipt != null) {
-                saveReceiptToDownloads(pendingReceipt)
-            } else if (!granted) {
-                binding.root.showErrorSnackbar("Нет разрешения для сохранения в загрузки")
-            }
-        }
 
     private val historyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -114,22 +93,9 @@ class HistoryFragment : Fragment() {
             context = requireContext(),
             showTransfers = model.getWithoutTransactions()
         ) { transaction ->
-            selectedTransaction = transaction
-            ReceiptConfirmDialogFragment().show(
-                childFragmentManager,
-                ReceiptConfirmDialogFragment::class.java.simpleName
-            )
+            openSuccessTransfer(transaction)
         }
         binding.history.adapter = adapter
-
-        childFragmentManager.setFragmentResultListener(
-            ReceiptConfirmDialogFragment.REQUEST_KEY,
-            viewLifecycleOwner
-        ) { _, bundle ->
-            if (bundle.getBoolean(ReceiptConfirmDialogFragment.CONFIRMED_KEY)) {
-                selectedTransaction?.let { requestReceipt(it) }
-            }
-        }
 
         refreshData()
         model.month.observe(viewLifecycleOwner) { it ->
@@ -258,13 +224,6 @@ class HistoryFragment : Fragment() {
             findParentNavController().navigate(NavGraphDirections.startChooseActiveFragment())
         }
 
-        model.receipt.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is UiState.Loading -> Unit
-                is UiState.Error -> binding.root.showErrorSnackbar(state.message)
-                is UiState.Success -> handleReceiptResult(state.data)
-            }
-        }
     }
 
     private fun getCurrentMonthInPrepositional(): String {
@@ -295,119 +254,16 @@ class HistoryFragment : Fragment() {
         model.monthTransactions()
     }
 
-    private fun requestReceipt(transaction: TransactionModel) {
-        val transactionId = transaction.transactionId
-        if (transactionId == null) {
-            binding.root.showErrorSnackbar("Не удалось определить ID операции")
-            return
-        }
-
-        val conversionSide = when (transaction.type) {
-            TransactionEnum.INCOME -> ConversionSide.OUT
-            else -> null
-        }
-
-        model.receipt(transactionId, conversionSide)
-    }
-
-    private fun handleReceiptResult(receipt: ReceiptModel) {
-        val enrichedReceipt = enrichReceiptWithUserAccounts(receipt)
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) {
-            pendingReceiptToSave = enrichedReceipt
-            writeStoragePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            return
-        }
-
-        saveReceiptToDownloads(enrichedReceipt)
-    }
-
-    private fun enrichReceiptWithUserAccounts(receipt: ReceiptModel): ReceiptModel {
-        val user = (model.myData.value as? UiState.Success)?.data ?: return receipt
-
-        fun walletAddress(currency: CurrencyEnum?): String {
-            return user.wallets.firstOrNull { it.currency == currency }?.address.orEmpty()
-        }
-
-        fun currencyByName(name: String): CurrencyEnum? {
-            return CurrencyEnum.values().firstOrNull { it.name.equals(name, ignoreCase = true) }
-        }
-
-        fun firstNotBlank(vararg values: String): String {
-            return values.firstOrNull { it.isNotBlank() } ?: ""
-        }
-
-        fun looksMasked(value: String): Boolean {
-            val compact = value.replace(" ", "")
-            val visible = compact.count { it != '*' }
-            return compact.contains('*') || visible <= 4
-        }
-
-        val receiptCurrency = currencyByName(receipt.currency)
-        val transactionCurrency = selectedTransaction?.currencyEnum
-        val somAddress = walletAddress(CurrencyEnum.SOM)
-        val esomAddress = walletAddress(CurrencyEnum.ESOM)
-        val fallbackByCurrency = walletAddress(receiptCurrency)
-        val fallbackByTransaction = walletAddress(transactionCurrency)
-        val fallbackPhone = user.phone
-
-        val sourceFallback = if (receipt.type.equals("CONVERSION", ignoreCase = true) &&
-            receipt.conversionSide == ConversionSide.OUT
-        ) {
-            // SOM -> ESOM: in "Оплачено со счета" must show debited ABS account.
-            firstNotBlank(receipt.absFromAccount, receipt.absAccount, fallbackPhone, fallbackByTransaction, fallbackByCurrency, somAddress, esomAddress)
-        } else {
-            firstNotBlank(receipt.absFromAccount, receipt.absAccount, fallbackPhone, fallbackByTransaction, fallbackByCurrency, esomAddress, somAddress)
-        }
-
-        val targetFallback = if (receipt.type.equals("CONVERSION", ignoreCase = true) &&
-            receipt.conversionSide == ConversionSide.IN
-        ) {
-            // ESOM -> SOM: in "Реквизиты счета" must show credited ABS account.
-            firstNotBlank(receipt.absToAccount, receipt.absAccount, fallbackPhone, fallbackByCurrency, fallbackByTransaction, somAddress, esomAddress)
-        } else {
-            firstNotBlank(receipt.absToAccount, receipt.absAccount, fallbackPhone, fallbackByCurrency, fallbackByTransaction, somAddress, esomAddress)
-        }
-
-        val paidFrom = if (looksMasked(receipt.paidFromAccount)) {
-            firstNotBlank(sourceFallback, receipt.paidFromAccount)
-        } else {
-            receipt.paidFromAccount
-        }
-
-        val accountDetails = if (looksMasked(receipt.accountDetails)) {
-            firstNotBlank(targetFallback, receipt.accountDetails)
-        } else {
-            receipt.accountDetails
-        }
-
-        return receipt.copy(
-            paidFromAccount = paidFrom,
-            accountDetails = accountDetails
+    private fun openSuccessTransfer(transaction: TransactionModel) {
+        val user = (model.myData.value as? UiState.Success)?.data
+        val operation = TransactionSuccessMapper.toSuccessOperation(
+            context = requireContext(),
+            transaction = transaction,
+            user = user
         )
-    }
-
-    private fun saveReceiptToDownloads(receipt: ReceiptModel) {
-        runCatching {
-            ReceiptFileUtils.saveReceiptToDownloads(requireContext(), receipt)
-        }.onSuccess { receiptUri ->
-            shareReceipt(receiptUri)
-        }.onFailure { error ->
-            binding.root.showErrorSnackbar(error.message ?: getString(R.string.something_went_wrong))
-        }
-    }
-
-    private fun shareReceipt(receiptUri: android.net.Uri) {
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "image/jpeg"
-            putExtra(Intent.EXTRA_STREAM, receiptUri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        startActivity(Intent.createChooser(shareIntent, "Поделиться квитанцией"))
+        val receipt = TransactionSuccessMapper.toReceipt(transaction, operation)
+        model.setLastSuccessOperation(operation, receipt)
+        findParentNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
     }
 
     private fun loadTransactions() {

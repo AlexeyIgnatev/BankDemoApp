@@ -23,8 +23,8 @@ import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentWalletBinding
-import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
+import com.esom.bank.screens.history.model.TransactionSuccessMapper
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
@@ -89,7 +89,9 @@ class WalletFragment : Fragment() {
         val currencyAdapter = CurrencyAdapter(requireContext())
         binding.currencies.adapter = currencyAdapter
 
-        val transactionAdapter = TransactionAdapter(requireContext())
+        val transactionAdapter = TransactionAdapter(requireContext()) { transaction ->
+            openSuccessTransfer(transaction)
+        }
         binding.transactions.adapter = transactionAdapter
 
         transactionAdapter.submitList(emptyList())
@@ -326,6 +328,18 @@ class WalletFragment : Fragment() {
         model.updateUserData()
         model.getSettings()
         model.latestTransactions(currentCurrency)
+    }
+
+    private fun openSuccessTransfer(transaction: TransactionModel) {
+        val user = (model.myData.value as? UiState.Success)?.data
+        val operation = TransactionSuccessMapper.toSuccessOperation(
+            context = requireContext(),
+            transaction = transaction,
+            user = user
+        )
+        val receipt = TransactionSuccessMapper.toReceipt(transaction, operation)
+        model.setLastSuccessOperation(operation, receipt)
+        findParentNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
     }
 
     private fun isDataForCurrentCurrency(transactions: List<TransactionModel?>): Boolean {

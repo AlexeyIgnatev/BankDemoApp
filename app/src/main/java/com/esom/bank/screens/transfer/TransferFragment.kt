@@ -259,16 +259,34 @@ class TransferFragment : Fragment() {
 
     private fun fillContactFromQr(rawContent: String) {
         val contact = normalizeQrContact(rawContent)
-        if (contact.isBlank()) {
+        if (!isValidQrContact(contact)) {
             binding.root.showErrorSnackbar(getString(R.string.qr_scan_empty))
             return
         }
+        applyContactInputModeForQr(contact)
         binding.contact.setText(contact)
         binding.contact.setSelection(binding.contact.text?.length ?: 0)
+        updateCommissionAndTotal(binding.sumInput.text.toString())
     }
 
     private fun normalizeQrContact(rawContent: String): String {
         val value = rawContent.trim()
+        parseInternalQrContact(value)?.let { return it }
+
+        val schemeMatch = Regex("^([a-zA-Z][a-zA-Z0-9+.-]*):(.*)$")
+            .find(value)
+        if (schemeMatch != null) {
+            val scheme = schemeMatch.groupValues[1].lowercase(Locale.US)
+            val payload = schemeMatch.groupValues[2]
+                .removePrefix("//")
+                .substringBefore("?")
+                .substringBefore("&")
+                .trim()
+            if (scheme in QR_CONTACT_SCHEMES && payload.isNotBlank()) {
+                return payload
+            }
+        }
+
         val uri = runCatching { Uri.parse(value) }.getOrNull()
         val scheme = uri?.scheme?.lowercase(Locale.US)
         val queryContact = if (uri?.isHierarchical == true) {
@@ -288,12 +306,59 @@ class TransferFragment : Fragment() {
                     ?.removePrefix("//")
                     ?.substringBefore("?")
                     ?.substringBefore("&")
-                    ?.substringBefore("@")
                     ?.trim()
                     .orEmpty()
             }
             else -> value
         }
+    }
+
+    private fun parseInternalQrContact(value: String): String? {
+        if (!value.startsWith(APP_QR_PREFIX)) return null
+        return value
+            .split("|")
+            .firstOrNull { it.startsWith("$APP_QR_CONTACT_KEY=") }
+            ?.substringAfter("=")
+            ?.trim()
+            ?.takeIf { it.isNotBlank() }
+    }
+
+    private fun applyContactInputModeForQr(contact: String) {
+        when {
+            isQrPhoneContact(contact) -> {
+                if (!isToPhoneNumber) {
+                    isToPhoneNumber = true
+                    applyPhoneMask()
+                    setContactHint()
+                }
+            }
+            currentFromCurrency != CurrencyEnum.SOM -> {
+                isToPhoneNumber = false
+                removePhoneMask()
+                setContactHint()
+            }
+        }
+    }
+
+    private fun isValidQrContact(contact: String): Boolean {
+        val compact = contact.trim()
+        if (compact.isBlank()) return false
+        if (compact.equals("test", ignoreCase = true) || compact.equals("\u0442\u0435\u0441\u0442", ignoreCase = true)) {
+            return false
+        }
+        return isQrPhoneContact(compact) || isQrWalletContact(compact)
+    }
+
+    private fun isQrPhoneContact(contact: String): Boolean {
+        val digitsCount = contact.count { it.isDigit() }
+        return digitsCount >= MIN_QR_PHONE_DIGITS && !isQrWalletContact(contact)
+    }
+
+    private fun isQrWalletContact(contact: String): Boolean {
+        val compact = contact.trim()
+        return compact.length >= MIN_QR_WALLET_LENGTH &&
+            compact.any { it.isLetter() } &&
+            compact.any { it.isDigit() }
     }
 
     private fun decodeQrFromImageUri(uri: Uri): String? {
@@ -645,6 +710,11 @@ class TransferFragment : Fragment() {
 
     companion object {
         private const val OPERATION_TRANSFER = "transfer"
+        private const val APP_QR_PREFIX = "ESOM_BANK_QR"
+        private const val APP_QR_CONTACT_KEY = "contact"
+        private const val MIN_QR_PHONE_DIGITS = 7
+        private const val MIN_QR_WALLET_LENGTH = 20
+        private val QR_CONTACT_SCHEMES = setOf("bitcoin", "ethereum", "tron", "usdt", "tether", "tel")
     }
 
     private fun getCurrencyName(currency: CurrencyEnum): String = when (currency) {

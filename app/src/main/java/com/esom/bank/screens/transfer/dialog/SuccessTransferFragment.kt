@@ -92,7 +92,11 @@ class SuccessTransferFragment : Fragment() {
             }
         }
 
-        model.prepareReceiptForLastSuccessOperation()
+        if (operation?.loadReceiptAutomatically == true &&
+            model.lastSuccessReceipt.value !is UiState.Success
+        ) {
+            model.prepareReceiptForLastSuccessOperation()
+        }
     }
 
     private fun bindOperation(operation: SuccessOperationModel?) {
@@ -115,8 +119,12 @@ class SuccessTransferFragment : Fragment() {
         if (receipt != null) {
             shareReceiptPdf(receipt)
         } else {
-            shareAfterReceiptLoaded = true
-            model.prepareReceiptForLastSuccessOperation()
+            if (operation?.loadReceiptAutomatically == true) {
+                shareAfterReceiptLoaded = true
+                model.prepareReceiptForLastSuccessOperation()
+            } else {
+                showReceiptError(MainViewModel.RECEIPT_OPERATION_NOT_FOUND)
+            }
         }
     }
 

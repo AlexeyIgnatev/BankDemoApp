@@ -152,9 +152,16 @@ class MainViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun setLastSuccessOperation(operation: SuccessOperationModel) {
+    fun setLastSuccessOperation(
+        operation: SuccessOperationModel,
+        receipt: ReceiptModel? = null
+    ) {
         _lastSuccessOperation.value = operation
-        _lastSuccessReceipt.value = UiState.Loading()
+        _lastSuccessReceipt.value = if (receipt != null) {
+            UiState.Success(receipt)
+        } else {
+            UiState.Loading()
+        }
     }
 
     fun updateLastSuccessOperationReceipt(transactionId: Long?, receiptNumber: String?) {

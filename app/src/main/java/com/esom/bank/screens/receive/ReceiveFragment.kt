@@ -69,18 +69,18 @@ class ReceiveFragment : Fragment() {
         if (args.currency == CurrencyEnum.SOM)
             binding.contact.text = args.contact.formatPhone()
         else binding.contact.text = args.contact
+        val qrBitmap = QRCodeGenerator.generateCryptoQRCodeWithScheme(
+            address = args.contact,
+            currency = args.currency,
+            width = 600,
+            height = 600
+        )
+        binding.qrIcon.setImageBitmap(qrBitmap)
+        binding.qrIcon.scaleType = ImageView.ScaleType.FIT_CENTER
+        binding.qrIcon.scaleX = 1.1f
+        binding.qrIcon.scaleY = 1.1f
+        binding.qrIcon.adjustViewBounds = true
         if (args.currency != CurrencyEnum.SOM) {
-            val qrBitmap = QRCodeGenerator.generateCryptoQRCodeWithScheme(
-                address = args.contact,
-                currency = args.currency,
-                width = 600,
-                height = 600
-            )
-            binding.qrIcon.setImageBitmap(qrBitmap)
-            binding.qrIcon.scaleType = ImageView.ScaleType.FIT_CENTER
-            binding.qrIcon.scaleX = 1.1f
-            binding.qrIcon.scaleY = 1.1f
-            binding.qrIcon.adjustViewBounds = true
             binding.copyOpinion.text = getString(R.string.copy_address)
         }
 

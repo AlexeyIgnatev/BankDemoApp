@@ -216,7 +216,7 @@ object ReceiptFileUtils {
         val creditedAmountText =
             "${formatNumber(receipt.amount - receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
         val accountDetailsValue = sanitizeOneLineValue(
-            formatAccountWithVisibleTail(
+            formatMaskedAccountWithVisibleTail(
                 pickBestAccountCandidate(
                     resolveAccountDetailsForReceipt(receipt),
                     receipt.accountDetails,
@@ -227,9 +227,9 @@ object ReceiptFileUtils {
                 )
             )
         )
-        val recipientValue = sanitizeOneLineValue(receipt.recipientFullName)
+        val recipientValue = accountDetailsValue
         val paidFromAccountValue = sanitizeOneLineValue(
-            formatAccountWithVisibleTail(
+            formatMaskedAccountWithVisibleTail(
                 pickBestAccountCandidate(
                     resolvePaidFromAccountForReceipt(receipt),
                     receipt.paidFromAccount,
@@ -415,7 +415,7 @@ object ReceiptFileUtils {
         return values.firstOrNull { it.isNotBlank() } ?: ""
     }
 
-    private fun formatAccountWithVisibleTail(rawValue: String): String {
+    private fun formatMaskedAccountWithVisibleTail(rawValue: String): String {
         val candidate = sanitizeOneLineValue(rawValue)
         if (candidate.isBlank()) return "-"
 

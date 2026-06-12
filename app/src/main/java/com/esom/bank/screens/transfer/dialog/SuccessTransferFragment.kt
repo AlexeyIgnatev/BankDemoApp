@@ -88,8 +88,8 @@ class SuccessTransferFragment : Fragment() {
                             operation?.paidFromAccount.orEmpty()
                         },
                         recipient = firstNotBlank(
-                            enrichedReceipt.recipientFullName,
                             enrichedReceipt.accountDetails,
+                            enrichedReceipt.recipientFullName,
                             operation?.recipient.orEmpty()
                         )
                     )
@@ -163,14 +163,20 @@ class SuccessTransferFragment : Fragment() {
     private fun enrichReceiptWithOperationFallback(receipt: ReceiptModel): ReceiptModel {
         val currentOperation = operation ?: return receipt
         return receipt.copy(
-            paidFromAccount = receipt.paidFromAccount.ifBlank {
+            paidFromAccount = if (receipt.paidFromAccount.isBlank() || looksMasked(receipt.paidFromAccount)) {
                 currentOperation.paidFromAccount
+            } else {
+                receipt.paidFromAccount
             },
-            accountDetails = receipt.accountDetails.ifBlank {
+            accountDetails = if (receipt.accountDetails.isBlank() || looksMasked(receipt.accountDetails)) {
                 currentOperation.recipient
+            } else {
+                receipt.accountDetails
             },
-            recipientFullName = receipt.recipientFullName.ifBlank {
+            recipientFullName = if (receipt.recipientFullName.isBlank()) {
                 currentOperation.recipient
+            } else {
+                receipt.recipientFullName
             },
             receiptNumber = receipt.receiptNumber.ifBlank {
                 currentOperation.receiptNumber
@@ -189,6 +195,12 @@ class SuccessTransferFragment : Fragment() {
 
     private fun firstNotBlank(vararg values: String): String =
         values.firstOrNull { it.isNotBlank() }.orEmpty()
+
+    private fun looksMasked(value: String): Boolean {
+        val compact = value.replace(" ", "")
+        val visibleChars = compact.count { it != '*' }
+        return compact.contains('*') || visibleChars <= 4
+    }
 
     private fun buildFallbackOperation(): SuccessOperationModel =
         SuccessOperationModel(

@@ -87,7 +87,7 @@ class SuccessTransferFragment : Fragment() {
                         fee = enrichedReceipt.fee,
                         paidFromAccount = resolvePaidFromAccount(enrichedReceipt),
                         recipient = resolveRecipientAccount(enrichedReceipt),
-                        amountIsNet = true
+                        amountIsNet = false
                     )
                     bindOperation(operation)
                     if (shareAfterReceiptLoaded) {

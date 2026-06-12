@@ -103,6 +103,7 @@ class SuccessTransferFragment : Fragment() {
     private fun bindOperation(operation: SuccessOperationModel?) {
         val data = operation ?: return
         val amountText = formatAmount(data.amount, data.currency)
+        val totalText = formatAmount(data.amount + data.fee, data.currency)
         val dateTimeText = formatDateTime(data.createdAt)
 
         binding.amount.text = "- $amountText"
@@ -113,7 +114,7 @@ class SuccessTransferFragment : Fragment() {
             data.paidFromAccount.ifBlank { getString(R.string.empty_value) }
         binding.recipientValue.text = data.recipient.ifBlank { getString(R.string.empty_value) }
         binding.feeValue.text = formatAmount(data.fee, data.currency)
-        binding.totalValue.text = amountText
+        binding.totalValue.text = totalText
     }
 
     private fun requestReceiptForShare() {

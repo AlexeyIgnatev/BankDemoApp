@@ -549,7 +549,7 @@ class TransferFragment : Fragment() {
         val amount = amountText.toDoubleOrNull() ?: 0.0
         val commission = calculateTransferCommission(amount, currentFromCurrency)
 
-        val totalAmount = amount - commission
+        val totalAmount = amount + commission
 
         binding.comissionValue.text = commission.formatBalanceNew()
         binding.total.text = formatTotalAmount(totalAmount)

@@ -372,11 +372,7 @@ class SwapFragment : Fragment() {
     }
 
     private fun updateCommissionTitles() {
-        binding.comissionTitle.text = if (isSomToEsomConversion()) {
-            getCurrencyName(currentFromCurrency)
-        } else {
-            getCurrencyName(currentToCurrency)
-        }
+        binding.comissionTitle.text = getCurrencyName(currentFromCurrency)
         binding.secondTitle.text = getCurrencyName(currentToCurrency)
     }
 
@@ -577,11 +573,12 @@ class SwapFragment : Fragment() {
         val actualFromAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
         val actualConvertedAmount = convertedAmount ?: calculateReceivedFromSend(actualFromAmount)
         val fee = calculateFeePreview(actualFromAmount)
+        val totalAmount = actualConvertedAmount + fee
 
         binding.thirdValue.text = formatAmount(fee)
         binding.comissionValue.text = formatAmount(actualFromAmount)
         binding.secondValue.text = formatAmount(actualConvertedAmount)
-        binding.total.text = formatAmount(actualConvertedAmount)
+        binding.total.text = formatAmount(totalAmount)
 
         Log.d(
             TAG,

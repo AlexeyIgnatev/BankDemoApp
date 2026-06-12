@@ -31,7 +31,7 @@ object TransactionSuccessMapper {
             transactionId = transaction.transactionId,
             conversionSide = transaction.conversionSide,
             createdAt = transaction.createdAt ?: System.currentTimeMillis(),
-            loadReceiptAutomatically = false
+            loadReceiptAutomatically = true
         )
     }
 
@@ -98,7 +98,7 @@ object TransactionSuccessMapper {
     }
 
     private fun TransactionModel.receiptNumber(): String =
-        transactionId?.toString().orEmpty()
+        ""
 
     private fun TransactionModel.paidFromAccount(account: String): String =
         when (type) {

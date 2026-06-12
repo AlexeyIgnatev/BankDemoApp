@@ -79,23 +79,24 @@ class SuccessTransferFragment : Fragment() {
                 }
                 is UiState.Success -> {
                     binding.shareBtn.isEnabled = true
+                    val enrichedReceipt = enrichReceiptWithOperationFallback(state.data)
                     operation = operation?.copy(
                         receiptNumber = state.data.receiptNumber,
                         createdAt = state.data.createdAt,
                         fee = state.data.fee,
-                        paidFromAccount = state.data.paidFromAccount.ifBlank {
+                        paidFromAccount = enrichedReceipt.paidFromAccount.ifBlank {
                             operation?.paidFromAccount.orEmpty()
                         },
                         recipient = firstNotBlank(
-                            state.data.recipientFullName,
-                            state.data.accountDetails,
+                            enrichedReceipt.recipientFullName,
+                            enrichedReceipt.accountDetails,
                             operation?.recipient.orEmpty()
                         )
                     )
                     bindOperation(operation)
                     if (shareAfterReceiptLoaded) {
                         shareAfterReceiptLoaded = false
-                        shareReceiptPdf(state.data)
+                        shareReceiptPdf(enrichedReceipt)
                     }
                 }
             }
@@ -128,7 +129,7 @@ class SuccessTransferFragment : Fragment() {
     private fun requestReceiptForShare() {
         val receipt = (model.lastSuccessReceipt.value as? UiState.Success)?.data
         if (receipt != null) {
-            shareReceiptPdf(receipt)
+            shareReceiptPdf(enrichReceiptWithOperationFallback(receipt))
         } else {
             if (operation?.transactionId != null) {
                 shareAfterReceiptLoaded = true
@@ -156,6 +157,24 @@ class SuccessTransferFragment : Fragment() {
                 shareIntent,
                 getString(R.string.share_success_operation)
             )
+        )
+    }
+
+    private fun enrichReceiptWithOperationFallback(receipt: ReceiptModel): ReceiptModel {
+        val currentOperation = operation ?: return receipt
+        return receipt.copy(
+            paidFromAccount = receipt.paidFromAccount.ifBlank {
+                currentOperation.paidFromAccount
+            },
+            accountDetails = receipt.accountDetails.ifBlank {
+                currentOperation.recipient
+            },
+            recipientFullName = receipt.recipientFullName.ifBlank {
+                currentOperation.recipient
+            },
+            receiptNumber = receipt.receiptNumber.ifBlank {
+                currentOperation.receiptNumber
+            }
         )
     }
 

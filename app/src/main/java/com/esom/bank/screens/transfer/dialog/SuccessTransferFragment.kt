@@ -79,19 +79,13 @@ class SuccessTransferFragment : Fragment() {
                 }
                 is UiState.Success -> {
                     binding.shareBtn.isEnabled = true
-                    val enrichedReceipt = enrichReceiptWithOperationFallback(state.data)
+                    val enrichedReceipt = fillOnlyBlankReceiptFields(state.data)
                     operation = operation?.copy(
-                        receiptNumber = state.data.receiptNumber,
-                        createdAt = state.data.createdAt,
-                        fee = state.data.fee,
-                        paidFromAccount = enrichedReceipt.paidFromAccount.ifBlank {
-                            operation?.paidFromAccount.orEmpty()
-                        },
-                        recipient = firstNotBlank(
-                            enrichedReceipt.accountDetails,
-                            enrichedReceipt.recipientFullName,
-                            operation?.recipient.orEmpty()
-                        )
+                        receiptNumber = enrichedReceipt.receiptNumber,
+                        createdAt = enrichedReceipt.createdAt,
+                        fee = enrichedReceipt.fee,
+                        paidFromAccount = resolvePaidFromAccount(enrichedReceipt),
+                        recipient = resolveRecipientAccount(enrichedReceipt)
                     )
                     bindOperation(operation)
                     if (shareAfterReceiptLoaded) {
@@ -120,8 +114,9 @@ class SuccessTransferFragment : Fragment() {
         binding.dateValue.text = dateTimeText
         binding.receiptValue.text = data.receiptNumber.ifBlank { getString(R.string.empty_value) }
         binding.paidFromValue.text =
-            data.paidFromAccount.ifBlank { getString(R.string.empty_value) }
-        binding.recipientValue.text = data.recipient.ifBlank { getString(R.string.empty_value) }
+            formatAccountForDisplay(data.paidFromAccount).ifBlank { getString(R.string.empty_value) }
+        binding.recipientValue.text =
+            formatAccountForDisplay(data.recipient).ifBlank { getString(R.string.empty_value) }
         binding.feeValue.text = formatAmount(data.fee, data.currency)
         binding.totalValue.text = totalText
     }
@@ -129,7 +124,7 @@ class SuccessTransferFragment : Fragment() {
     private fun requestReceiptForShare() {
         val receipt = (model.lastSuccessReceipt.value as? UiState.Success)?.data
         if (receipt != null) {
-            shareReceiptPdf(enrichReceiptWithOperationFallback(receipt))
+            shareReceiptPdf(fillOnlyBlankReceiptFields(receipt))
         } else {
             if (operation?.transactionId != null) {
                 shareAfterReceiptLoaded = true
@@ -160,27 +155,34 @@ class SuccessTransferFragment : Fragment() {
         )
     }
 
-    private fun enrichReceiptWithOperationFallback(receipt: ReceiptModel): ReceiptModel {
+    private fun fillOnlyBlankReceiptFields(receipt: ReceiptModel): ReceiptModel {
         val currentOperation = operation ?: return receipt
         return receipt.copy(
-            paidFromAccount = if (receipt.paidFromAccount.isBlank() || looksMasked(receipt.paidFromAccount)) {
-                currentOperation.paidFromAccount
-            } else {
-                receipt.paidFromAccount
-            },
-            accountDetails = if (receipt.accountDetails.isBlank() || looksMasked(receipt.accountDetails)) {
-                currentOperation.recipient
-            } else {
-                receipt.accountDetails
-            },
-            recipientFullName = if (receipt.recipientFullName.isBlank()) {
-                currentOperation.recipient
-            } else {
-                receipt.recipientFullName
-            },
+            paidFromAccount = receipt.paidFromAccount.ifBlank { currentOperation.paidFromAccount },
+            accountDetails = receipt.accountDetails.ifBlank { currentOperation.recipient },
             receiptNumber = receipt.receiptNumber.ifBlank {
                 currentOperation.receiptNumber
             }
+        )
+    }
+
+    private fun resolvePaidFromAccount(receipt: ReceiptModel): String {
+        val currentOperation = operation
+        return firstNotBlank(
+            receipt.absFromAccount,
+            receipt.paidFromAccount,
+            receipt.absAccount,
+            currentOperation?.paidFromAccount.orEmpty()
+        )
+    }
+
+    private fun resolveRecipientAccount(receipt: ReceiptModel): String {
+        val currentOperation = operation
+        return firstNotBlank(
+            receipt.accountDetails,
+            receipt.absToAccount,
+            receipt.absAccount,
+            currentOperation?.recipient.orEmpty()
         )
     }
 
@@ -196,10 +198,18 @@ class SuccessTransferFragment : Fragment() {
     private fun firstNotBlank(vararg values: String): String =
         values.firstOrNull { it.isNotBlank() }.orEmpty()
 
-    private fun looksMasked(value: String): Boolean {
-        val compact = value.replace(" ", "")
-        val visibleChars = compact.count { it != '*' }
-        return compact.contains('*') || visibleChars <= 4
+    private fun formatAccountForDisplay(value: String): String {
+        val compact = value
+            .replace(Regex("[\\r\\n\\t]+"), " ")
+            .replace(Regex("\\s{2,}"), " ")
+            .trim()
+            .replace(" ", "")
+            .replace("-", "")
+        if (compact.isBlank()) return ""
+        if (compact.contains('*') || compact.length <= 8) return compact
+
+        val visibleTail = compact.takeLast(8)
+        return "${"*".repeat(compact.length - visibleTail.length)}$visibleTail"
     }
 
     private fun buildFallbackOperation(): SuccessOperationModel =

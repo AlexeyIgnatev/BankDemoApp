@@ -221,9 +221,7 @@ object ReceiptFileUtils {
                     resolveAccountDetailsForReceipt(receipt),
                     receipt.accountDetails,
                     receipt.absToAccount,
-                    receipt.absAccount,
-                    receipt.paidFromAccount,
-                    receipt.absFromAccount
+                    receipt.absAccount
                 )
             )
         )
@@ -234,9 +232,7 @@ object ReceiptFileUtils {
                     resolvePaidFromAccountForReceipt(receipt),
                     receipt.paidFromAccount,
                     receipt.absFromAccount,
-                    receipt.absAccount,
-                    receipt.accountDetails,
-                    receipt.absToAccount
+                    receipt.absAccount
                 )
             )
         )

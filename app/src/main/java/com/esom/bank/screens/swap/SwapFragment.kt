@@ -573,12 +573,11 @@ class SwapFragment : Fragment() {
         val actualFromAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
         val actualConvertedAmount = convertedAmount ?: calculateReceivedFromSend(actualFromAmount)
         val fee = calculateFeePreview(actualFromAmount)
-        val totalAmount = actualConvertedAmount + fee
 
         binding.thirdValue.text = formatAmount(fee)
         binding.comissionValue.text = formatAmount(actualFromAmount)
         binding.secondValue.text = formatAmount(actualConvertedAmount)
-        binding.total.text = formatAmount(totalAmount)
+        binding.total.text = formatAmount(actualConvertedAmount)
 
         Log.d(
             TAG,

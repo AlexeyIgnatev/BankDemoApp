@@ -103,7 +103,7 @@ class SuccessTransferFragment : Fragment() {
     private fun bindOperation(operation: SuccessOperationModel?) {
         val data = operation ?: return
         val amountText = formatAmount(data.amount, data.currency)
-        val totalText = formatAmount(data.amount + data.fee, data.currency)
+        val totalText = formatAmount((data.amount - data.fee).coerceAtLeast(0.0), data.currency)
         val dateTimeText = formatDateTime(data.createdAt)
 
         binding.amount.text = "- $amountText"

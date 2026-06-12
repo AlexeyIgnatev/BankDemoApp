@@ -158,8 +158,16 @@ class SuccessTransferFragment : Fragment() {
     private fun fillOnlyBlankReceiptFields(receipt: ReceiptModel): ReceiptModel {
         val currentOperation = operation ?: return receipt
         return receipt.copy(
-            paidFromAccount = receipt.paidFromAccount.ifBlank { currentOperation.paidFromAccount },
-            accountDetails = receipt.accountDetails.ifBlank { currentOperation.recipient },
+            paidFromAccount = bestAccountCandidate(
+                receipt.paidFromAccount,
+                receipt.absFromAccount,
+                currentOperation.paidFromAccount
+            ),
+            accountDetails = bestAccountCandidate(
+                receipt.accountDetails,
+                receipt.absToAccount,
+                currentOperation.recipient
+            ),
             receiptNumber = receipt.receiptNumber.ifBlank {
                 currentOperation.receiptNumber
             }
@@ -168,7 +176,7 @@ class SuccessTransferFragment : Fragment() {
 
     private fun resolvePaidFromAccount(receipt: ReceiptModel): String {
         val currentOperation = operation
-        return firstNotBlank(
+        return bestAccountCandidate(
             receipt.absFromAccount,
             receipt.paidFromAccount,
             receipt.absAccount,
@@ -178,7 +186,7 @@ class SuccessTransferFragment : Fragment() {
 
     private fun resolveRecipientAccount(receipt: ReceiptModel): String {
         val currentOperation = operation
-        return firstNotBlank(
+        return bestAccountCandidate(
             receipt.accountDetails,
             receipt.absToAccount,
             receipt.absAccount,
@@ -198,11 +206,28 @@ class SuccessTransferFragment : Fragment() {
     private fun firstNotBlank(vararg values: String): String =
         values.firstOrNull { it.isNotBlank() }.orEmpty()
 
-    private fun formatAccountForDisplay(value: String): String {
-        val compact = value
-            .replace(Regex("[\\r\\n\\t]+"), " ")
+    private fun bestAccountCandidate(vararg values: String): String =
+        values
+            .map { it.sanitizeAccountCandidate() }
+            .filter { it.isNotBlank() }
+            .maxByOrNull { accountCandidateScore(it) }
+            .orEmpty()
+
+    private fun accountCandidateScore(value: String): Int {
+        val compact = value.replace(" ", "").replace("-", "")
+        val visibleChars = compact.count { it != '*' }
+        val starPenalty = compact.count { it == '*' } * 20
+        return visibleChars * 10 + compact.length - starPenalty
+    }
+
+    private fun String.sanitizeAccountCandidate(): String =
+        replace(Regex("[\\r\\n\\t]+"), " ")
             .replace(Regex("\\s{2,}"), " ")
             .trim()
+
+    private fun formatAccountForDisplay(value: String): String {
+        val compact = value
+            .sanitizeAccountCandidate()
             .replace(" ", "")
             .replace("-", "")
         if (compact.isBlank()) return ""

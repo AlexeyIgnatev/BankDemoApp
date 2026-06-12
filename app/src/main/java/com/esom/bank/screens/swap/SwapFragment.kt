@@ -166,7 +166,8 @@ class SwapFragment : Fragment() {
                     recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty(),
                     receiptNumber = "",
                     fee = calculateFeePreview(amount),
-                    conversionSide = getConversionSide(fromCurrency, toCurrency)
+                    conversionSide = getConversionSide(fromCurrency, toCurrency),
+                    targetCurrency = toCurrency
                 )
             )
             model.convert(fromCurrency, toCurrency, amount)

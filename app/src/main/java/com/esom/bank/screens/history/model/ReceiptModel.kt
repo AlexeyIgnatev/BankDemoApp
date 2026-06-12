@@ -19,7 +19,8 @@ data class ReceiptModel(
     val absAccount: String,
     val absFromAccount: String,
     val absToAccount: String,
-    val receiptNumber: String
+    val receiptNumber: String,
+    val targetCurrency: String = ""
 )
 
 fun ReceiptResponseDto.toModel(requestedConversionSide: ConversionSide? = null): ReceiptModel =

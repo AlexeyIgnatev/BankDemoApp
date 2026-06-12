@@ -113,7 +113,7 @@ class SuccessTransferFragment : Fragment() {
         } else {
             (data.amount - data.fee).coerceAtLeast(0.0)
         }
-        val totalText = formatAmount(totalAmount, data.currency)
+        val totalText = formatAmount(totalAmount, data.targetCurrency ?: data.currency)
         val dateTimeText = formatDateTime(data.createdAt)
 
         binding.amount.text = "- $amountText"
@@ -177,7 +177,8 @@ class SuccessTransferFragment : Fragment() {
             ),
             receiptNumber = receipt.receiptNumber.ifBlank {
                 currentOperation.receiptNumber
-            }
+            },
+            targetCurrency = currentOperation.targetCurrency?.name.orEmpty()
         )
     }
 

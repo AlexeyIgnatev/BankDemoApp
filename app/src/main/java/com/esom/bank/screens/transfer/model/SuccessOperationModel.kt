@@ -13,6 +13,7 @@ data class SuccessOperationModel(
     val fee: Double = 0.0,
     val transactionId: Long? = null,
     val conversionSide: ConversionSide? = null,
+    val targetCurrency: CurrencyEnum? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val loadReceiptAutomatically: Boolean = true,
     val amountIsNet: Boolean = false

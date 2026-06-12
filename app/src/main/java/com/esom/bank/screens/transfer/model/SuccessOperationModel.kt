@@ -11,6 +11,7 @@ data class SuccessOperationModel(
     val recipient: String,
     val receiptNumber: String,
     val fee: Double = 0.0,
+    val creditedAmount: Double? = null,
     val transactionId: Long? = null,
     val conversionSide: ConversionSide? = null,
     val targetCurrency: CurrencyEnum? = null,

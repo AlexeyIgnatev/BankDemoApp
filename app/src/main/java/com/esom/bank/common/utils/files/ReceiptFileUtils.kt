@@ -214,8 +214,10 @@ object ReceiptFileUtils {
         val (dateText, timeText) = formatDateAndTime(receipt.createdAt)
         val feeText = "${formatNumber(receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
         val creditedCurrency = resolveCreditedCurrency(receipt)
+        val creditedAmount = receipt.creditedAmount
+            ?: (receipt.amount - receipt.fee).coerceAtLeast(0.0)
         val creditedAmountText =
-            "${formatNumber((receipt.amount - receipt.fee).coerceAtLeast(0.0))} ${formatCurrencyForDocument(creditedCurrency)}"
+            "${formatNumber(creditedAmount)} ${formatCurrencyForDocument(creditedCurrency)}"
         val accountDetailsValue = sanitizeOneLineValue(
             formatMaskedAccountWithVisibleTail(
                 pickBestAccountCandidate(

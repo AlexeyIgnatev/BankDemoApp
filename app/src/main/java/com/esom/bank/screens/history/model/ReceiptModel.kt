@@ -16,6 +16,7 @@ data class ReceiptModel(
     val recipientFullName: String,
     val paidFromAccount: String,
     val conversionSide: ConversionSide?,
+    val creditedAmount: Double? = null,
     val absAccount: String,
     val absFromAccount: String,
     val absToAccount: String,

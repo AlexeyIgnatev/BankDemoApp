@@ -57,6 +57,7 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
         const val TITLE_KEY = "transfer_confirmation_title"
         const val OPERATION_KEY = "transfer_confirmation_operation"
         const val AMOUNT_KEY = "transfer_confirmation_amount"
+        const val CREDITED_AMOUNT_KEY = "transfer_confirmation_credited_amount"
         const val FROM_CURRENCY_KEY = "transfer_confirmation_from_currency"
         const val TO_CURRENCY_KEY = "transfer_confirmation_to_currency"
         const val PHONE_KEY = "transfer_confirmation_phone"

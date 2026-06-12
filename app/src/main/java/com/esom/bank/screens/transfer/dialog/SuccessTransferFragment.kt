@@ -82,7 +82,6 @@ class SuccessTransferFragment : Fragment() {
                     binding.shareBtn.isEnabled = true
                     val enrichedReceipt = fillOnlyBlankReceiptFields(state.data)
                     operation = operation?.copy(
-                        amount = enrichedReceipt.amount,
                         receiptNumber = enrichedReceipt.receiptNumber,
                         createdAt = enrichedReceipt.createdAt,
                         fee = enrichedReceipt.fee,
@@ -109,7 +108,7 @@ class SuccessTransferFragment : Fragment() {
     private fun bindOperation(operation: SuccessOperationModel?) {
         val data = operation ?: return
         val amountText = formatAmount(data.amount, data.currency)
-        val totalAmount = if (data.amountIsNet) {
+        val totalAmount = data.creditedAmount ?: if (data.amountIsNet) {
             data.amount
         } else {
             (data.amount - data.fee).coerceAtLeast(0.0)
@@ -166,6 +165,7 @@ class SuccessTransferFragment : Fragment() {
     private fun fillOnlyBlankReceiptFields(receipt: ReceiptModel): ReceiptModel {
         val currentOperation = operation ?: return receipt
         return receipt.copy(
+            amount = currentOperation.amount,
             paidFromAccount = bestAccountCandidate(
                 receipt.paidFromAccount,
                 receipt.absFromAccount,
@@ -179,6 +179,7 @@ class SuccessTransferFragment : Fragment() {
             receiptNumber = receipt.receiptNumber.ifBlank {
                 currentOperation.receiptNumber
             },
+            creditedAmount = currentOperation.creditedAmount,
             targetCurrency = currentOperation.targetCurrency?.name.orEmpty()
         )
     }

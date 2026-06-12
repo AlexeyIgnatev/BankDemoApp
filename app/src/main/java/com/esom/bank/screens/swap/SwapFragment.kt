@@ -155,6 +155,7 @@ class SwapFragment : Fragment() {
                 CurrencyEnum.valueOf(bundle.getString(TransferConfirmationFragment.TO_CURRENCY_KEY).orEmpty())
             }.getOrNull() ?: return@setFragmentResultListener
             val amount = bundle.getDouble(TransferConfirmationFragment.AMOUNT_KEY)
+            val creditedAmount = bundle.getDouble(TransferConfirmationFragment.CREDITED_AMOUNT_KEY)
 
             model.setLastSuccessOperation(
                 SuccessOperationModel(
@@ -166,6 +167,7 @@ class SwapFragment : Fragment() {
                     recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty(),
                     receiptNumber = "",
                     fee = calculateFeePreview(amount),
+                    creditedAmount = creditedAmount,
                     conversionSide = getConversionSide(fromCurrency, toCurrency),
                     targetCurrency = toCurrency
                 )
@@ -791,6 +793,7 @@ class SwapFragment : Fragment() {
     private fun showConvertConfirmation(amount: Double) {
         val amountText = "${amount.formatBalanceNew()} ${getCurrencyName(currentFromCurrency)}"
         val target = getCurrencyName(currentToCurrency)
+        val creditedAmount = parseAmount(binding.peopleSum.text?.toString())
         parentFragmentManager.setFragmentResult(
             TransferConfirmationFragment.DATA_REQUEST_KEY,
             bundleOf(
@@ -801,6 +804,7 @@ class SwapFragment : Fragment() {
                 ),
                 TransferConfirmationFragment.OPERATION_KEY to OPERATION_CONVERT,
                 TransferConfirmationFragment.AMOUNT_KEY to amount,
+                TransferConfirmationFragment.CREDITED_AMOUNT_KEY to creditedAmount,
                 TransferConfirmationFragment.FROM_CURRENCY_KEY to currentFromCurrency.name,
                 TransferConfirmationFragment.TO_CURRENCY_KEY to currentToCurrency.name,
                 TransferConfirmationFragment.OPERATION_TITLE_KEY to getString(R.string.convertation),

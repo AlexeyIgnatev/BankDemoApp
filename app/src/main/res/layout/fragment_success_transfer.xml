@@ -253,16 +253,35 @@
             style="@style/SuccessDetailsLabel"
             android:layout_width="@dimen/_0dp"
             android:layout_marginTop="@dimen/_18dp"
-            android:text="@string/total"
+            android:text="@string/comission"
             app:layout_constraintEnd_toStartOf="@id/details_value_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/recipient_value" />
 
         <TextView
-            android:id="@+id/total_value"
+            android:id="@+id/fee_value"
             style="@style/SuccessDetailsValue"
             android:layout_marginStart="@dimen/_8dp"
             app:layout_constraintBaseline_toBaselineOf="@id/total_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/details_value_guideline"
+            tools:text="0,00 KGS" />
+
+        <TextView
+            android:id="@+id/final_total_label"
+            style="@style/SuccessDetailsLabel"
+            android:layout_width="@dimen/_0dp"
+            android:layout_marginTop="@dimen/_18dp"
+            android:text="@string/total"
+            app:layout_constraintEnd_toStartOf="@id/details_value_guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/fee_value" />
+
+        <TextView
+            android:id="@+id/total_value"
+            style="@style/SuccessDetailsValue"
+            android:layout_marginStart="@dimen/_8dp"
+            app:layout_constraintBaseline_toBaselineOf="@id/final_total_label"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/details_value_guideline"
             tools:text="180,00 KGS" />

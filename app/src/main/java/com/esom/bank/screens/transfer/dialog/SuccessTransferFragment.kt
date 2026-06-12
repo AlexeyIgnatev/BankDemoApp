@@ -81,7 +81,8 @@ class SuccessTransferFragment : Fragment() {
                     binding.shareBtn.isEnabled = true
                     operation = operation?.copy(
                         receiptNumber = state.data.receiptNumber,
-                        createdAt = state.data.createdAt
+                        createdAt = state.data.createdAt,
+                        fee = state.data.fee
                     )
                     bindOperation(operation)
                     if (shareAfterReceiptLoaded) {
@@ -111,6 +112,7 @@ class SuccessTransferFragment : Fragment() {
         binding.paidFromValue.text =
             data.paidFromAccount.ifBlank { getString(R.string.empty_value) }
         binding.recipientValue.text = data.recipient.ifBlank { getString(R.string.empty_value) }
+        binding.feeValue.text = formatAmount(data.fee, data.currency)
         binding.totalValue.text = amountText
     }
 

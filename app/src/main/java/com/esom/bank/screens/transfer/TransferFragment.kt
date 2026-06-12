@@ -194,7 +194,8 @@ class TransferFragment : Fragment() {
                         ?: getString(R.string.transfer),
                     paidFromAccount = bundle.getString(TransferConfirmationFragment.PAID_FROM_KEY).orEmpty(),
                     recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty(),
-                    receiptNumber = ""
+                    receiptNumber = "",
+                    fee = calculateTransferCommission(amount, currency)
                 )
             )
             model.transferToUser(amount, phone, address, currency)
@@ -545,25 +546,24 @@ class TransferFragment : Fragment() {
     }
 
     private fun updateCommissionAndTotal(amountText: String) {
-        val settings = (model.settings.value as? UiState.Success)?.data ?: return
         val amount = amountText.toDoubleOrNull() ?: 0.0
-
-        val commission = when {
-            isToPhoneNumber -> 0.0
-            else -> {
-                when (currentFromCurrency) {
-                    CurrencyEnum.BTC -> settings.btcWithdrawFeeFixed
-                    CurrencyEnum.ETH -> settings.ethWithdrawFeeFixed
-                    CurrencyEnum.USDT_TRC20 -> settings.usdtWithdrawFeeFixed
-                    else -> 0.0
-                }
-            }
-        }
+        val commission = calculateTransferCommission(amount, currentFromCurrency)
 
         val totalAmount = amount - commission
 
         binding.comissionValue.text = commission.formatBalanceNew()
         binding.total.text = formatTotalAmount(totalAmount)
+    }
+
+    private fun calculateTransferCommission(amount: Double, currency: CurrencyEnum): Double {
+        if (amount <= 0.0 || isToPhoneNumber) return 0.0
+        val settings = (model.settings.value as? UiState.Success)?.data ?: return 0.0
+        return when (currency) {
+            CurrencyEnum.BTC -> settings.btcWithdrawFeeFixed
+            CurrencyEnum.ETH -> settings.ethWithdrawFeeFixed
+            CurrencyEnum.USDT_TRC20 -> settings.usdtWithdrawFeeFixed
+            else -> 0.0
+        }
     }
 
     private fun formatTotalAmount(amount: Double): String {

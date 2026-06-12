@@ -10,6 +10,7 @@ data class SuccessOperationModel(
     val paidFromAccount: String,
     val recipient: String,
     val receiptNumber: String,
+    val fee: Double = 0.0,
     val transactionId: Long? = null,
     val conversionSide: ConversionSide? = null,
     val createdAt: Long = System.currentTimeMillis(),

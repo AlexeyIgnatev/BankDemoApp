@@ -165,6 +165,7 @@ class SwapFragment : Fragment() {
                     paidFromAccount = bundle.getString(TransferConfirmationFragment.PAID_FROM_KEY).orEmpty(),
                     recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty(),
                     receiptNumber = "",
+                    fee = calculateFeePreview(amount),
                     conversionSide = getConversionSide(fromCurrency, toCurrency)
                 )
             )

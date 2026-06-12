@@ -17,6 +17,7 @@ import com.esom.bank.common.utils.files.ReceiptFileUtils
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentSuccessTransferBinding
+import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.model.ReceiptModel
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
@@ -113,7 +114,7 @@ class SuccessTransferFragment : Fragment() {
         } else {
             (data.amount - data.fee).coerceAtLeast(0.0)
         }
-        val totalText = formatAmount(totalAmount, data.targetCurrency ?: data.currency)
+        val totalText = formatAmount(totalAmount, resolveCreditedCurrency(data))
         val dateTimeText = formatDateTime(data.createdAt)
 
         binding.amount.text = "- $amountText"
@@ -213,6 +214,14 @@ class SuccessTransferFragment : Fragment() {
 
     private fun firstNotBlank(vararg values: String): String =
         values.firstOrNull { it.isNotBlank() }.orEmpty()
+
+    private fun resolveCreditedCurrency(operation: SuccessOperationModel): CurrencyEnum {
+        return operation.targetCurrency ?: when (operation.conversionSide) {
+            ConversionSide.IN -> CurrencyEnum.SOM
+            ConversionSide.OUT -> CurrencyEnum.ESOM
+            null -> operation.currency
+        }
+    }
 
     private fun bestAccountCandidate(vararg values: String): String =
         values

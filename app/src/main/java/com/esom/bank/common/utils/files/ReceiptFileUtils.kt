@@ -213,7 +213,7 @@ object ReceiptFileUtils {
 
         val (dateText, timeText) = formatDateAndTime(receipt.createdAt)
         val feeText = "${formatNumber(receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
-        val creditedCurrency = receipt.targetCurrency.ifBlank { receipt.currency }
+        val creditedCurrency = resolveCreditedCurrency(receipt)
         val creditedAmountText =
             "${formatNumber((receipt.amount - receipt.fee).coerceAtLeast(0.0))} ${formatCurrencyForDocument(creditedCurrency)}"
         val accountDetailsValue = sanitizeOneLineValue(
@@ -405,6 +405,15 @@ object ReceiptFileUtils {
             firstNotBlank(receipt.absFromAccount, receipt.absAccount, receipt.paidFromAccount)
         } else {
             firstNotBlank(receipt.paidFromAccount, receipt.absFromAccount, receipt.absAccount)
+        }
+    }
+
+    private fun resolveCreditedCurrency(receipt: ReceiptModel): String {
+        if (receipt.targetCurrency.isNotBlank()) return receipt.targetCurrency
+        return when (receipt.conversionSide) {
+            ConversionSide.IN -> "SOM"
+            ConversionSide.OUT -> "ESOM"
+            null -> receipt.currency
         }
     }
 

@@ -49,7 +49,8 @@ class FailTransferFragment : DialogFragment() {
             window.attributes = lp
         }
 
-        binding.opinion.text = getString(R.string.anti_fraud)
+        binding.opinion.text = args.error.takeIf { it.isNotBlank() }
+            ?: getString(R.string.anti_fraud)
         binding.closeBtn.setOnClickListener {
             findNavController().popBackStack()
         }

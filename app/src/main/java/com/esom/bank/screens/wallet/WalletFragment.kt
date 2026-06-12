@@ -72,7 +72,7 @@ class WalletFragment : Fragment() {
         }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            refreshData()
+            refreshDataFromSwipe()
         }
 
         val newsAdapter = NewsAdapter()
@@ -305,6 +305,7 @@ class WalletFragment : Fragment() {
             when (it) {
                 is UiState.Loading -> {}
                 is UiState.Error -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
                     binding.root.showErrorSnackbar(it.message)
                     if (it.message == getString(R.string.logged_out)) {
                         findParentNavController().navigate(
@@ -328,6 +329,11 @@ class WalletFragment : Fragment() {
         model.updateUserData()
         model.getSettings()
         model.latestTransactions(currentCurrency)
+    }
+
+    private fun refreshDataFromSwipe() {
+        binding.swipeRefreshLayout.isRefreshing = true
+        refreshData()
     }
 
     private fun openSuccessTransfer(transaction: TransactionModel) {

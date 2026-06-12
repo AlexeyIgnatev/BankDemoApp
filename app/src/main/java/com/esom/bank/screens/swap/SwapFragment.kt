@@ -40,6 +40,8 @@ class SwapFragment : Fragment() {
     private var isPeoplePanelShown = false
     private var currentFromCurrency: CurrencyEnum = CurrencyEnum.SOM
     private var currentToCurrency: CurrencyEnum = CurrencyEnum.ESOM
+    private var fromPanelCurrencies: List<CurrencyEnum> = emptyList()
+    private var toPanelCurrencies: List<CurrencyEnum> = emptyList()
 
     private var isUpdatingAmounts = false
 
@@ -230,69 +232,42 @@ class SwapFragment : Fragment() {
         }
 
         binding.firstUsdtBtn.setOnClickListener {
-            swapFromCurrency(binding.usdtIcon.drawable, binding.usdtTitle.text.toString())
-            updateCurrentCurrencies()
-            updateBalanceDisplay()
-            updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+            selectFromCurrency(fromPanelCurrencies.getOrNull(0) ?: return@setOnClickListener)
             closeAllPanels()
         }
 
         binding.firstBitcoinBtn.setOnClickListener {
-            swapFromCurrency(binding.bitcoinIcon.drawable, binding.bitcoinTitle.text.toString())
-            updateCurrentCurrencies()
-            updateBalanceDisplay()
-            updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+            selectFromCurrency(fromPanelCurrencies.getOrNull(1) ?: return@setOnClickListener)
             closeAllPanels()
         }
 
         binding.firstEthBtn.setOnClickListener {
-            swapFromCurrency(binding.ethIcon.drawable, binding.ethTitle.text.toString())
-            updateCurrentCurrencies()
-            updateBalanceDisplay()
-            updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+            selectFromCurrency(fromPanelCurrencies.getOrNull(2) ?: return@setOnClickListener)
             closeAllPanels()
         }
 
         binding.firstDigitalBtn.setOnClickListener {
-            swapFromCurrency(binding.fiatIcon.drawable, binding.fiatTitle.text.toString())
-            updateCurrentCurrencies()
-            updateBalanceDisplay()
-            updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+            selectFromCurrency(fromPanelCurrencies.getOrNull(3) ?: return@setOnClickListener)
             closeAllPanels()
         }
 
         binding.secondUsdtBtn.setOnClickListener {
-            swapToCurrency(binding.peopleUsdtIcon.drawable, binding.peopleUsdtTitle.text.toString())
-            updateCurrentCurrencies()
-            updateBalanceDisplay()
-            updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+            selectToCurrency(toPanelCurrencies.getOrNull(0) ?: return@setOnClickListener)
             closeAllPanels()
         }
 
         binding.secondBitcoinBtn.setOnClickListener {
-            swapToCurrency(
-                binding.peopleBitcoinIcon.drawable,
-                binding.peopleBitcoinTitle.text.toString()
-            )
-            updateCurrentCurrencies()
-            updateBalanceDisplay()
-            updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+            selectToCurrency(toPanelCurrencies.getOrNull(1) ?: return@setOnClickListener)
             closeAllPanels()
         }
 
         binding.secondEthBtn.setOnClickListener {
-            swapToCurrency(binding.peopleEthIcon.drawable, binding.peopleEthTitle.text.toString())
-            updateCurrentCurrencies()
-            updateBalanceDisplay()
-            updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+            selectToCurrency(toPanelCurrencies.getOrNull(2) ?: return@setOnClickListener)
             closeAllPanels()
         }
 
         binding.secondDigitalBtn.setOnClickListener {
-            swapToCurrency(binding.peopleFiatIcon.drawable, binding.peopleFiatTitle.text.toString())
-            updateCurrentCurrencies()
-            updateBalanceDisplay()
-            updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+            selectToCurrency(toPanelCurrencies.getOrNull(3) ?: return@setOnClickListener)
             closeAllPanels()
         }
 
@@ -366,88 +341,33 @@ class SwapFragment : Fragment() {
         }
     }
 
-    private fun swapFromCurrency(drawable: android.graphics.drawable.Drawable, title: String) {
-        val tempIcon = binding.icon.drawable
-        val tempTitle = binding.currencyTitle.text.toString()
-
-        binding.icon.setImageDrawable(drawable)
-        binding.currencyTitle.text = title
-
-        when (title) {
-            binding.usdtTitle.text.toString() -> {
-                binding.usdtIcon.setImageDrawable(tempIcon)
-                binding.usdtTitle.text = tempTitle
-            }
-
-            binding.bitcoinTitle.text.toString() -> {
-                binding.bitcoinIcon.setImageDrawable(tempIcon)
-                binding.bitcoinTitle.text = tempTitle
-            }
-
-            binding.ethTitle.text.toString() -> {
-                binding.ethIcon.setImageDrawable(tempIcon)
-                binding.ethTitle.text = tempTitle
-            }
-
-            binding.fiatTitle.text.toString() -> {
-                binding.fiatIcon.setImageDrawable(tempIcon)
-                binding.fiatTitle.text = tempTitle
-            }
+    private fun selectFromCurrency(currency: CurrencyEnum) {
+        val previousCurrency = currentFromCurrency
+        currentFromCurrency = currency
+        fromPanelCurrencies = fromPanelCurrencies.map {
+            if (it == currency) previousCurrency else it
         }
+        updateCurrencyViews()
+        updateFromPanelViews()
+        onCurrencySelectionChanged()
     }
 
-    private fun swapToCurrency(drawable: android.graphics.drawable.Drawable, title: String) {
-        val tempIcon = binding.peopleIcon.drawable
-        val tempTitle = binding.peopleTitle.text.toString()
-
-        binding.peopleIcon.setImageDrawable(drawable)
-        binding.peopleTitle.text = title
-
-        when (title) {
-            binding.peopleUsdtTitle.text.toString() -> {
-                binding.peopleUsdtIcon.setImageDrawable(tempIcon)
-                binding.peopleUsdtTitle.text = tempTitle
-            }
-
-            binding.peopleBitcoinTitle.text.toString() -> {
-                binding.peopleBitcoinIcon.setImageDrawable(tempIcon)
-                binding.peopleBitcoinTitle.text = tempTitle
-            }
-
-            binding.peopleEthTitle.text.toString() -> {
-                binding.peopleEthIcon.setImageDrawable(tempIcon)
-                binding.peopleEthTitle.text = tempTitle
-            }
-
-            binding.peopleFiatTitle.text.toString() -> {
-                binding.peopleFiatIcon.setImageDrawable(tempIcon)
-                binding.peopleFiatTitle.text = tempTitle
-            }
+    private fun selectToCurrency(currency: CurrencyEnum) {
+        val previousCurrency = currentToCurrency
+        currentToCurrency = currency
+        toPanelCurrencies = toPanelCurrencies.map {
+            if (it == currency) previousCurrency else it
         }
+        updateCurrencyViews()
+        updateToPanelViews()
+        onCurrencySelectionChanged()
     }
 
-    private fun updateCurrentCurrencies() {
-        currentFromCurrency = when (binding.currencyTitle.text.toString()) {
-            getString(R.string.som) -> CurrencyEnum.SOM
-            getString(R.string.digital) -> CurrencyEnum.ESOM
-            getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
-            getString(R.string.bitcoin) -> CurrencyEnum.BTC
-            getString(R.string.ethereum) -> CurrencyEnum.ETH
-            else -> CurrencyEnum.SOM
-        }
-
-        currentToCurrency = when (binding.peopleTitle.text.toString()) {
-            getString(R.string.som) -> CurrencyEnum.SOM
-            getString(R.string.digital) -> CurrencyEnum.ESOM
-            getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
-            getString(R.string.bitcoin) -> CurrencyEnum.BTC
-            getString(R.string.ethereum) -> CurrencyEnum.ETH
-            else -> CurrencyEnum.ESOM
-        }
-
+    private fun onCurrencySelectionChanged() {
         updateBalanceDisplay()
         updateSomIconsVisibility()
         updateCommissionTitles()
+        updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
     }
 
     private fun updateCommissionTitles() {
@@ -467,22 +387,16 @@ class SwapFragment : Fragment() {
         Log.d(TAG, "currentFromCurrency: $currentFromCurrency")
         Log.d(TAG, "currentToCurrency: $currentToCurrency")
 
-        binding.icon.setImageResource(getCurrencyIcon(currentFromCurrency))
-        binding.currencyTitle.text = getCurrencyString(currentFromCurrency)
-
-        binding.peopleIcon.setImageResource(getCurrencyIcon(currentToCurrency))
-        binding.peopleTitle.text = getCurrencyString(currentToCurrency)
-
         val allCurrencies = CurrencyEnum.values().toList()
 
-        val firstPanelCurrencies = allCurrencies
+        fromPanelCurrencies = allCurrencies
             .filter { it != currentFromCurrency }
             .take(4)
 
         val baseSecondList = allCurrencies
             .filter { it != currentToCurrency }
 
-        val secondPanelCurrencies = if (currentToCurrency == CurrencyEnum.ESOM) {
+        toPanelCurrencies = if (currentToCurrency == CurrencyEnum.ESOM) {
             val modifiedList = baseSecondList
                 .filter { it != CurrencyEnum.ESOM }
                 .toMutableList()
@@ -496,35 +410,51 @@ class SwapFragment : Fragment() {
             baseSecondList.take(4)
         }
 
-        binding.usdtIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[0]))
-        binding.usdtTitle.text = getCurrencyString(firstPanelCurrencies[0])
-
-        binding.bitcoinIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[1]))
-        binding.bitcoinTitle.text = getCurrencyString(firstPanelCurrencies[1])
-
-        binding.ethIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[2]))
-        binding.ethTitle.text = getCurrencyString(firstPanelCurrencies[2])
-
-        binding.fiatIcon.setImageResource(getCurrencyIcon(firstPanelCurrencies[3]))
-        binding.fiatTitle.text = getCurrencyString(firstPanelCurrencies[3])
-
-        binding.peopleUsdtIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[0]))
-        binding.peopleUsdtTitle.text = getCurrencyString(secondPanelCurrencies[0])
-
-        binding.peopleBitcoinIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[1]))
-        binding.peopleBitcoinTitle.text = getCurrencyString(secondPanelCurrencies[1])
-
-        binding.peopleEthIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[2]))
-        binding.peopleEthTitle.text = getCurrencyString(secondPanelCurrencies[2])
-
-        binding.peopleFiatIcon.setImageResource(getCurrencyIcon(secondPanelCurrencies[3]))
-        binding.peopleFiatTitle.text = getCurrencyString(secondPanelCurrencies[3])
+        updateCurrencyViews()
+        updateFromPanelViews()
+        updateToPanelViews()
 
         updateBalanceDisplay()
         updateSomIconsVisibility()
         updateCommissionTitles()
 
         Log.d(TAG, "=== END initInitialIcons() ===")
+    }
+
+    private fun updateCurrencyViews() {
+        binding.icon.setImageResource(getCurrencyIcon(currentFromCurrency))
+        binding.currencyTitle.text = getCurrencyString(currentFromCurrency)
+
+        binding.peopleIcon.setImageResource(getCurrencyIcon(currentToCurrency))
+        binding.peopleTitle.text = getCurrencyString(currentToCurrency)
+    }
+
+    private fun updateFromPanelViews() {
+        binding.usdtIcon.setImageResource(getCurrencyIcon(fromPanelCurrencies[0]))
+        binding.usdtTitle.text = getCurrencyString(fromPanelCurrencies[0])
+
+        binding.bitcoinIcon.setImageResource(getCurrencyIcon(fromPanelCurrencies[1]))
+        binding.bitcoinTitle.text = getCurrencyString(fromPanelCurrencies[1])
+
+        binding.ethIcon.setImageResource(getCurrencyIcon(fromPanelCurrencies[2]))
+        binding.ethTitle.text = getCurrencyString(fromPanelCurrencies[2])
+
+        binding.fiatIcon.setImageResource(getCurrencyIcon(fromPanelCurrencies[3]))
+        binding.fiatTitle.text = getCurrencyString(fromPanelCurrencies[3])
+    }
+
+    private fun updateToPanelViews() {
+        binding.peopleUsdtIcon.setImageResource(getCurrencyIcon(toPanelCurrencies[0]))
+        binding.peopleUsdtTitle.text = getCurrencyString(toPanelCurrencies[0])
+
+        binding.peopleBitcoinIcon.setImageResource(getCurrencyIcon(toPanelCurrencies[1]))
+        binding.peopleBitcoinTitle.text = getCurrencyString(toPanelCurrencies[1])
+
+        binding.peopleEthIcon.setImageResource(getCurrencyIcon(toPanelCurrencies[2]))
+        binding.peopleEthTitle.text = getCurrencyString(toPanelCurrencies[2])
+
+        binding.peopleFiatIcon.setImageResource(getCurrencyIcon(toPanelCurrencies[3]))
+        binding.peopleFiatTitle.text = getCurrencyString(toPanelCurrencies[3])
     }
 
     private fun getCurrencyIcon(currency: CurrencyEnum): Int = when (currency) {
@@ -559,77 +489,15 @@ class SwapFragment : Fragment() {
         binding.sendAvailableTitle.text =
             getString(R.string.available_title, fromBalance.formatBalanceNew())
 
-        val firstUsdtCurrency = when (binding.usdtTitle.text.toString()) {
-            getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
-            getString(R.string.bitcoin) -> CurrencyEnum.BTC
-            getString(R.string.ethereum) -> CurrencyEnum.ETH
-            getString(R.string.digital) -> CurrencyEnum.ESOM
-            getString(R.string.som) -> CurrencyEnum.SOM
-            else -> CurrencyEnum.USDT_TRC20
-        }
+        val firstUsdtCurrency = fromPanelCurrencies.getOrElse(0) { CurrencyEnum.USDT_TRC20 }
+        val firstBitcoinCurrency = fromPanelCurrencies.getOrElse(1) { CurrencyEnum.BTC }
+        val firstEthCurrency = fromPanelCurrencies.getOrElse(2) { CurrencyEnum.ETH }
+        val firstDigitalCurrency = fromPanelCurrencies.getOrElse(3) { CurrencyEnum.ESOM }
 
-        val firstBitcoinCurrency = when (binding.bitcoinTitle.text.toString()) {
-            getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
-            getString(R.string.bitcoin) -> CurrencyEnum.BTC
-            getString(R.string.ethereum) -> CurrencyEnum.ETH
-            getString(R.string.digital) -> CurrencyEnum.ESOM
-            getString(R.string.som) -> CurrencyEnum.SOM
-            else -> CurrencyEnum.BTC
-        }
-
-        val firstEthCurrency = when (binding.ethTitle.text.toString()) {
-            getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
-            getString(R.string.bitcoin) -> CurrencyEnum.BTC
-            getString(R.string.ethereum) -> CurrencyEnum.ETH
-            getString(R.string.digital) -> CurrencyEnum.ESOM
-            getString(R.string.som) -> CurrencyEnum.SOM
-            else -> CurrencyEnum.ETH
-        }
-
-        val firstDigitalCurrency = when (binding.fiatTitle.text.toString()) {
-            getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
-            getString(R.string.bitcoin) -> CurrencyEnum.BTC
-            getString(R.string.ethereum) -> CurrencyEnum.ETH
-            getString(R.string.digital) -> CurrencyEnum.ESOM
-            getString(R.string.som) -> CurrencyEnum.SOM
-            else -> CurrencyEnum.ESOM
-        }
-
-        val secondUsdtCurrency = when (binding.peopleUsdtTitle.text.toString()) {
-            getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
-            getString(R.string.bitcoin) -> CurrencyEnum.BTC
-            getString(R.string.ethereum) -> CurrencyEnum.ETH
-            getString(R.string.digital) -> CurrencyEnum.ESOM
-            getString(R.string.som) -> CurrencyEnum.SOM
-            else -> CurrencyEnum.USDT_TRC20
-        }
-
-        val secondBitcoinCurrency = when (binding.peopleBitcoinTitle.text.toString()) {
-            getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
-            getString(R.string.bitcoin) -> CurrencyEnum.BTC
-            getString(R.string.ethereum) -> CurrencyEnum.ETH
-            getString(R.string.digital) -> CurrencyEnum.ESOM
-            getString(R.string.som) -> CurrencyEnum.SOM
-            else -> CurrencyEnum.BTC
-        }
-
-        val secondEthCurrency = when (binding.peopleEthTitle.text.toString()) {
-            getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
-            getString(R.string.bitcoin) -> CurrencyEnum.BTC
-            getString(R.string.ethereum) -> CurrencyEnum.ETH
-            getString(R.string.digital) -> CurrencyEnum.ESOM
-            getString(R.string.som) -> CurrencyEnum.SOM
-            else -> CurrencyEnum.ETH
-        }
-
-        val secondDigitalCurrency = when (binding.peopleFiatTitle.text.toString()) {
-            getString(R.string.usdt) -> CurrencyEnum.USDT_TRC20
-            getString(R.string.bitcoin) -> CurrencyEnum.BTC
-            getString(R.string.ethereum) -> CurrencyEnum.ETH
-            getString(R.string.digital) -> CurrencyEnum.ESOM
-            getString(R.string.som) -> CurrencyEnum.SOM
-            else -> CurrencyEnum.SOM
-        }
+        val secondUsdtCurrency = toPanelCurrencies.getOrElse(0) { CurrencyEnum.USDT_TRC20 }
+        val secondBitcoinCurrency = toPanelCurrencies.getOrElse(1) { CurrencyEnum.BTC }
+        val secondEthCurrency = toPanelCurrencies.getOrElse(2) { CurrencyEnum.ETH }
+        val secondDigitalCurrency = toPanelCurrencies.getOrElse(3) { CurrencyEnum.SOM }
 
         binding.sum1.text =
             (wallets.find { it.currency == firstUsdtCurrency }?.balance ?: 0.0).formatBalanceNew()

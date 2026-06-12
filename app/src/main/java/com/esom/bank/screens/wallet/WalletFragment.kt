@@ -343,8 +343,7 @@ class WalletFragment : Fragment() {
             transaction = transaction,
             user = user
         )
-        val receipt = TransactionSuccessMapper.toReceipt(transaction, operation)
-        model.setLastSuccessOperation(operation, receipt)
+        model.setLastSuccessOperation(operation)
         findParentNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
     }
 

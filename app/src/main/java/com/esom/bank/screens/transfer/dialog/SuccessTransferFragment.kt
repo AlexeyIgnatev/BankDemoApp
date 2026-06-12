@@ -82,7 +82,15 @@ class SuccessTransferFragment : Fragment() {
                     operation = operation?.copy(
                         receiptNumber = state.data.receiptNumber,
                         createdAt = state.data.createdAt,
-                        fee = state.data.fee
+                        fee = state.data.fee,
+                        paidFromAccount = state.data.paidFromAccount.ifBlank {
+                            operation?.paidFromAccount.orEmpty()
+                        },
+                        recipient = firstNotBlank(
+                            state.data.recipientFullName,
+                            state.data.accountDetails,
+                            operation?.recipient.orEmpty()
+                        )
                     )
                     bindOperation(operation)
                     if (shareAfterReceiptLoaded) {
@@ -122,7 +130,7 @@ class SuccessTransferFragment : Fragment() {
         if (receipt != null) {
             shareReceiptPdf(receipt)
         } else {
-            if (operation?.loadReceiptAutomatically == true) {
+            if (operation?.transactionId != null) {
                 shareAfterReceiptLoaded = true
                 model.prepareReceiptForLastSuccessOperation()
             } else {
@@ -159,6 +167,9 @@ class SuccessTransferFragment : Fragment() {
         }
         binding.root.showErrorSnackbar(errorMessage)
     }
+
+    private fun firstNotBlank(vararg values: String): String =
+        values.firstOrNull { it.isNotBlank() }.orEmpty()
 
     private fun buildFallbackOperation(): SuccessOperationModel =
         SuccessOperationModel(

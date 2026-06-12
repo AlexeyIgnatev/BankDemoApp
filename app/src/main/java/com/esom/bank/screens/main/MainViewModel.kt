@@ -159,8 +159,10 @@ class MainViewModel @Inject constructor(
         _lastSuccessOperation.value = operation
         _lastSuccessReceipt.value = if (receipt != null) {
             UiState.Success(receipt)
-        } else {
+        } else if (operation.loadReceiptAutomatically) {
             UiState.Loading()
+        } else {
+            UiState.Error(RECEIPT_OPERATION_NOT_FOUND)
         }
     }
 

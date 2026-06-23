@@ -13,6 +13,7 @@ import com.esom.bank.screens.history.dto.TransactionDto
 import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.main.dto.FeeDto
 import com.esom.bank.screens.main.dto.FcmTokenDto
+import com.esom.bank.screens.main.dto.PaymentFeeDto
 import com.esom.bank.screens.main.dto.PushSettingsDto
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.SwapDto
@@ -29,6 +30,7 @@ import javax.inject.Inject
 interface MainCloudDataSource {
     fun getUserInfo(): Flow<ApiResponse<UserDto>>
     fun getSettings(): Flow<ApiResponse<FeeDto>>
+    fun getFees(): Flow<ApiResponse<List<PaymentFeeDto>>>
     fun convert(convert: ConvertDto): Flow<ApiResponse<StatusDto>>
     fun fiatToCrypto(amount: Double): Flow<ApiResponse<StatusDto>>
     fun cryptoToFiat(amount: Double): Flow<ApiResponse<StatusDto>>
@@ -58,6 +60,10 @@ class MainCloudDataSourceImpl @Inject constructor(
 
     override fun getSettings(): Flow<ApiResponse<FeeDto>> = safeApiCall {
         serverApi.getSettings()
+    }
+
+    override fun getFees(): Flow<ApiResponse<List<PaymentFeeDto>>> = safeApiCall {
+        serverApi.getFees()
     }
 
     override fun convert(convert: ConvertDto): Flow<ApiResponse<StatusDto>>  = safeApiCall {

@@ -49,7 +49,9 @@ class ReceiveFragment : Fragment() {
             )
             insets
         }
-        when (args.currency) {
+        val currency = CurrencyEnum.fromNameOrNull(args.currency) ?: CurrencyEnum.SOM
+
+        when (currency) {
             CurrencyEnum.SOM ->
                 binding.opinion.text =
                     getString(R.string.receiving_opinion, getString(R.string.som))
@@ -59,19 +61,13 @@ class ReceiveFragment : Fragment() {
             CurrencyEnum.USDT_TRC20 ->
                 binding.opinion.text =
                     getString(R.string.receiving_opinion, getString(R.string.usdt))
-            CurrencyEnum.ETH ->
-                binding.opinion.text =
-                    getString(R.string.receiving_opinion, getString(R.string.ethereum))
-            CurrencyEnum.BTC ->
-                binding.opinion.text =
-                    getString(R.string.receiving_opinion, getString(R.string.bitcoin))
         }
-        if (args.currency == CurrencyEnum.SOM)
+        if (currency == CurrencyEnum.SOM)
             binding.contact.text = args.contact.formatPhone()
         else binding.contact.text = args.contact
         val qrBitmap = QRCodeGenerator.generateCryptoQRCodeWithScheme(
             address = args.contact,
-            currency = args.currency,
+            currency = currency,
             width = 600,
             height = 600
         )
@@ -80,7 +76,7 @@ class ReceiveFragment : Fragment() {
         binding.qrIcon.scaleX = 1.1f
         binding.qrIcon.scaleY = 1.1f
         binding.qrIcon.adjustViewBounds = true
-        if (args.currency != CurrencyEnum.SOM) {
+        if (currency != CurrencyEnum.SOM) {
             binding.copyOpinion.text = getString(R.string.copy_address)
         }
 
@@ -91,13 +87,13 @@ class ReceiveFragment : Fragment() {
 
         binding.copyBtn.setOnClickListener {
             val phone =
-                (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == args.currency }?.address
+                (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currency }?.address
                     ?: return@setOnClickListener
             val clipboard: ClipboardManager =
                 requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(phone, phone)
             clipboard.setPrimaryClip(clip)
-            if (args.currency == CurrencyEnum.SOM)
+            if (currency == CurrencyEnum.SOM)
                 binding.root.showSuccessSnackbar(getString(R.string.phone_copy_success))
             else
                 binding.root.showSuccessSnackbar(getString(R.string.adres_success_copy))

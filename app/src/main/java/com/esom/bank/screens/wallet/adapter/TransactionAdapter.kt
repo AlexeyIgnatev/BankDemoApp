@@ -28,8 +28,6 @@ class TransactionAdapter(
                 CurrencyEnum.SOM -> binding.icon.setImageResource(R.drawable.som_icon)
                 CurrencyEnum.ESOM -> binding.icon.setImageResource(R.drawable.salam_icon)
                 CurrencyEnum.USDT_TRC20 -> binding.icon.setImageResource(R.drawable.usdt_icon)
-                CurrencyEnum.BTC -> binding.icon.setImageResource(R.drawable.bitcoin_icon)
-                CurrencyEnum.ETH -> binding.icon.setImageResource(R.drawable.eth_icon)
                 null -> Log.e("error", "error - null")
             }
 
@@ -39,48 +37,38 @@ class TransactionAdapter(
                 TransactionEnum.INCOME -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.income_som
                     CurrencyEnum.ESOM -> R.string.income_digital
-                    CurrencyEnum.ETH -> R.string.income_eth
-                    CurrencyEnum.BTC -> R.string.income_bitcoin
                     CurrencyEnum.USDT_TRC20 -> R.string.income_usdt
-                    else -> R.string.transfer_usdt
+                    else -> R.string.transfer
                 }
 
                 TransactionEnum.EXPENSE -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.expense_som
                     CurrencyEnum.ESOM -> R.string.expense_digital
-                    CurrencyEnum.ETH -> R.string.expense_eth
-                    CurrencyEnum.BTC -> R.string.expense_bitcoin
                     CurrencyEnum.USDT_TRC20 -> R.string.expense_usdt
-                    else -> R.string.transfer_usdt
+                    else -> R.string.transfer
                 }
 
                 TransactionEnum.INFLOW -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.inflow_som
                     CurrencyEnum.ESOM -> R.string.inflow_digital
-                    CurrencyEnum.ETH -> R.string.inflow_eth
-                    CurrencyEnum.BTC -> R.string.inflow_bitcoin
                     CurrencyEnum.USDT_TRC20 -> R.string.inflow_usdt
-                    else -> R.string.transfer_usdt
+                    else -> R.string.transfer
                 }
 
                 TransactionEnum.TRANSFER -> when (item.currencyEnum) {
                     CurrencyEnum.SOM -> R.string.transfer_som
                     CurrencyEnum.ESOM -> R.string.transfer_digital
-                    CurrencyEnum.ETH -> R.string.transfer_eth
-                    CurrencyEnum.BTC -> R.string.transfer_bitcoin
                     CurrencyEnum.USDT_TRC20 -> R.string.transfer_usdt
-                    else -> R.string.transfer_usdt
+                    else -> R.string.transfer
                 }
 
-                null -> R.string.transfer_usdt
+                null -> R.string.transfer
             }
 
             val conversionTitle = when (item.currencyEnum) {
                 CurrencyEnum.SOM -> "Конвертация в Сом"
                 CurrencyEnum.ESOM -> "Конвертация в Салам"
                 CurrencyEnum.USDT_TRC20 -> "Конвертация в USDT"
-                CurrencyEnum.BTC -> "Конвертация в BTC"
-                CurrencyEnum.ETH -> "Конвертация в ETH"
                 null -> "Конвертация"
             }
             binding.title.text = if (item.type == TransactionEnum.CONVERSION) {

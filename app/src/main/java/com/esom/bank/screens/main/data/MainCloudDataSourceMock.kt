@@ -9,6 +9,7 @@ import com.esom.bank.screens.history.dto.TransactionDto
 import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.main.dto.FeeDto
+import com.esom.bank.screens.main.dto.PaymentFeeDto
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.UserDto
 import com.esom.bank.screens.main.dto.WalletDto
@@ -43,32 +44,18 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                             sellRate = 1.0
                         ),
                         WalletDto(
-                            currency = CurrencyEnum.USDT_TRC20,
-                            address = "TJkTgPifKq1Q9crT9zNCy5dbcXrd71vvof",
-                            balance = 1000.0,
-                            buyRate = 88.5,
-                            sellRate = 87.2
-                        ),
-                        WalletDto(
-                            currency = CurrencyEnum.BTC,
-                            address = "bc1qycral9w687hqzzh2jpq67e3rt5udj3khrzwqnq",
-                            balance = 2000.0,
-                            buyRate = 5800000.0,
-                            sellRate = 5750000.0
-                        ),
-                        WalletDto(
-                            currency = CurrencyEnum.ETH,
-                            address = "0x604fFa2e0a04f0595206A03AcA898ddAaed900A0",
-                            balance = 30000.0,
-                            buyRate = 320000.0,
-                            sellRate = 315000.0
-                        ),
-                        WalletDto(
                             currency = CurrencyEnum.ESOM,
                             address = "esom_wallet_address_12345",
                             balance = 500.0,
                             buyRate = 1.05,
                             sellRate = 0.95
+                        ),
+                        WalletDto(
+                            currency = CurrencyEnum.USDT_TRC20,
+                            address = "TJkTgPifKq1Q9crT9zNCy5dbcXrd71vvof",
+                            balance = 1000.0,
+                            buyRate = 88.5,
+                            sellRate = 87.2
                         )
                     )
                 ),
@@ -82,17 +69,32 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
             ApiResponse.Success(
                 FeeDto(
                     id = 1,
-                    esomPerUsd = 1.0,
-                    esomSomConversionFeePct = 3.0,
-                    btcTradeFeePct = 0.5,
-                    ethTradeFeePct = 0.5,
-                    usdtTradeFeePct = 0.2,
-                    btcWithdrawFeeFixed = 0.0002,
-                    ethWithdrawFeeFixed = 0.003,
-                    usdtWithdrawFeeFixed = 10.0,
-                    minWithdrawBtc = 0.0002,
-                    minWithdrawEth = 0.003,
-                    minWithdrawUsdtTrc20 = 10.0
+                    esomPerUsd = 1.0
+                ),
+                200
+            )
+        )
+    }
+
+    override fun getFees(): Flow<ApiResponse<List<PaymentFeeDto>>> = flow {
+        emit(
+            ApiResponse.Success(
+                listOf(
+                    PaymentFeeDto(
+                        operation = "WALLET_TRANSFER_ESOM",
+                        percentFee = "0",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "WALLET_TRANSFER_USDT_TRC20",
+                        percentFee = "1.5",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "ESOM_TO_USDT_TRC20",
+                        percentFee = "0.2",
+                        fixedFee = "0"
+                    )
                 ),
                 200
             )
@@ -129,7 +131,11 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
     ): Flow<ApiResponse<List<TransactionDto>>> = flow {
 
         val allTransactions = List(40) { index ->
-            val currencies = CurrencyEnum.values()
+            val currencies = listOf(
+                CurrencyEnum.SOM,
+                CurrencyEnum.ESOM,
+                CurrencyEnum.USDT_TRC20
+            )
             val randomCurrency = currencies[index % currencies.size]
             val randomType = TransactionEnum.values()[index % TransactionEnum.values().size]
             val createdAt = System.currentTimeMillis() - index * 60_000L

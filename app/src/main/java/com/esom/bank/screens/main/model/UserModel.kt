@@ -34,32 +34,10 @@ fun UserDto.toModel() = UserModel(
 @Parcelize
 data class FeeModel(
     val id: Int,
-    val esomPerUsd: Double,
-    val esomSomConversionFeePct: Double,
-    val esomSomConversionFeeMin: Double,
-    val btcTradeFeePct: Double,
-    val ethTradeFeePct: Double,
-    val usdtTradeFeePct: Double,
-    val btcWithdrawFeeFixed: Double,
-    val ethWithdrawFeeFixed: Double,
-    val usdtWithdrawFeeFixed: Double,
-    val minWithdrawBtc: Double,
-    val minWithdrawEth: Double,
-    val minWithdrawUsdtTrc20: Double
+    val esomPerUsd: Double
 ): Parcelable
 
 fun FeeDto.toModel() = FeeModel(
     id = id,
-    esomPerUsd = esomPerUsd,
-    esomSomConversionFeePct = esomSomConversionFeePct,
-    esomSomConversionFeeMin = esomSomConversionFeeMin,
-    btcTradeFeePct = btcTradeFeePct,
-    ethTradeFeePct = ethTradeFeePct,
-    usdtTradeFeePct = usdtTradeFeePct,
-    btcWithdrawFeeFixed = btcWithdrawFeeFixed,
-    ethWithdrawFeeFixed = ethWithdrawFeeFixed,
-    usdtWithdrawFeeFixed = usdtWithdrawFeeFixed,
-    minWithdrawBtc = minWithdrawBtc,
-    minWithdrawEth = minWithdrawEth,
-    minWithdrawUsdtTrc20 = minWithdrawUsdtTrc20
+    esomPerUsd = esomPerUsd
 )

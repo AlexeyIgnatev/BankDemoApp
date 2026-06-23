@@ -55,24 +55,6 @@ class CardAdapter(
                     binding.convertTitle.text = context.getString(R.string.buy_usdt)
                 }
 
-                CurrencyEnum.BTC -> {
-                    binding.somIcon.setImageResource(R.drawable.bitcoin_icon)
-                    binding.somTitle.text = context.getString(R.string.bitcoin)
-                    binding.somCount.text = item.balance.formatBalanceNew()
-                    binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
-                    binding.somIconMonth.visibility = View.GONE
-                    binding.convertTitle.text = context.getString(R.string.buy_btc)
-                }
-
-                CurrencyEnum.ETH -> {
-                    binding.somIcon.setImageResource(R.drawable.eth_icon)
-                    binding.somTitle.text = context.getString(R.string.ethereum)
-                    binding.somCount.text = item.balance.formatBalanceNew()
-                    binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
-                    binding.somIconMonth.visibility = View.GONE
-                    binding.convertTitle.text = context.getString(R.string.buy_eth)
-                }
-
                 CurrencyEnum.ESOM -> {
                     binding.somIcon.setImageResource(R.drawable.salam_icon)
                     binding.somTitle.text = context.getString(R.string.digital)

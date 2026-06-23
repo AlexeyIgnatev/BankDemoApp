@@ -275,8 +275,6 @@ class SuccessTransferFragment : Fragment() {
             CurrencyEnum.SOM -> "С"
             CurrencyEnum.ESOM -> getString(R.string.digital)
             CurrencyEnum.USDT_TRC20 -> "USDT"
-            CurrencyEnum.BTC -> "BTC"
-            CurrencyEnum.ETH -> "ETH"
         }
 
     private fun formatDateTime(timestamp: Long): String {

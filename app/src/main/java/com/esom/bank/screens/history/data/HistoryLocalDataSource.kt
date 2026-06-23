@@ -33,7 +33,9 @@ class HistoryLocalDataSourceImpl @Inject constructor(): HistoryLocalDataSource {
         val currencyString = storage.decodeString("currency")
         return currencyString?.split(",")?.mapNotNull {
             try { CurrencyEnum.valueOf(it) } catch (e: Exception) { null }
-        } ?: listOf(CurrencyEnum.SOM)
+        }?.ifEmpty {
+            listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM, CurrencyEnum.USDT_TRC20)
+        } ?: listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM, CurrencyEnum.USDT_TRC20)
     }
 
     override fun setCurrency(currency: List<CurrencyEnum>) {

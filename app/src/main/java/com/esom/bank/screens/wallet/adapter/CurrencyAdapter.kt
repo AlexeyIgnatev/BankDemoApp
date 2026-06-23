@@ -26,23 +26,11 @@ class CurrencyAdapter(private val context: Context): ListAdapter<Currency, Curre
                         binding.currencyName.visibility = View.GONE
                         binding.currency.text = context.getString(R.string.usdt)
                     }
-                    TypeOfCurrency.BITCOIN -> {
-                        binding.icon.setImageResource(R.drawable.bitcoin_icon)
-                        binding.title.visibility = View.GONE
-                        binding.currencyName.visibility = View.GONE
-                        binding.currency.text = context.getString(R.string.bitcoin)
-                    }
-                    TypeOfCurrency.ETH -> {
-                        binding.icon.setImageResource(R.drawable.eth_icon)
-                        binding.title.visibility = View.GONE
-                        binding.currencyName.visibility = View.GONE
-                        binding.currency.text = context.getString(R.string.ethereum)
-                    }
                     TypeOfCurrency.DIGITAL -> {
                         binding.icon.setImageResource(R.drawable.salam_icon)
                         binding.title.visibility = View.GONE
                         binding.currencyName.visibility = View.GONE
-                        binding.currency.text = context.getString(R.string.digital_wallet)
+                        binding.currency.text = context.getString(R.string.digital)
                     }
                 }
 
@@ -81,7 +69,5 @@ data class Currency(
 enum class TypeOfCurrency {
     FIAT,
     DIGITAL,
-    USDT,
-    BITCOIN,
-    ETH
+    USDT
 }

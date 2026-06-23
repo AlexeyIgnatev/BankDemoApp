@@ -13,7 +13,9 @@ import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.toModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.FeeModel
+import com.esom.bank.screens.main.model.PaymentFeeModel
 import com.esom.bank.screens.main.model.UserModel
+import com.esom.bank.screens.main.model.toPaymentFeeModels
 import com.esom.bank.screens.main.model.toModel
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.messaging.data.MessagingLocalDataSource
@@ -34,6 +36,7 @@ interface MainRepository {
     fun getUserInfo(): Flow<UiState<UserModel>>
 
     fun getSettings(): Flow<UiState<FeeModel>>
+    fun getFees(): Flow<UiState<List<PaymentFeeModel>>>
 
     fun convert(
         from: CurrencyEnum,
@@ -130,6 +133,14 @@ class MainRepositoryImpl @Inject constructor(
         mainCloudDataSource.getSettings().map { response ->
             when(response) {
                 is ApiResponse.Success -> return@map UiState.Success(response.data.toModel())
+                is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
+            }
+        }
+
+    override fun getFees(): Flow<UiState<List<PaymentFeeModel>>> =
+        mainCloudDataSource.getFees().map { response ->
+            when (response) {
+                is ApiResponse.Success -> return@map UiState.Success(response.data.toPaymentFeeModels())
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
             }
         }

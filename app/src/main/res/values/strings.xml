@@ -40,8 +40,6 @@
     <string name="total_balance">Общий баланс</string>
     <string name="som">Сом</string>
     <string name="usdt">USDT TRC20</string>
-    <string name="bitcoin">Bitcoin</string>
-    <string name="ethereum">Ethereum</string>
     <string name="digital">Салам</string>
     <string name="digital_wallet">Салам</string>
     <string name="convert_esom">Конвертировать ЕСом</string>
@@ -53,32 +51,22 @@
     <string name="etc">Ещё</string>
     <string name="convert_som">Конвертация в сом</string>
     <string name="convert_digital">Конвертация в салам</string>
-    <string name="convert_eth">Конвертация в Ethereum</string>
-    <string name="convert_bitcoin">Конвертация в Bitcoin</string>
     <string name="convert_usdt">Конвертация в USDT TRC20</string>
 
     <string name="income_som">Пополнение в сом</string>
     <string name="income_digital">Пополнение в салам</string>
-    <string name="income_eth">Пополнение в Ethereum</string>
-    <string name="income_bitcoin">Пополнение в Bitcoin</string>
     <string name="income_usdt">Пополнение в USDT TRC20</string>
 
     <string name="expense_som">Списание в сом</string>
     <string name="expense_digital">Списание в салам</string>
-    <string name="expense_eth">Списание в Ethereum</string>
-    <string name="expense_bitcoin">Списание в Bitcoin</string>
     <string name="expense_usdt">Списание в USDT TRC20</string>
 
     <string name="inflow_som">Входящий перевод в сом</string>
     <string name="inflow_digital">Входящий перевод в салам</string>
-    <string name="inflow_eth">Входящий перевод в Ethereum</string>
-    <string name="inflow_bitcoin">Входящий перевод в Bitcoin</string>
     <string name="inflow_usdt">Входящий перевод в USDT TRC20</string>
 
     <string name="transfer_som">Исходящий перевод в сом</string>
     <string name="transfer_digital">Исходящий перевод в салам</string>
-    <string name="transfer_eth">Исходящий перевод в Ethereum</string>
-    <string name="transfer_bitcoin">Исходящий перевод в Bitcoin</string>
     <string name="transfer_usdt">Исходящий перевод в USDT TRC20</string>
 
     <string name="search">Поиск</string>
@@ -154,8 +142,6 @@
     <string name="adres_success_copy">Адрес кошелька скопирован</string>
     <string name="change_type_withdraw">Поменять способ перевода</string>
     <string name="buy_usdt">Купить USDT</string>
-    <string name="buy_btc">Купить BTC</string>
-    <string name="buy_eth">Купить ETH</string>
     <string name="logout">Выйти</string>
     <string name="anti_fraud">Операция приостановлена системой финконтроля</string>
 

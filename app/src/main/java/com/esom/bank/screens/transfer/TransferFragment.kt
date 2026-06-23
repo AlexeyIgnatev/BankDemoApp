@@ -101,7 +101,7 @@ class TransferFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        currentFromCurrency = args.currency
+        currentFromCurrency = CurrencyEnum.fromNameOrNull(args.currency) ?: CurrencyEnum.SOM
         isToPhoneNumber = currentFromCurrency in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)
         updateCurrencyIcon(currentFromCurrency)
         setContactHint()
@@ -111,6 +111,7 @@ class TransferFragment : Fragment() {
         } else {
             removePhoneMask()
         }
+        model.getFees()
         initInitialBalances()
         setupQuickAmounts()
         binding.sumInput.setOnUserTextChangeListener { text ->
@@ -122,8 +123,6 @@ class TransferFragment : Fragment() {
         binding.qrScanBtn.setOnClickListener { showQrSourceDialog() }
 
         binding.firstUsdtBtn.setOnClickListener { selectCurrency(CurrencyEnum.USDT_TRC20) }
-        binding.firstBitcoinBtn.setOnClickListener { selectCurrency(CurrencyEnum.BTC) }
-        binding.firstEthBtn.setOnClickListener { selectCurrency(CurrencyEnum.ETH) }
         binding.firstDigitalBtn.setOnClickListener { selectCurrency(CurrencyEnum.ESOM) }
         binding.firstSomBtn.setOnClickListener { selectCurrency(CurrencyEnum.SOM) }
 
@@ -134,6 +133,12 @@ class TransferFragment : Fragment() {
             if (it is UiState.Success) {
                 updateWalletBalances()
                 initInitialBalances()
+                updateCommissionAndTotal(binding.sumInput.text.toString())
+            }
+        }
+
+        model.fees.observe(viewLifecycleOwner) {
+            if (it is UiState.Success) {
                 updateCommissionAndTotal(binding.sumInput.text.toString())
             }
         }
@@ -181,7 +186,7 @@ class TransferFragment : Fragment() {
 
             val amount = bundle.getDouble(TransferConfirmationFragment.AMOUNT_KEY)
             val currencyName = bundle.getString(TransferConfirmationFragment.FROM_CURRENCY_KEY).orEmpty()
-            val currency = runCatching { CurrencyEnum.valueOf(currencyName) }.getOrNull()
+            val currency = CurrencyEnum.fromNameOrNull(currencyName)
                 ?: return@setFragmentResultListener
             val phone = bundle.getString(TransferConfirmationFragment.PHONE_KEY).orEmpty()
             val address = bundle.getString(TransferConfirmationFragment.ADDRESS_KEY)
@@ -203,17 +208,10 @@ class TransferFragment : Fragment() {
     }
 
     private fun setupChangeButton() {
-        val isCryptoCurrency = currentFromCurrency in listOf(
-            CurrencyEnum.BTC, CurrencyEnum.ETH, CurrencyEnum.USDT_TRC20
-        )
+        val isCryptoCurrency = currentFromCurrency == CurrencyEnum.USDT_TRC20
         binding.changeLayout.isVisible = isCryptoCurrency
         binding.changeLayout.setOnClickListener {
-            if (currentFromCurrency in listOf(
-                    CurrencyEnum.BTC,
-                    CurrencyEnum.ETH,
-                    CurrencyEnum.USDT_TRC20
-                )
-            ) {
+            if (currentFromCurrency == CurrencyEnum.USDT_TRC20) {
                 isToPhoneNumber = !isToPhoneNumber
                 updateContactType()
             }
@@ -302,7 +300,7 @@ class TransferFragment : Fragment() {
         if (queryContact.isNotBlank()) return queryContact
 
         return when (scheme) {
-            "bitcoin", "ethereum", "tron", "usdt", "tether", "tel" -> {
+            "usdt", "tether", "tel" -> {
                 uri.schemeSpecificPart
                     ?.removePrefix("//")
                     ?.substringBefore("?")
@@ -399,13 +397,9 @@ class TransferFragment : Fragment() {
         }
 
         val walletUSDT = wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }
-        val walletBTC = wallets.find { it.currency == CurrencyEnum.BTC }
-        val walletETH = wallets.find { it.currency == CurrencyEnum.ETH }
         val walletESOM = wallets.find { it.currency == CurrencyEnum.ESOM }
         val walletSOM = wallets.find { it.currency == CurrencyEnum.SOM }
         binding.usdt.text = getSuffix(CurrencyEnum.USDT_TRC20, walletUSDT?.address)
-        binding.bitcoin.text = getSuffix(CurrencyEnum.BTC, walletBTC?.address)
-        binding.eth.text = getSuffix(CurrencyEnum.ETH, walletETH?.address)
         binding.fiat.text = getSuffix(CurrencyEnum.ESOM, walletESOM?.address)
         binding.som.text = getSuffix(CurrencyEnum.SOM, walletSOM?.address)
         val currentWallet = wallets.find { it.currency == currentFromCurrency }
@@ -419,8 +413,6 @@ class TransferFragment : Fragment() {
             when (currentFromCurrency) {
                 CurrencyEnum.SOM -> R.drawable.som_icon
                 CurrencyEnum.ESOM -> R.drawable.salam_icon
-                CurrencyEnum.BTC -> R.drawable.bitcoin_icon
-                CurrencyEnum.ETH -> R.drawable.eth_icon
                 CurrencyEnum.USDT_TRC20 -> R.drawable.usdt_icon
             }
         )
@@ -451,19 +443,13 @@ class TransferFragment : Fragment() {
     private fun initInitialBalances() {
         val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return
         val walletUSDT = wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }
-        val walletBTC = wallets.find { it.currency == CurrencyEnum.BTC }
-        val walletETH = wallets.find { it.currency == CurrencyEnum.ETH }
         val walletESOM = wallets.find { it.currency == CurrencyEnum.ESOM }
         val walletSOM = wallets.find { it.currency == CurrencyEnum.SOM }
         binding.sum1.text =
             walletUSDT?.balance?.formatBalanceNew() ?: "0"
         binding.sum2.text =
-            walletBTC?.balance?.formatBalanceNew() ?: "0"
-        binding.sum3.text =
-            walletETH?.balance?.formatBalanceNew() ?: "0"
-        binding.sum4.text =
             walletESOM?.balance?.formatBalanceNew() ?: "0"
-        binding.sum5.text =
+        binding.sum3.text =
             walletSOM?.balance?.formatBalanceNew() ?: "0"
         updateWalletBalances()
     }
@@ -513,18 +499,6 @@ class TransferFragment : Fragment() {
                 false
             )
 
-            CurrencyEnum.BTC -> setCurrencyUI(
-                R.drawable.bitcoin_icon,
-                getString(R.string.bitcoin),
-                false
-            )
-
-            CurrencyEnum.ETH -> setCurrencyUI(
-                R.drawable.eth_icon,
-                getString(R.string.ethereum),
-                false
-            )
-
             CurrencyEnum.USDT_TRC20 -> setCurrencyUI(
                 R.drawable.usdt_icon,
                 getString(R.string.usdt),
@@ -556,14 +530,8 @@ class TransferFragment : Fragment() {
     }
 
     private fun calculateTransferCommission(amount: Double, currency: CurrencyEnum): Double {
-        if (amount <= 0.0 || isToPhoneNumber) return 0.0
-        val settings = (model.settings.value as? UiState.Success)?.data ?: return 0.0
-        return when (currency) {
-            CurrencyEnum.BTC -> settings.btcWithdrawFeeFixed
-            CurrencyEnum.ETH -> settings.ethWithdrawFeeFixed
-            CurrencyEnum.USDT_TRC20 -> settings.usdtWithdrawFeeFixed
-            else -> 0.0
-        }
+        if (amount <= 0.0) return 0.0
+        return model.calculateTransferFee(amount, currency)
     }
 
     private fun formatTotalAmount(amount: Double): String {
@@ -606,21 +574,6 @@ class TransferFragment : Fragment() {
         if (sum == null) {
             binding.root.showErrorSnackbar("Введите сумму для перевода")
             return
-        }
-
-        val settings = (model.settings.value as? UiState.Success)?.data
-        if (settings != null && !isToPhoneNumber) {
-            val minAmount = when (currentFromCurrency) {
-                CurrencyEnum.BTC -> settings.minWithdrawBtc
-                CurrencyEnum.ETH -> settings.minWithdrawEth
-                CurrencyEnum.USDT_TRC20 -> settings.minWithdrawUsdtTrc20
-                else -> 0.0
-            }
-            if (sum < minAmount) {
-                val currencyName = getCurrencyName(currentFromCurrency)
-                binding.root.showErrorSnackbar("Минимальная сумма для вывода $currencyName: ${minAmount.formatBalanceNew()}")
-                return
-            }
         }
 
         when {
@@ -714,15 +667,13 @@ class TransferFragment : Fragment() {
         private const val APP_QR_CONTACT_KEY = "contact"
         private const val MIN_QR_PHONE_DIGITS = 7
         private const val MIN_QR_WALLET_LENGTH = 20
-        private val QR_CONTACT_SCHEMES = setOf("bitcoin", "ethereum", "tron", "usdt", "tether", "tel")
+        private val QR_CONTACT_SCHEMES = setOf("usdt", "tether", "tel")
     }
 
     private fun getCurrencyName(currency: CurrencyEnum): String = when (currency) {
         CurrencyEnum.SOM -> "Сом"
         CurrencyEnum.ESOM -> "Салам"
         CurrencyEnum.USDT_TRC20 -> "USDT"
-        CurrencyEnum.BTC -> "BTC"
-        CurrencyEnum.ETH -> "ETH"
     }
 
     private fun slideIn(view: View) {

@@ -8,6 +8,7 @@ import com.esom.bank.screens.history.dto.ReceiptResponseDto
 import com.esom.bank.screens.history.dto.TransactionDto
 import com.esom.bank.screens.main.dto.FeeDto
 import com.esom.bank.screens.main.dto.FcmTokenDto
+import com.esom.bank.screens.main.dto.PaymentFeeDto
 import com.esom.bank.screens.main.dto.PushSettingsDto
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.main.dto.SwapDto
@@ -62,6 +63,9 @@ interface ServerApi {
 
     @GET("blockchain-config/settings")
     suspend fun getSettings(): Response<FeeDto>
+
+    @GET("payments/fees")
+    suspend fun getFees(): Response<List<PaymentFeeDto>>
 
     @GET("/support/history")
     suspend fun getMessages(): Response<List<SupportDto>>

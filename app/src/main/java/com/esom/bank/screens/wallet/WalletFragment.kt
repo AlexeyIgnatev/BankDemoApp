@@ -161,7 +161,7 @@ class WalletFragment : Fragment() {
             { fromCurrency, toCurrency ->
                 findParentNavController().navigate(
                     NavGraphDirections.startSwapFragment(
-                        fromCurrency, toCurrency
+                        fromCurrency.name, toCurrency.name
                     )
                 )
             },
@@ -171,13 +171,13 @@ class WalletFragment : Fragment() {
                 Log.e("address", address.toString())
                 findParentNavController().navigate(
                     NavGraphDirections.startReceiveFragment(
-                        address ?: "", currency
+                        address ?: "", currency.name
                     )
                 )
             },
             {
                 findParentNavController().navigate(
-                    NavGraphDirections.startTransferFragment(it)
+                    NavGraphDirections.startTransferFragment(it.name)
                 )
             }
         )
@@ -256,9 +256,7 @@ class WalletFragment : Fragment() {
                 val targetCurrency = when (realPosition) {
                     0 -> CurrencyEnum.SOM
                     1 -> CurrencyEnum.ESOM
-                    2 -> CurrencyEnum.BTC
-                    3 -> CurrencyEnum.ETH
-                    4 -> CurrencyEnum.USDT_TRC20
+                    2 -> CurrencyEnum.USDT_TRC20
                     else -> return
                 }
 
@@ -275,7 +273,7 @@ class WalletFragment : Fragment() {
                             binding.pager.setCurrentItem(1, false)
                         }, 150)
                     }
-                    4 -> {
+                    2 -> {
                         Handler(Looper.getMainLooper()).postDelayed({
                             binding.pager.setCurrentItem(cards.size, false)
                         }, 150)
@@ -355,7 +353,10 @@ class WalletFragment : Fragment() {
         val previousCurrency = currentCurrency
 
         cards = wallets
+            .filter { it.currency in CurrencyEnum.supportedValues }
+            .sortedBy { currencyOrder(it.currency) }
         infiniteList = mutableListOf<WalletModel>().apply {
+            if (cards.isEmpty()) return@apply
             add(cards.last())
             addAll(cards)
             add(cards.first())
@@ -366,9 +367,7 @@ class WalletFragment : Fragment() {
         val targetPosition = when (previousCurrency) {
             CurrencyEnum.SOM -> 1
             CurrencyEnum.ESOM -> 2
-            CurrencyEnum.BTC -> 3
-            CurrencyEnum.ETH -> 4
-            CurrencyEnum.USDT_TRC20 -> 5
+            CurrencyEnum.USDT_TRC20 -> 3
         }
 
         if (targetPosition in 1 until infiniteList.size - 1) {
@@ -383,15 +382,9 @@ class WalletFragment : Fragment() {
     }
 
     private fun updateCurrencies(wallets: List<WalletModel>) {
-        val sortedWallets = wallets.sortedWith(compareBy {
-            when (it.currency) {
-                CurrencyEnum.SOM -> 0
-                CurrencyEnum.USDT_TRC20 -> 1
-                CurrencyEnum.BTC -> 2
-                CurrencyEnum.ETH -> 3
-                CurrencyEnum.ESOM -> 4
-            }
-        })
+        val sortedWallets = wallets
+            .filter { it.currency in CurrencyEnum.supportedValues }
+            .sortedBy { currencyOrder(it.currency) }
 
         val currencies = sortedWallets.map { wallet ->
             when (wallet.currency) {
@@ -401,26 +394,14 @@ class WalletFragment : Fragment() {
                     wallet.sellRate.formatBalanceNew()
                 )
 
-                CurrencyEnum.USDT_TRC20 -> Currency(
-                    TypeOfCurrency.USDT,
-                    wallet.buyRate.formatBalanceNew(),
-                    wallet.sellRate.formatBalanceNew()
-                )
-
-                CurrencyEnum.BTC -> Currency(
-                    TypeOfCurrency.BITCOIN,
-                    wallet.buyRate.formatBalanceNew(),
-                    wallet.sellRate.formatBalanceNew()
-                )
-
-                CurrencyEnum.ETH -> Currency(
-                    TypeOfCurrency.ETH,
-                    wallet.buyRate.formatBalanceNew(),
-                    wallet.sellRate.formatBalanceNew()
-                )
-
                 CurrencyEnum.ESOM -> Currency(
                     TypeOfCurrency.DIGITAL,
+                    wallet.buyRate.formatBalanceNew(),
+                    wallet.sellRate.formatBalanceNew()
+                )
+
+                CurrencyEnum.USDT_TRC20 -> Currency(
+                    TypeOfCurrency.USDT,
                     wallet.buyRate.formatBalanceNew(),
                     wallet.sellRate.formatBalanceNew()
                 )
@@ -428,6 +409,12 @@ class WalletFragment : Fragment() {
         }
 
         (binding.currencies.adapter as? CurrencyAdapter)?.submitList(currencies)
+    }
+
+    private fun currencyOrder(currency: CurrencyEnum): Int = when (currency) {
+        CurrencyEnum.SOM -> 0
+        CurrencyEnum.ESOM -> 1
+        CurrencyEnum.USDT_TRC20 -> 2
     }
 
     private fun updateTotalBalance(wallets: List<WalletModel>) {
@@ -449,9 +436,13 @@ class WalletFragment : Fragment() {
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         savedInstanceState?.let {
-            currentPosition = it.getInt("current_position", 1)
             val currencyName = it.getString("current_currency", CurrencyEnum.SOM.name)
-            currentCurrency = CurrencyEnum.valueOf(currencyName)
+            currentCurrency = CurrencyEnum.fromNameOrNull(currencyName) ?: CurrencyEnum.SOM
+            currentPosition = when (currentCurrency) {
+                CurrencyEnum.SOM -> 1
+                CurrencyEnum.ESOM -> 2
+                CurrencyEnum.USDT_TRC20 -> 3
+            }
         }
     }
 }

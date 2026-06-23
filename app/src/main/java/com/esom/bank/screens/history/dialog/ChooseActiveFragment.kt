@@ -33,12 +33,6 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
         binding.usdtBtn.setOnClickListener {
             binding.usdtCheck.isChecked = !binding.usdtCheck.isChecked
         }
-        binding.bitcoinBtn.setOnClickListener {
-            binding.bitcoinCheck.isChecked = !binding.bitcoinCheck.isChecked
-        }
-        binding.ethBtn.setOnClickListener {
-            binding.ethCheck.isChecked = !binding.ethCheck.isChecked
-        }
         binding.somBtn.setOnClickListener {
             binding.fiatCheck.isChecked = !binding.fiatCheck.isChecked
         }
@@ -53,14 +47,6 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
                 is UiState.Success -> {
                     binding.usdt.text = it.data.wallets
                         .find { currency -> currency.currency == CurrencyEnum.USDT_TRC20 }?.address?.takeLast(
-                            3
-                        )
-                    binding.bitcoin.text = it.data.wallets
-                        .find { currency -> currency.currency == CurrencyEnum.BTC }?.address?.takeLast(
-                            3
-                        )
-                    binding.eth.text = it.data.wallets
-                        .find { currency -> currency.currency == CurrencyEnum.ETH }?.address?.takeLast(
                             3
                         )
                     binding.fiat.text = it.data.wallets
@@ -79,8 +65,6 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
         binding.chooseBtn.setOnClickListener {
             val currencies: MutableList<CurrencyEnum> = mutableListOf()
             if (binding.usdtCheck.isChecked) currencies.add(CurrencyEnum.USDT_TRC20)
-            if (binding.bitcoinCheck.isChecked) currencies.add(CurrencyEnum.BTC)
-            if (binding.ethCheck.isChecked) currencies.add(CurrencyEnum.ETH)
             if (binding.fiatCheck.isChecked) currencies.add(CurrencyEnum.SOM)
             if (binding.digitalCheck.isChecked) currencies.add(CurrencyEnum.ESOM)
             model.setCurrency(currencies)
@@ -97,10 +81,6 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
         val currencies = model.getCurrency()
         binding.usdtCheck.isChecked = (currencies.find { it == CurrencyEnum.USDT_TRC20 }
                 == CurrencyEnum.USDT_TRC20)
-        binding.bitcoinCheck.isChecked = (currencies.find { it == CurrencyEnum.BTC }
-                == CurrencyEnum.BTC)
-        binding.ethCheck.isChecked = (currencies.find { it == CurrencyEnum.ETH }
-                == CurrencyEnum.ETH)
         binding.fiatCheck.isChecked = (currencies.find { it == CurrencyEnum.SOM }
                 == CurrencyEnum.SOM)
         binding.digitalCheck.isChecked = (currencies.find { it == CurrencyEnum.ESOM }

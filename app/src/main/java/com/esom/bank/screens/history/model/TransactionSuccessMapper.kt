@@ -62,29 +62,21 @@ object TransactionSuccessMapper {
             TransactionEnum.INCOME -> when (currency) {
                 CurrencyEnum.SOM -> R.string.income_som
                 CurrencyEnum.ESOM -> R.string.income_digital
-                CurrencyEnum.ETH -> R.string.income_eth
-                CurrencyEnum.BTC -> R.string.income_bitcoin
                 CurrencyEnum.USDT_TRC20 -> R.string.income_usdt
             }
             TransactionEnum.EXPENSE -> when (currency) {
                 CurrencyEnum.SOM -> R.string.expense_som
                 CurrencyEnum.ESOM -> R.string.expense_digital
-                CurrencyEnum.ETH -> R.string.expense_eth
-                CurrencyEnum.BTC -> R.string.expense_bitcoin
                 CurrencyEnum.USDT_TRC20 -> R.string.expense_usdt
             }
             TransactionEnum.INFLOW -> when (currency) {
                 CurrencyEnum.SOM -> R.string.inflow_som
                 CurrencyEnum.ESOM -> R.string.inflow_digital
-                CurrencyEnum.ETH -> R.string.inflow_eth
-                CurrencyEnum.BTC -> R.string.inflow_bitcoin
                 CurrencyEnum.USDT_TRC20 -> R.string.inflow_usdt
             }
             TransactionEnum.TRANSFER -> when (currency) {
                 CurrencyEnum.SOM -> R.string.transfer_som
                 CurrencyEnum.ESOM -> R.string.transfer_digital
-                CurrencyEnum.ETH -> R.string.transfer_eth
-                CurrencyEnum.BTC -> R.string.transfer_bitcoin
                 CurrencyEnum.USDT_TRC20 -> R.string.transfer_usdt
             }
             null -> R.string.transfer

@@ -24,6 +24,8 @@ import com.esom.bank.screens.chat.enums.SupportRole
 import com.esom.bank.screens.chat.model.SupportModel
 import com.esom.bank.screens.history.pagingsource.TransactionsPagingSource
 import com.esom.bank.screens.main.model.FeeModel
+import com.esom.bank.screens.main.model.PaymentFeeModel
+import com.esom.bank.screens.main.model.PaymentFeeOperationResolver
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.notification.model.NotificationModel
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
@@ -66,6 +68,9 @@ class MainViewModel @Inject constructor(
     private val _settings = MutableLiveData<UiState<FeeModel>>()
     val settings: LiveData<UiState<FeeModel>> = _settings
 
+    private val _fees = MutableLiveData<UiState<List<PaymentFeeModel>>>()
+    val fees: LiveData<UiState<List<PaymentFeeModel>>> = _fees
+
     private val _financialReport = SingleLiveEvent<UiState<Unit>>()
     val financialReport: LiveData<UiState<Unit>> = _financialReport
 
@@ -93,6 +98,7 @@ class MainViewModel @Inject constructor(
         _sendMessage.value = UiState.Loading()
         _notifications.value = UiState.Loading()
         _settings.value = UiState.Loading()
+        _fees.value = UiState.Loading()
         _financialReport.value = UiState.Loading()
         mainRepository.clearAllLocalData()
     }
@@ -105,6 +111,7 @@ class MainViewModel @Inject constructor(
         mainRepository.authenticate(login, password).onEach {
             _myData.value = it
             if (it is UiState.Success) {
+                getFees()
                 refreshAndSendFcmToken()
             }
         }.launchIn(viewModelScope)
@@ -120,6 +127,31 @@ class MainViewModel @Inject constructor(
         mainRepository.getSettings().onEach {
             _settings.value = it
         }.launchIn(viewModelScope)
+    }
+
+    fun getFees() {
+        _fees.value = UiState.Loading()
+        mainRepository.getFees().onEach {
+            _fees.value = it
+        }.launchIn(viewModelScope)
+    }
+
+    fun feeForOperation(operation: String?): PaymentFeeModel? {
+        val state = _fees.value as? UiState.Success ?: return null
+        return state.data.firstOrNull { it.operation.equals(operation, ignoreCase = true) }
+    }
+
+    fun calculateFee(amount: Double, operation: String?): Double {
+        if (amount <= 0.0) return 0.0
+        return feeForOperation(operation)?.calculateFee(amount) ?: 0.0
+    }
+
+    fun calculateTransferFee(amount: Double, currency: CurrencyEnum): Double {
+        return calculateFee(amount, PaymentFeeOperationResolver.transferOperation(currency))
+    }
+
+    fun calculateConvertFee(amount: Double, from: CurrencyEnum, to: CurrencyEnum): Double {
+        return calculateFee(amount, PaymentFeeOperationResolver.convertOperation(from, to))
     }
 
     fun convert(from: CurrencyEnum,
@@ -245,7 +277,11 @@ class MainViewModel @Inject constructor(
         calendar.add(java.util.Calendar.MONTH, -1)
         val from = calendar.timeInMillis
         mainRepository.history(
-            listOf(CurrencyEnum.BTC, CurrencyEnum.ETH, CurrencyEnum.USDT_TRC20, CurrencyEnum.ESOM, CurrencyEnum.SOM),
+            listOf(
+                CurrencyEnum.SOM,
+                CurrencyEnum.ESOM,
+                CurrencyEnum.USDT_TRC20
+            ),
             from,
             System.currentTimeMillis(),
             50,

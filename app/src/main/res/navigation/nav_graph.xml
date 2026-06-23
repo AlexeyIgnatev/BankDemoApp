@@ -34,10 +34,10 @@
         tools:layout="@layout/fragment_swap">
         <argument
             android:name="from"
-            app:argType="com.esom.bank.screens.main.enums.CurrencyEnum" />
+            app:argType="string" />
         <argument
             android:name="to"
-            app:argType="com.esom.bank.screens.main.enums.CurrencyEnum" />
+            app:argType="string" />
     </fragment>
 
     <action
@@ -55,7 +55,7 @@
         tools:layout="@layout/fragment_transfer">
         <argument
             android:name="currency"
-            app:argType="com.esom.bank.screens.main.enums.CurrencyEnum"/>
+            app:argType="string"/>
     </fragment>
 
     <action
@@ -76,7 +76,7 @@
             app:argType="string"/>
         <argument
             android:name="currency"
-            app:argType="com.esom.bank.screens.main.enums.CurrencyEnum"/>
+            app:argType="string"/>
     </fragment>
 
     <action

@@ -80,15 +80,20 @@ class SuccessTransferFragment : Fragment() {
                 }
                 is UiState.Success -> {
                     binding.shareBtn.isEnabled = true
-                    val enrichedReceipt = fillOnlyBlankReceiptFields(state.data)
+                    val creditedAmount = resolveCreditedAmount(
+                        currentOperation = operation,
+                        receipt = state.data
+                    )
                     operation = operation?.copy(
-                        receiptNumber = enrichedReceipt.receiptNumber,
-                        createdAt = enrichedReceipt.createdAt,
-                        fee = enrichedReceipt.fee,
-                        paidFromAccount = resolvePaidFromAccount(enrichedReceipt),
-                        recipient = resolveRecipientAccount(enrichedReceipt),
+                        receiptNumber = state.data.receiptNumber,
+                        createdAt = state.data.createdAt,
+                        fee = state.data.fee,
+                        paidFromAccount = resolvePaidFromAccount(state.data),
+                        recipient = resolveRecipientAccount(state.data),
+                        creditedAmount = creditedAmount,
                         amountIsNet = false
                     )
+                    val enrichedReceipt = fillOnlyBlankReceiptFields(state.data)
                     bindOperation(operation)
                     if (shareAfterReceiptLoaded) {
                         shareAfterReceiptLoaded = false
@@ -221,6 +226,24 @@ class SuccessTransferFragment : Fragment() {
             ConversionSide.IN -> CurrencyEnum.SOM
             ConversionSide.OUT -> CurrencyEnum.ESOM
             null -> operation.currency
+        }
+    }
+
+    private fun resolveCreditedAmount(
+        currentOperation: SuccessOperationModel?,
+        receipt: ReceiptModel
+    ): Double? {
+        val operation = currentOperation ?: return receipt.creditedAmount
+        val isSomEsomConversion = (
+            operation.currency == CurrencyEnum.SOM && operation.targetCurrency == CurrencyEnum.ESOM
+                ) || (
+            operation.currency == CurrencyEnum.ESOM && operation.targetCurrency == CurrencyEnum.SOM
+                )
+
+        return if (isSomEsomConversion) {
+            (operation.amount - receipt.fee).coerceAtLeast(0.0)
+        } else {
+            receipt.creditedAmount ?: operation.creditedAmount
         }
     }
 

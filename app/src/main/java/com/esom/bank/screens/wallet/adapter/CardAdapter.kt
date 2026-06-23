@@ -18,6 +18,7 @@ import com.esom.bank.screens.main.model.WalletModel
 
 class CardAdapter(
     private val context: Context,
+    private val phoneProvider: () -> String?,
     private val onSwapClick: (CurrencyEnum, CurrencyEnum) -> Unit,
     private val onReceiveClick: (CurrencyEnum) -> Unit,
     private val onTransferClick: (CurrencyEnum) -> Unit
@@ -65,7 +66,13 @@ class CardAdapter(
                 }
             }
 
-            binding.number.text = "*${item.address.takeLast(3)}"
+            binding.number.text = when (item.currency) {
+                CurrencyEnum.SOM -> phoneProvider()
+                    ?.takeLast(3)
+                    ?.let { "*$it" }
+                    ?: "*${item.address.takeLast(3)}"
+                else -> "*${item.address.takeLast(3)}"
+            }
         }
     }
 

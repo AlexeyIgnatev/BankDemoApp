@@ -157,15 +157,18 @@ class WalletFragment : Fragment() {
         }
 
         val adapter = CardAdapter(
-            requireContext(),
-            { fromCurrency, toCurrency ->
+            context = requireContext(),
+            phoneProvider = {
+                (model.myData.value as? UiState.Success)?.data?.phone
+            },
+            onSwapClick = { fromCurrency, toCurrency ->
                 findParentNavController().navigate(
                     NavGraphDirections.startSwapFragment(
                         fromCurrency.name, toCurrency.name
                     )
                 )
             },
-            { currency ->
+            onReceiveClick = { currency ->
                 val address = (model.myData.value as? UiState.Success)
                     ?.data?.wallets?.find { it.currency == currency }?.address
                 Log.e("address", address.toString())
@@ -175,7 +178,7 @@ class WalletFragment : Fragment() {
                     )
                 )
             },
-            {
+            onTransferClick = {
                 findParentNavController().navigate(
                     NavGraphDirections.startTransferFragment(it.name)
                 )

@@ -553,7 +553,7 @@ class SwapFragment : Fragment() {
         val fee = calculateFeePreview(actualFromAmount)
 
         binding.thirdValue.text = formatAmount(fee)
-        binding.comissionValue.text = formatAmount(actualFromAmount)
+        binding.comissionValue.text = formatAmount(fee)
         binding.secondValue.text = formatAmount(actualConvertedAmount)
         binding.total.text = formatAmount(actualConvertedAmount)
 
@@ -620,12 +620,7 @@ class SwapFragment : Fragment() {
     }
 
     private fun currentConvertFeeModel() =
-        model.feeForOperation(
-            com.esom.bank.screens.main.model.PaymentFeeOperationResolver.convertOperation(
-                currentFromCurrency,
-                currentToCurrency
-            )
-        )
+        model.feeForConvertOperation(currentFromCurrency, currentToCurrency)
 
     private fun convertWithoutFee(fromAmount: Double): Double {
         val exchangeRate = getExchangeRate()
@@ -696,7 +691,7 @@ class SwapFragment : Fragment() {
     private fun showConvertConfirmation(amount: Double) {
         val amountText = "${amount.formatBalanceNew()} ${getCurrencyName(currentFromCurrency)}"
         val target = getCurrencyName(currentToCurrency)
-        val creditedAmount = parseAmount(binding.peopleSum.text?.toString())
+        val creditedAmount = calculateReceivedFromSend(amount)
         parentFragmentManager.setFragmentResult(
             TransferConfirmationFragment.DATA_REQUEST_KEY,
             bundleOf(

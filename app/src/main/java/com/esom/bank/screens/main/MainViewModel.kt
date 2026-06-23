@@ -147,11 +147,37 @@ class MainViewModel @Inject constructor(
     }
 
     fun calculateTransferFee(amount: Double, currency: CurrencyEnum): Double {
-        return calculateFee(amount, PaymentFeeOperationResolver.transferOperation(currency))
+        return calculateFeeForOperations(
+            amount,
+            PaymentFeeOperationResolver.transferOperations(currency)
+        )
     }
 
     fun calculateConvertFee(amount: Double, from: CurrencyEnum, to: CurrencyEnum): Double {
-        return calculateFee(amount, PaymentFeeOperationResolver.convertOperation(from, to))
+        return calculateFeeForOperations(
+            amount,
+            PaymentFeeOperationResolver.convertOperations(from, to)
+        )
+    }
+
+    fun feeForTransferOperation(currency: CurrencyEnum): PaymentFeeModel? {
+        return feeForOperations(PaymentFeeOperationResolver.transferOperations(currency))
+    }
+
+    fun feeForConvertOperation(from: CurrencyEnum, to: CurrencyEnum): PaymentFeeModel? {
+        return feeForOperations(PaymentFeeOperationResolver.convertOperations(from, to))
+    }
+
+    private fun calculateFeeForOperations(amount: Double, operations: List<String>): Double {
+        if (amount <= 0.0) return 0.0
+        return feeForOperations(operations)?.calculateFee(amount) ?: 0.0
+    }
+
+    private fun feeForOperations(operations: List<String>): PaymentFeeModel? {
+        if (operations.isEmpty()) return null
+        return operations.asSequence()
+            .mapNotNull { feeForOperation(it) }
+            .firstOrNull()
     }
 
     fun convert(from: CurrencyEnum,

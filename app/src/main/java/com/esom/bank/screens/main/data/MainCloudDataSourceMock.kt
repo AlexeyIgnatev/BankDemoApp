@@ -81,6 +81,11 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
             ApiResponse.Success(
                 listOf(
                     PaymentFeeDto(
+                        operation = "WALLET_TRANSFER_SOM",
+                        percentFee = "0",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
                         operation = "WALLET_TRANSFER_ESOM",
                         percentFee = "0",
                         fixedFee = "0"
@@ -91,7 +96,32 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                         fixedFee = "0"
                     ),
                     PaymentFeeDto(
-                        operation = "ESOM_TO_USDT_TRC20",
+                        operation = "CONVERT_SOM_TO_ESOM",
+                        percentFee = "0.2",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "CONVERT_ESOM_TO_SOM",
+                        percentFee = "0.2",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "CONVERT_SOM_TO_USDT_TRC20",
+                        percentFee = "0.2",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "CONVERT_USDT_TRC20_TO_SOM",
+                        percentFee = "0.2",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "CONVERT_ESOM_TO_USDT_TRC20",
+                        percentFee = "0.2",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "CONVERT_USDT_TRC20_TO_ESOM",
                         percentFee = "0.2",
                         fixedFee = "0"
                     )
@@ -175,7 +205,7 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                     type = "TRANSFER",
                     currency = "SOM",
                     createdAt = System.currentTimeMillis(),
-                    fee = 0.0,
+                    fee = if (conversionSide != null) 0.2 else 0.0,
                     accountDetails = "996557501281",
                     recipientFullName = "Мирлан Т. у.",
                     paidFromAccount = "****1234",

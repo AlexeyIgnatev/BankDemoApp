@@ -45,6 +45,8 @@ import com.google.zxing.common.HybridBinarizer
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -104,6 +106,7 @@ class TransferFragment : Fragment() {
         currentFromCurrency = CurrencyEnum.fromNameOrNull(args.currency) ?: CurrencyEnum.SOM
         isToPhoneNumber = currentFromCurrency in listOf(CurrencyEnum.SOM, CurrencyEnum.ESOM)
         updateCurrencyIcon(currentFromCurrency)
+        updateCurrencyOptionsPanel()
         setContactHint()
         setupChangeButton()
         if (isToPhoneNumber) {
@@ -387,6 +390,7 @@ class TransferFragment : Fragment() {
         values.firstOrNull { !it.isNullOrBlank() }.orEmpty()
 
     private fun updateWalletBalances() {
+        updateCurrencyOptionsPanel()
         val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return
         val phone = (model.myData.value as? UiState.Success)?.data?.phone
         fun getSuffix(currency: CurrencyEnum, walletAddress: String?): String {
@@ -399,60 +403,6 @@ class TransferFragment : Fragment() {
         val walletUSDT = wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }
         val walletESOM = wallets.find { it.currency == CurrencyEnum.ESOM }
         val walletSOM = wallets.find { it.currency == CurrencyEnum.SOM }
-
-        binding.firstUsdtBtn.visibility = View.VISIBLE
-        binding.firstDigitalBtn.visibility = View.VISIBLE
-        binding.firstSomBtn.visibility = View.VISIBLE
-        binding.firstBitcoinBtn.visibility = View.GONE
-        binding.firstEthBtn.visibility = View.GONE
-
-        binding.usdtIcon.visibility = View.VISIBLE
-        binding.usdtTitle.visibility = View.VISIBLE
-        binding.usdt.visibility = View.VISIBLE
-        binding.usdtView.visibility = View.VISIBLE
-
-        binding.bitcoinIcon.visibility = View.GONE
-        binding.bitcoinTitle.visibility = View.GONE
-        binding.bitcoin.visibility = View.GONE
-        binding.bitcoinView.visibility = View.GONE
-
-        binding.ethIcon.visibility = View.GONE
-        binding.ethTitle.visibility = View.GONE
-        binding.eth.visibility = View.GONE
-        binding.ethView.visibility = View.GONE
-
-        binding.fiatIcon.visibility = View.VISIBLE
-        binding.fiatTitle.visibility = View.VISIBLE
-        binding.fiat.visibility = View.VISIBLE
-        binding.fiatView.visibility = View.VISIBLE
-
-        binding.currencySomIcon.visibility = View.VISIBLE
-        binding.somTitle.visibility = View.VISIBLE
-        binding.som.visibility = View.VISIBLE
-
-        binding.secondUsdtBtn.visibility = View.VISIBLE
-        binding.secondBitcoinBtn.visibility = View.VISIBLE
-        binding.secondDigitalBtn.visibility = View.VISIBLE
-        binding.secondEthBtn.visibility = View.GONE
-
-        binding.peopleUsdtIcon.visibility = View.VISIBLE
-        binding.peopleUsdtTitle.visibility = View.VISIBLE
-        binding.peopleUsdt.visibility = View.VISIBLE
-        binding.peopleUsdtView.visibility = View.VISIBLE
-
-        binding.peopleBitcoinIcon.visibility = View.VISIBLE
-        binding.peopleBitcoinTitle.visibility = View.VISIBLE
-        binding.peopleBitcoin.visibility = View.VISIBLE
-        binding.peopleBitcoinView.visibility = View.VISIBLE
-
-        binding.peopleEthIcon.visibility = View.GONE
-        binding.peopleEthTitle.visibility = View.GONE
-        binding.peopleEth.visibility = View.GONE
-        binding.peopleEthView.visibility = View.GONE
-
-        binding.peopleFiatIcon.visibility = View.VISIBLE
-        binding.peopleFiatTitle.visibility = View.VISIBLE
-        binding.peopleFiat.visibility = View.VISIBLE
 
         binding.usdt.text = getSuffix(CurrencyEnum.USDT_TRC20, walletUSDT?.address)
         binding.fiat.text = getSuffix(CurrencyEnum.ESOM, walletESOM?.address)
@@ -477,6 +427,32 @@ class TransferFragment : Fragment() {
         binding.peopleBitcoin.text = getSuffix(CurrencyEnum.ESOM, walletESOM?.address)
         binding.peopleFiat.text = getSuffix(CurrencyEnum.SOM, walletSOM?.address)
         binding.peopleEth.text = ""
+    }
+
+    private fun updateCurrencyOptionsPanel() {
+        val showUsdt = currentFromCurrency != CurrencyEnum.USDT_TRC20
+        val showEsom = currentFromCurrency != CurrencyEnum.ESOM
+        val showSom = currentFromCurrency != CurrencyEnum.SOM
+
+        binding.firstUsdtBtn.isVisible = showUsdt
+        binding.usdtIcon.isVisible = showUsdt
+        binding.usdtTitle.isVisible = showUsdt
+        binding.usdt.isVisible = showUsdt
+        binding.usdtView.isVisible = showUsdt
+        binding.sum1.isVisible = showUsdt
+
+        binding.firstDigitalBtn.isVisible = showEsom
+        binding.bitcoinIcon.isVisible = showEsom
+        binding.bitcoinTitle.isVisible = showEsom
+        binding.bitcoin.isVisible = showEsom
+        binding.bitcoinView.isVisible = showEsom
+        binding.sum2.isVisible = showEsom
+
+        binding.firstSomBtn.isVisible = showSom
+        binding.currencySomIcon.isVisible = showSom
+        binding.somTitle.isVisible = showSom
+        binding.som.isVisible = showSom
+        binding.sum5.isVisible = showSom
     }
 
     private fun setContactHint() {
@@ -540,6 +516,7 @@ class TransferFragment : Fragment() {
             binding.contact.setText("")
         }
         updateCurrencyIcon(currency)
+        updateCurrencyOptionsPanel()
         updateWalletBalances()
         updateCommissionAndTotal(binding.sumInput.text.toString())
         setupChangeButton()
@@ -586,8 +563,8 @@ class TransferFragment : Fragment() {
 
         val totalAmount = amount - commission
 
-        binding.comissionValue.text = commission.formatBalanceNew()
-        binding.total.text = formatTotalAmount(totalAmount)
+        binding.comissionValue.text = formatTransferAmount(commission)
+        binding.total.text = formatTransferAmount(totalAmount.coerceAtLeast(0.0))
     }
 
     private fun calculateTransferCommission(amount: Double, currency: CurrencyEnum): Double {
@@ -595,12 +572,12 @@ class TransferFragment : Fragment() {
         return model.calculateTransferFee(amount, currency)
     }
 
-    private fun formatTotalAmount(amount: Double): String {
-        return if (amount % 1 == 0.0) {
-            amount.toLong().toString()
-        } else {
-            amount.formatBalanceNew()
-        }
+    private fun formatTransferAmount(amount: Double): String {
+        val normalized = BigDecimal.valueOf(amount)
+            .setScale(6, RoundingMode.DOWN)
+            .stripTrailingZeros()
+            .toPlainString()
+        return normalized.ifBlank { "0" }
     }
 
     private fun applyPhoneMask() {

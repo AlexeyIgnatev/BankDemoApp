@@ -399,9 +399,66 @@ class TransferFragment : Fragment() {
         val walletUSDT = wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }
         val walletESOM = wallets.find { it.currency == CurrencyEnum.ESOM }
         val walletSOM = wallets.find { it.currency == CurrencyEnum.SOM }
+
+        binding.firstUsdtBtn.visibility = View.VISIBLE
+        binding.firstDigitalBtn.visibility = View.VISIBLE
+        binding.firstSomBtn.visibility = View.VISIBLE
+        binding.firstBitcoinBtn.visibility = View.GONE
+        binding.firstEthBtn.visibility = View.GONE
+
+        binding.usdtIcon.visibility = View.VISIBLE
+        binding.usdtTitle.visibility = View.VISIBLE
+        binding.usdt.visibility = View.VISIBLE
+        binding.usdtView.visibility = View.VISIBLE
+
+        binding.bitcoinIcon.visibility = View.GONE
+        binding.bitcoinTitle.visibility = View.GONE
+        binding.bitcoin.visibility = View.GONE
+        binding.bitcoinView.visibility = View.GONE
+
+        binding.ethIcon.visibility = View.GONE
+        binding.ethTitle.visibility = View.GONE
+        binding.eth.visibility = View.GONE
+        binding.ethView.visibility = View.GONE
+
+        binding.fiatIcon.visibility = View.VISIBLE
+        binding.fiatTitle.visibility = View.VISIBLE
+        binding.fiat.visibility = View.VISIBLE
+        binding.fiatView.visibility = View.VISIBLE
+
+        binding.currencySomIcon.visibility = View.VISIBLE
+        binding.somTitle.visibility = View.VISIBLE
+        binding.som.visibility = View.VISIBLE
+
+        binding.secondUsdtBtn.visibility = View.VISIBLE
+        binding.secondBitcoinBtn.visibility = View.VISIBLE
+        binding.secondDigitalBtn.visibility = View.VISIBLE
+        binding.secondEthBtn.visibility = View.GONE
+
+        binding.peopleUsdtIcon.visibility = View.VISIBLE
+        binding.peopleUsdtTitle.visibility = View.VISIBLE
+        binding.peopleUsdt.visibility = View.VISIBLE
+        binding.peopleUsdtView.visibility = View.VISIBLE
+
+        binding.peopleBitcoinIcon.visibility = View.VISIBLE
+        binding.peopleBitcoinTitle.visibility = View.VISIBLE
+        binding.peopleBitcoin.visibility = View.VISIBLE
+        binding.peopleBitcoinView.visibility = View.VISIBLE
+
+        binding.peopleEthIcon.visibility = View.GONE
+        binding.peopleEthTitle.visibility = View.GONE
+        binding.peopleEth.visibility = View.GONE
+        binding.peopleEthView.visibility = View.GONE
+
+        binding.peopleFiatIcon.visibility = View.VISIBLE
+        binding.peopleFiatTitle.visibility = View.VISIBLE
+        binding.peopleFiat.visibility = View.VISIBLE
+
         binding.usdt.text = getSuffix(CurrencyEnum.USDT_TRC20, walletUSDT?.address)
         binding.fiat.text = getSuffix(CurrencyEnum.ESOM, walletESOM?.address)
         binding.som.text = getSuffix(CurrencyEnum.SOM, walletSOM?.address)
+        binding.bitcoin.text = ""
+        binding.eth.text = ""
         val currentWallet = wallets.find { it.currency == currentFromCurrency }
         binding.sum.text =
             currentWallet?.balance?.formatBalanceNew() ?: "0"
@@ -416,6 +473,10 @@ class TransferFragment : Fragment() {
                 CurrencyEnum.USDT_TRC20 -> R.drawable.usdt_icon
             }
         )
+        binding.peopleUsdt.text = getSuffix(CurrencyEnum.USDT_TRC20, walletUSDT?.address)
+        binding.peopleBitcoin.text = getSuffix(CurrencyEnum.ESOM, walletESOM?.address)
+        binding.peopleFiat.text = getSuffix(CurrencyEnum.SOM, walletSOM?.address)
+        binding.peopleEth.text = ""
     }
 
     private fun setContactHint() {

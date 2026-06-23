@@ -324,6 +324,7 @@
                     app:layout_constraintTop_toTopOf="@id/usdt_icon"
                     app:layout_constraintBottom_toBottomOf="@id/usdt_view"/>
                 <ImageButton
+                    android:visibility="gone"
                     android:id="@+id/first_bitcoin_btn"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/_0dp"
@@ -331,6 +332,7 @@
                     app:layout_constraintTop_toTopOf="@id/bitcoin_icon"
                     app:layout_constraintBottom_toBottomOf="@id/bitcoin_view"/>
                 <ImageButton
+                    android:visibility="gone"
                     android:id="@+id/first_eth_btn"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/_0dp"
@@ -404,6 +406,7 @@
                     android:layout_marginTop="@dimen/_12dp"/>
 
                 <ImageView
+                    android:visibility="gone"
                     android:id="@+id/bitcoin_icon"
                     android:layout_width="@dimen/_44dp"
                     android:layout_height="@dimen/_44dp"
@@ -411,6 +414,7 @@
                     app:layout_constraintTop_toBottomOf="@id/usdt_view"
                     android:layout_marginTop="@dimen/_10dp"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/bitcoin_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -424,6 +428,7 @@
                     android:layout_marginStart="@dimen/_8dp"
                     android:layout_marginTop="@dimen/_3dp"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/bitcoin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -436,6 +441,7 @@
                     app:layout_constraintTop_toBottomOf="@id/bitcoin_title"
                     app:layout_constraintStart_toStartOf="@id/bitcoin_title"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/sum_2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -447,6 +453,7 @@
                     app:layout_constraintTop_toTopOf="@id/bitcoin_icon"
                     app:layout_constraintBottom_toBottomOf="@id/bitcoin_icon"/>
                 <View
+                    android:visibility="gone"
                     android:id="@+id/bitcoin_view"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -456,6 +463,7 @@
                     android:layout_marginTop="@dimen/_12dp"/>
 
                 <ImageView
+                    android:visibility="gone"
                     android:id="@+id/eth_icon"
                     android:layout_width="@dimen/_44dp"
                     android:layout_height="@dimen/_44dp"
@@ -463,6 +471,7 @@
                     app:layout_constraintTop_toBottomOf="@id/bitcoin_view"
                     android:layout_marginTop="@dimen/_10dp"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/eth_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -476,6 +485,7 @@
                     android:layout_marginStart="@dimen/_8dp"
                     android:layout_marginTop="@dimen/_3dp"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/eth"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -488,6 +498,7 @@
                     app:layout_constraintTop_toBottomOf="@id/eth_title"
                     app:layout_constraintStart_toStartOf="@id/eth_title"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/sum_3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -499,6 +510,7 @@
                     app:layout_constraintTop_toTopOf="@id/eth_icon"
                     app:layout_constraintBottom_toBottomOf="@id/eth_icon"/>
                 <View
+                    android:visibility="gone"
                     android:id="@+id/eth_view"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -850,6 +862,7 @@
                     app:layout_constraintTop_toTopOf="@id/people_bitcoin_icon"
                     app:layout_constraintBottom_toBottomOf="@id/people_bitcoin_view"/>
                 <ImageButton
+                    android:visibility="gone"
                     android:id="@+id/second_eth_btn"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/_0dp"
@@ -967,6 +980,7 @@
                     android:layout_marginTop="@dimen/_12dp"/>
 
                 <ImageView
+                    android:visibility="gone"
                     android:id="@+id/people_eth_icon"
                     android:layout_width="@dimen/_44dp"
                     android:layout_height="@dimen/_44dp"
@@ -974,6 +988,7 @@
                     app:layout_constraintTop_toBottomOf="@id/people_bitcoin_view"
                     android:layout_marginTop="@dimen/_10dp"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/people_eth_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -987,6 +1002,7 @@
                     android:layout_marginStart="@dimen/_8dp"
                     android:layout_marginTop="@dimen/_3dp"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/people_eth"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -999,6 +1015,7 @@
                     app:layout_constraintTop_toBottomOf="@id/people_eth_title"
                     app:layout_constraintStart_toStartOf="@id/people_eth_title"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/people_sum_3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -1010,6 +1027,7 @@
                     app:layout_constraintTop_toTopOf="@id/people_eth_icon"
                     app:layout_constraintBottom_toBottomOf="@id/people_eth_icon"/>
                 <View
+                    android:visibility="gone"
                     android:id="@+id/people_eth_view"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"

@@ -69,7 +69,9 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
             ApiResponse.Success(
                 FeeDto(
                     id = 1,
-                    esomPerUsd = 1.0
+                    esomPerUsd = 1.0,
+                    somEsomPercentFee = "5.5",
+                    somEsomFixedFee = "0"
                 ),
                 200
             )
@@ -93,16 +95,6 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                     PaymentFeeDto(
                         operation = "WALLET_TRANSFER_USDT_TRC20",
                         percentFee = "1.5",
-                        fixedFee = "0"
-                    ),
-                    PaymentFeeDto(
-                        operation = "CONVERT_SOM_TO_ESOM",
-                        percentFee = "0.2",
-                        fixedFee = "0"
-                    ),
-                    PaymentFeeDto(
-                        operation = "CONVERT_ESOM_TO_SOM",
-                        percentFee = "0.2",
                         fixedFee = "0"
                     ),
                     PaymentFeeDto(
@@ -205,7 +197,7 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                     type = "TRANSFER",
                     currency = "SOM",
                     createdAt = System.currentTimeMillis(),
-                    fee = if (conversionSide != null) 0.2 else 0.0,
+                    fee = if (conversionSide != null) 5.5 else 0.0,
                     accountDetails = "996557501281",
                     recipientFullName = "Мирлан Т. у.",
                     paidFromAccount = "****1234",

@@ -37,16 +37,6 @@ object PaymentFeeOperationResolver {
         if (from == to) return emptyList()
 
         return when {
-            from == CurrencyEnum.SOM && to == CurrencyEnum.ESOM -> listOf(
-                CONVERT_SOM_TO_ESOM,
-                LEGACY_SOM_TO_ESOM
-            )
-
-            from == CurrencyEnum.ESOM && to == CurrencyEnum.SOM -> listOf(
-                CONVERT_ESOM_TO_SOM,
-                LEGACY_ESOM_TO_SOM
-            )
-
             from == CurrencyEnum.SOM && to == CurrencyEnum.USDT_TRC20 -> listOf(
                 CONVERT_SOM_TO_USDT_TRC20,
                 LEGACY_SOM_TO_USDT_TRC20

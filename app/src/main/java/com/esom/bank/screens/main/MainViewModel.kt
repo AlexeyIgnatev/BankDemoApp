@@ -154,6 +154,9 @@ class MainViewModel @Inject constructor(
     }
 
     fun calculateConvertFee(amount: Double, from: CurrencyEnum, to: CurrencyEnum): Double {
+        if (isSomEsomConversion(from, to)) {
+            return calculateSettingsSomEsomFee(amount)
+        }
         return calculateFeeForOperations(
             amount,
             PaymentFeeOperationResolver.convertOperations(from, to)
@@ -165,6 +168,9 @@ class MainViewModel @Inject constructor(
     }
 
     fun feeForConvertOperation(from: CurrencyEnum, to: CurrencyEnum): PaymentFeeModel? {
+        if (isSomEsomConversion(from, to)) {
+            return somEsomSettingsFeeModel()
+        }
         return feeForOperationsWithPositiveFee(PaymentFeeOperationResolver.convertOperations(from, to))
     }
 
@@ -192,6 +198,32 @@ class MainViewModel @Inject constructor(
         return operations.asSequence()
             .mapNotNull { feeForOperation(it) }
             .firstOrNull { it.calculateFee(sampleAmount) > 0.0 }
+    }
+
+    private fun isSomEsomConversion(from: CurrencyEnum, to: CurrencyEnum): Boolean {
+        return (from == CurrencyEnum.SOM && to == CurrencyEnum.ESOM) ||
+            (from == CurrencyEnum.ESOM && to == CurrencyEnum.SOM)
+    }
+
+    private fun calculateSettingsSomEsomFee(amount: Double): Double {
+        if (amount <= 0.0) return 0.0
+        val settings = _settings.value as? UiState.Success<*> ?: return 0.0
+        val feeModel = settings.data as? FeeModel ?: return 0.0
+        val percent = feeModel.somEsomPercentFee?.coerceAtLeast(0.0) ?: 0.0
+        val fixed = feeModel.somEsomFixedFee?.coerceAtLeast(0.0) ?: 0.0
+        return amount * (percent / 100.0) + fixed
+    }
+
+    private fun somEsomSettingsFeeModel(): PaymentFeeModel? {
+        val settings = _settings.value as? UiState.Success<*> ?: return null
+        val feeModel = settings.data as? FeeModel ?: return null
+        val percent = feeModel.somEsomPercentFee?.coerceAtLeast(0.0) ?: 0.0
+        val fixed = feeModel.somEsomFixedFee?.coerceAtLeast(0.0) ?: 0.0
+        return if (percent <= 0.0 && fixed <= 0.0) null else PaymentFeeModel(
+            operation = "SETTINGS_SOM_ESOM_CONVERT",
+            percentFee = percent,
+            fixedFee = fixed
+        )
     }
 
     fun convert(from: CurrencyEnum,

@@ -34,10 +34,14 @@ fun UserDto.toModel() = UserModel(
 @Parcelize
 data class FeeModel(
     val id: Int,
-    val esomPerUsd: Double
+    val esomPerUsd: Double,
+    val somEsomPercentFee: Double? = null,
+    val somEsomFixedFee: Double? = null
 ): Parcelable
 
 fun FeeDto.toModel() = FeeModel(
     id = id,
-    esomPerUsd = esomPerUsd
+    esomPerUsd = esomPerUsd,
+    somEsomPercentFee = somEsomPercentFee?.toDoubleOrNull(),
+    somEsomFixedFee = somEsomFixedFee?.toDoubleOrNull()
 )

@@ -154,15 +154,10 @@ class MainViewModel @Inject constructor(
     }
 
     fun calculateConvertFee(amount: Double, from: CurrencyEnum, to: CurrencyEnum): Double {
-        val directFee = calculateFeeForOperations(
+        return calculateFeeForOperations(
             amount,
             PaymentFeeOperationResolver.convertOperations(from, to)
         )
-        if (directFee > 0.0 || !isSomEsomConversion(from, to)) {
-            return directFee
-        }
-
-        return calculateFeeForOperations(amount, somEsomFallbackOperations(from, to))
     }
 
     fun feeForTransferOperation(currency: CurrencyEnum): PaymentFeeModel? {
@@ -170,13 +165,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun feeForConvertOperation(from: CurrencyEnum, to: CurrencyEnum): PaymentFeeModel? {
-        val directFeeModel = feeForOperations(PaymentFeeOperationResolver.convertOperations(from, to))
-        val directFeeValue = directFeeModel?.calculateFee(1.0) ?: 0.0
-        if (directFeeValue > 0.0 || !isSomEsomConversion(from, to)) {
-            return directFeeModel
-        }
-
-        return feeForOperationsWithPositiveFee(somEsomFallbackOperations(from, to))
+        return feeForOperationsWithPositiveFee(PaymentFeeOperationResolver.convertOperations(from, to))
     }
 
     private fun calculateFeeForOperations(amount: Double, operations: List<String>): Double {
@@ -203,18 +192,6 @@ class MainViewModel @Inject constructor(
         return operations.asSequence()
             .mapNotNull { feeForOperation(it) }
             .firstOrNull { it.calculateFee(sampleAmount) > 0.0 }
-    }
-
-    private fun isSomEsomConversion(from: CurrencyEnum, to: CurrencyEnum): Boolean {
-        return (from == CurrencyEnum.SOM && to == CurrencyEnum.ESOM) ||
-            (from == CurrencyEnum.ESOM && to == CurrencyEnum.SOM)
-    }
-
-    private fun somEsomFallbackOperations(from: CurrencyEnum, to: CurrencyEnum): List<String> {
-        return listOfNotNull(
-            feeForTransferOperation(from)?.operation,
-            feeForTransferOperation(to)?.operation
-        )
     }
 
     fun convert(from: CurrencyEnum,

@@ -37,39 +37,35 @@ object PaymentFeeOperationResolver {
         if (from == to) return emptyList()
 
         return when {
-            (from == CurrencyEnum.SOM && to == CurrencyEnum.ESOM) ||
-                (from == CurrencyEnum.ESOM && to == CurrencyEnum.SOM) -> {
-                listOf(
-                    CONVERT_SOM_TO_ESOM,
-                    CONVERT_ESOM_TO_SOM,
-                    LEGACY_SOM_TO_ESOM,
-                    LEGACY_ESOM_TO_SOM
-                )
-            }
+            from == CurrencyEnum.SOM && to == CurrencyEnum.ESOM -> listOf(
+                CONVERT_SOM_TO_ESOM,
+                LEGACY_SOM_TO_ESOM
+            )
 
-            (from == CurrencyEnum.SOM && to == CurrencyEnum.USDT_TRC20) ||
-                (from == CurrencyEnum.USDT_TRC20 && to == CurrencyEnum.SOM) -> {
-                listOf(
-                    CONVERT_SOM_TO_USDT_TRC20,
-                    CONVERT_USDT_TRC20_TO_SOM,
-                    LEGACY_SOM_TO_USDT_TRC20,
-                    LEGACY_USDT_TRC20_TO_SOM,
-                    CONVERT_ESOM_TO_USDT_TRC20,
-                    CONVERT_USDT_TRC20_TO_ESOM,
-                    LEGACY_ESOM_TO_USDT_TRC20,
-                    LEGACY_USDT_TRC20_TO_ESOM
-                )
-            }
+            from == CurrencyEnum.ESOM && to == CurrencyEnum.SOM -> listOf(
+                CONVERT_ESOM_TO_SOM,
+                LEGACY_ESOM_TO_SOM
+            )
 
-            (from == CurrencyEnum.ESOM && to == CurrencyEnum.USDT_TRC20) ||
-                (from == CurrencyEnum.USDT_TRC20 && to == CurrencyEnum.ESOM) -> {
-                listOf(
-                    CONVERT_ESOM_TO_USDT_TRC20,
-                    CONVERT_USDT_TRC20_TO_ESOM,
-                    LEGACY_ESOM_TO_USDT_TRC20,
-                    LEGACY_USDT_TRC20_TO_ESOM
-                )
-            }
+            from == CurrencyEnum.SOM && to == CurrencyEnum.USDT_TRC20 -> listOf(
+                CONVERT_SOM_TO_USDT_TRC20,
+                LEGACY_SOM_TO_USDT_TRC20
+            )
+
+            from == CurrencyEnum.USDT_TRC20 && to == CurrencyEnum.SOM -> listOf(
+                CONVERT_USDT_TRC20_TO_SOM,
+                LEGACY_USDT_TRC20_TO_SOM
+            )
+
+            from == CurrencyEnum.ESOM && to == CurrencyEnum.USDT_TRC20 -> listOf(
+                CONVERT_ESOM_TO_USDT_TRC20,
+                LEGACY_ESOM_TO_USDT_TRC20
+            )
+
+            from == CurrencyEnum.USDT_TRC20 && to == CurrencyEnum.ESOM -> listOf(
+                CONVERT_USDT_TRC20_TO_ESOM,
+                LEGACY_USDT_TRC20_TO_ESOM
+            )
 
             else -> emptyList()
         }

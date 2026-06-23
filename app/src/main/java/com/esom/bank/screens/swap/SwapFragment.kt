@@ -553,7 +553,7 @@ class SwapFragment : Fragment() {
         val fee = calculateFeePreview(actualFromAmount)
 
         binding.thirdValue.text = formatAmount(fee)
-        binding.comissionValue.text = formatAmount(fee)
+        binding.comissionValue.text = actualFromAmount.toString()
         binding.secondValue.text = formatAmount(actualConvertedAmount)
         binding.total.text = formatAmount(actualConvertedAmount)
 

@@ -340,6 +340,7 @@
                     app:layout_constraintTop_toTopOf="@id/eth_icon"
                     app:layout_constraintBottom_toBottomOf="@id/eth_view"/>
                 <ImageButton
+                    android:visibility="gone"
                     android:id="@+id/first_digital_btn"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/_0dp"
@@ -348,6 +349,7 @@
                     app:layout_constraintBottom_toBottomOf="@id/fiat_icon"/>
 
                 <ImageButton
+                    android:visibility="gone"
                     android:id="@+id/first_som_btn"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/_0dp"
@@ -520,6 +522,7 @@
                     android:layout_marginTop="@dimen/_12dp"/>
 
                 <ImageView
+                    android:visibility="gone"
                     android:id="@+id/fiat_icon"
                     android:layout_width="@dimen/_44dp"
                     android:layout_height="@dimen/_44dp"
@@ -527,6 +530,7 @@
                     app:layout_constraintTop_toBottomOf="@id/eth_view"
                     android:layout_marginTop="@dimen/_10dp"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/fiat_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -540,6 +544,7 @@
                     android:layout_marginStart="@dimen/_8dp"
                     android:layout_marginTop="@dimen/_3dp"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/fiat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -552,6 +557,7 @@
                     app:layout_constraintTop_toBottomOf="@id/fiat_title"
                     app:layout_constraintStart_toStartOf="@id/fiat_title"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/sum_4"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -564,6 +570,7 @@
                     app:layout_constraintBottom_toBottomOf="@id/fiat_icon"/>
 
                 <View
+                    android:visibility="gone"
                     android:id="@+id/fiat_view"
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -573,6 +580,7 @@
                     android:layout_marginTop="@dimen/_12dp"/>
 
                 <ImageView
+                    android:visibility="gone"
                     android:id="@+id/currency_som_icon"
                     android:layout_width="@dimen/_44dp"
                     android:layout_height="@dimen/_44dp"
@@ -580,6 +588,7 @@
                     app:layout_constraintTop_toBottomOf="@id/fiat_view"
                     android:layout_marginTop="@dimen/_10dp"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/som_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -593,6 +602,7 @@
                     android:layout_marginStart="@dimen/_8dp"
                     android:layout_marginTop="@dimen/_3dp"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/som"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -605,6 +615,7 @@
                     app:layout_constraintTop_toBottomOf="@id/som_title"
                     app:layout_constraintStart_toStartOf="@id/som_title"/>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/sum_5"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

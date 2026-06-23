@@ -154,10 +154,15 @@ class MainViewModel @Inject constructor(
     }
 
     fun calculateConvertFee(amount: Double, from: CurrencyEnum, to: CurrencyEnum): Double {
-        return calculateFeeForOperations(
+        val directFee = calculateFeeForOperations(
             amount,
             PaymentFeeOperationResolver.convertOperations(from, to)
         )
+        if (directFee > 0.0 || !isSomEsomConversion(from, to)) {
+            return directFee
+        }
+
+        return calculateFeeForOperations(amount, somEsomFallbackOperations(from, to))
     }
 
     fun feeForTransferOperation(currency: CurrencyEnum): PaymentFeeModel? {
@@ -165,12 +170,22 @@ class MainViewModel @Inject constructor(
     }
 
     fun feeForConvertOperation(from: CurrencyEnum, to: CurrencyEnum): PaymentFeeModel? {
-        return feeForOperations(PaymentFeeOperationResolver.convertOperations(from, to))
+        val directFeeModel = feeForOperations(PaymentFeeOperationResolver.convertOperations(from, to))
+        val directFeeValue = directFeeModel?.calculateFee(1.0) ?: 0.0
+        if (directFeeValue > 0.0 || !isSomEsomConversion(from, to)) {
+            return directFeeModel
+        }
+
+        return feeForOperationsWithPositiveFee(somEsomFallbackOperations(from, to))
     }
 
     private fun calculateFeeForOperations(amount: Double, operations: List<String>): Double {
         if (amount <= 0.0) return 0.0
-        return feeForOperations(operations)?.calculateFee(amount) ?: 0.0
+        return operations.asSequence()
+            .mapNotNull { feeForOperation(it) }
+            .map { it.calculateFee(amount) }
+            .firstOrNull { it > 0.0 }
+            ?: 0.0
     }
 
     private fun feeForOperations(operations: List<String>): PaymentFeeModel? {
@@ -178,6 +193,28 @@ class MainViewModel @Inject constructor(
         return operations.asSequence()
             .mapNotNull { feeForOperation(it) }
             .firstOrNull()
+    }
+
+    private fun feeForOperationsWithPositiveFee(
+        operations: List<String>,
+        sampleAmount: Double = 1.0
+    ): PaymentFeeModel? {
+        if (operations.isEmpty()) return null
+        return operations.asSequence()
+            .mapNotNull { feeForOperation(it) }
+            .firstOrNull { it.calculateFee(sampleAmount) > 0.0 }
+    }
+
+    private fun isSomEsomConversion(from: CurrencyEnum, to: CurrencyEnum): Boolean {
+        return (from == CurrencyEnum.SOM && to == CurrencyEnum.ESOM) ||
+            (from == CurrencyEnum.ESOM && to == CurrencyEnum.SOM)
+    }
+
+    private fun somEsomFallbackOperations(from: CurrencyEnum, to: CurrencyEnum): List<String> {
+        return listOfNotNull(
+            feeForTransferOperation(from)?.operation,
+            feeForTransferOperation(to)?.operation
+        )
     }
 
     fun convert(from: CurrencyEnum,

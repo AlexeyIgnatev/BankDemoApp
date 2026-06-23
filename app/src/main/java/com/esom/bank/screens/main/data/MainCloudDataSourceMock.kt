@@ -70,8 +70,8 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                 FeeDto(
                     id = 1,
                     esomPerUsd = 1.0,
-                    somEsomPercentFee = "5.5",
-                    somEsomFixedFee = "0"
+                    esomSomConversionFeePct = "5.5",
+                    esomSomConversionFeeMin = "0"
                 ),
                 200
             )

@@ -209,20 +209,21 @@ class MainViewModel @Inject constructor(
         if (amount <= 0.0) return 0.0
         val settings = _settings.value as? UiState.Success<*> ?: return 0.0
         val feeModel = settings.data as? FeeModel ?: return 0.0
-        val percent = feeModel.somEsomPercentFee?.coerceAtLeast(0.0) ?: 0.0
-        val fixed = feeModel.somEsomFixedFee?.coerceAtLeast(0.0) ?: 0.0
-        return amount * (percent / 100.0) + fixed
+        val percent = feeModel.esomSomConversionFeePct?.coerceAtLeast(0.0) ?: 0.0
+        val minFee = feeModel.esomSomConversionFeeMin?.coerceAtLeast(0.0) ?: 0.0
+        val feeByPercent = amount * (percent / 100.0)
+        return maxOf(feeByPercent, minFee)
     }
 
     private fun somEsomSettingsFeeModel(): PaymentFeeModel? {
         val settings = _settings.value as? UiState.Success<*> ?: return null
         val feeModel = settings.data as? FeeModel ?: return null
-        val percent = feeModel.somEsomPercentFee?.coerceAtLeast(0.0) ?: 0.0
-        val fixed = feeModel.somEsomFixedFee?.coerceAtLeast(0.0) ?: 0.0
-        return if (percent <= 0.0 && fixed <= 0.0) null else PaymentFeeModel(
+        val percent = feeModel.esomSomConversionFeePct?.coerceAtLeast(0.0) ?: 0.0
+        val minFee = feeModel.esomSomConversionFeeMin?.coerceAtLeast(0.0) ?: 0.0
+        return if (percent <= 0.0 && minFee <= 0.0) null else PaymentFeeModel(
             operation = "SETTINGS_SOM_ESOM_CONVERT",
             percentFee = percent,
-            fixedFee = fixed
+            fixedFee = minFee
         )
     }
 

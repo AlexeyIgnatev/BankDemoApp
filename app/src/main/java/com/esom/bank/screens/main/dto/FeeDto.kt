@@ -8,23 +8,25 @@ data class FeeDto(
     @SerializedName("esom_per_usd")
     val esomPerUsd: Double,
     @SerializedName(
-        value = "som_esom_percent_fee",
+        value = "esom_som_conversion_fee_pct",
         alternate = [
+            "som_esom_percent_fee",
             "som_to_esom_percent_fee",
             "esom_to_som_percent_fee",
             "convert_som_esom_percent_fee",
             "commission_som_esom_percent"
         ]
     )
-    val somEsomPercentFee: String? = null,
+    val esomSomConversionFeePct: String? = null,
     @SerializedName(
-        value = "som_esom_fixed_fee",
+        value = "esom_som_conversion_fee_min",
         alternate = [
+            "som_esom_fixed_fee",
             "som_to_esom_fixed_fee",
             "esom_to_som_fixed_fee",
             "convert_som_esom_fixed_fee",
             "commission_som_esom_fixed_fee"
         ]
     )
-    val somEsomFixedFee: String? = null
+    val esomSomConversionFeeMin: String? = null
 )

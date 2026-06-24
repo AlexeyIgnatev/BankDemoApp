@@ -26,6 +26,7 @@ import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.dialog.TransferConfirmationFragment
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.main.model.WalletModel
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -237,22 +238,44 @@ class SwapFragment : Fragment() {
         }
 
         binding.firstUsdtBtn.setOnClickListener {
-            selectFromCurrency(fromPanelCurrencies.getOrNull(0) ?: return@setOnClickListener)
+            if (CurrencyEnum.USDT_TRC20 in fromPanelCurrencies) {
+                selectFromCurrency(CurrencyEnum.USDT_TRC20)
+            }
             closeAllPanels()
         }
 
-        binding.firstBitcoinBtn.setOnClickListener {
-            selectFromCurrency(fromPanelCurrencies.getOrNull(1) ?: return@setOnClickListener)
+        binding.firstDigitalBtn.setOnClickListener {
+            if (CurrencyEnum.ESOM in fromPanelCurrencies) {
+                selectFromCurrency(CurrencyEnum.ESOM)
+            }
             closeAllPanels()
         }
 
-        binding.secondUsdtBtn.setOnClickListener {
-            selectToCurrency(toPanelCurrencies.getOrNull(0) ?: return@setOnClickListener)
+        binding.firstSomBtn.setOnClickListener {
+            if (CurrencyEnum.SOM in fromPanelCurrencies) {
+                selectFromCurrency(CurrencyEnum.SOM)
+            }
             closeAllPanels()
         }
 
-        binding.secondBitcoinBtn.setOnClickListener {
-            selectToCurrency(toPanelCurrencies.getOrNull(1) ?: return@setOnClickListener)
+        binding.peopleUsdtBtn.setOnClickListener {
+            if (CurrencyEnum.USDT_TRC20 in toPanelCurrencies) {
+                selectToCurrency(CurrencyEnum.USDT_TRC20)
+            }
+            closeAllPanels()
+        }
+
+        binding.peopleDigitalBtn.setOnClickListener {
+            if (CurrencyEnum.ESOM in toPanelCurrencies) {
+                selectToCurrency(CurrencyEnum.ESOM)
+            }
+            closeAllPanels()
+        }
+
+        binding.peopleSomBtn.setOnClickListener {
+            if (CurrencyEnum.SOM in toPanelCurrencies) {
+                selectToCurrency(CurrencyEnum.SOM)
+            }
             closeAllPanels()
         }
 
@@ -402,55 +425,101 @@ class SwapFragment : Fragment() {
     }
 
     private fun updateFromPanelViews() {
-        binding.usdtIcon.setImageResource(getCurrencyIcon(fromPanelCurrencies.getOrNull(0) ?: CurrencyEnum.SOM))
-        binding.usdtTitle.text = getCurrencyString(fromPanelCurrencies.getOrNull(0) ?: CurrencyEnum.SOM)
-        binding.usdt.visibility = View.VISIBLE
-        binding.usdtView.visibility = View.VISIBLE
+        val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return
+        val phone = (model.myData.value as? UiState.Success)?.data?.phone
+        val usdtWallet = wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }
+        val esomWallet = wallets.find { it.currency == CurrencyEnum.ESOM }
+        val somWallet = wallets.find { it.currency == CurrencyEnum.SOM }
 
-        binding.bitcoinIcon.setImageResource(getCurrencyIcon(fromPanelCurrencies.getOrNull(1) ?: CurrencyEnum.ESOM))
-        binding.bitcoinTitle.text = getCurrencyString(fromPanelCurrencies.getOrNull(1) ?: CurrencyEnum.ESOM)
-        binding.bitcoinIcon.visibility = View.VISIBLE
-        binding.bitcoinTitle.visibility = View.VISIBLE
-        binding.bitcoin.visibility = View.VISIBLE
-        binding.bitcoinView.visibility = View.VISIBLE
+        binding.firstUsdtBtn.isVisible = CurrencyEnum.USDT_TRC20 in fromPanelCurrencies
+        binding.firstDigitalBtn.isVisible = CurrencyEnum.ESOM in fromPanelCurrencies
+        binding.firstSomBtn.isVisible = CurrencyEnum.SOM in fromPanelCurrencies
 
-        binding.ethIcon.visibility = View.GONE
-        binding.ethTitle.visibility = View.GONE
-        binding.eth.visibility = View.GONE
-        binding.ethView.visibility = View.GONE
-        binding.firstEthBtn.visibility = View.GONE
-        binding.firstDigitalBtn.visibility = View.GONE
-
-        binding.fiatIcon.visibility = View.GONE
-        binding.fiatTitle.visibility = View.GONE
-        binding.fiat.visibility = View.GONE
+        bindPanelRow(
+            icon = binding.firstUsdtIcon,
+            title = binding.firstUsdtTitle,
+            suffix = binding.firstUsdt,
+            balance = binding.firstSum1,
+            divider = binding.firstUsdtView,
+            currency = CurrencyEnum.USDT_TRC20.takeIf { it in fromPanelCurrencies },
+            walletUSDT = usdtWallet,
+            walletESOM = esomWallet,
+            walletSOM = somWallet,
+            phone = phone
+        )
+        bindPanelRow(
+            icon = binding.firstDigitalIcon,
+            title = binding.firstDigitalTitle,
+            suffix = binding.firstDigital,
+            balance = binding.firstSum2,
+            divider = binding.firstDigitalView,
+            currency = CurrencyEnum.ESOM.takeIf { it in fromPanelCurrencies },
+            walletUSDT = usdtWallet,
+            walletESOM = esomWallet,
+            walletSOM = somWallet,
+            phone = phone
+        )
+        bindPanelRow(
+            icon = binding.firstSomIcon,
+            title = binding.firstSomTitle,
+            suffix = binding.firstSom,
+            balance = binding.firstSum3,
+            divider = binding.firstSomView,
+            currency = CurrencyEnum.SOM.takeIf { it in fromPanelCurrencies },
+            walletUSDT = usdtWallet,
+            walletESOM = esomWallet,
+            walletSOM = somWallet,
+            phone = phone
+        )
     }
 
     private fun updateToPanelViews() {
-        binding.peopleUsdtIcon.setImageResource(getCurrencyIcon(toPanelCurrencies.getOrNull(0) ?: CurrencyEnum.SOM))
-        binding.peopleUsdtTitle.text = getCurrencyString(toPanelCurrencies.getOrNull(0) ?: CurrencyEnum.SOM)
-        binding.peopleUsdtIcon.visibility = View.VISIBLE
-        binding.peopleUsdtTitle.visibility = View.VISIBLE
-        binding.peopleUsdt.visibility = View.VISIBLE
-        binding.peopleUsdtView.visibility = View.VISIBLE
+        val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return
+        val phone = (model.myData.value as? UiState.Success)?.data?.phone
+        val usdtWallet = wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }
+        val esomWallet = wallets.find { it.currency == CurrencyEnum.ESOM }
+        val somWallet = wallets.find { it.currency == CurrencyEnum.SOM }
 
-        binding.peopleBitcoinIcon.setImageResource(getCurrencyIcon(toPanelCurrencies.getOrNull(1) ?: CurrencyEnum.ESOM))
-        binding.peopleBitcoinTitle.text = getCurrencyString(toPanelCurrencies.getOrNull(1) ?: CurrencyEnum.ESOM)
-        binding.peopleBitcoinIcon.visibility = View.VISIBLE
-        binding.peopleBitcoinTitle.visibility = View.VISIBLE
-        binding.peopleBitcoin.visibility = View.VISIBLE
-        binding.peopleBitcoinView.visibility = View.VISIBLE
+        binding.peopleUsdtBtn.isVisible = CurrencyEnum.USDT_TRC20 in toPanelCurrencies
+        binding.peopleDigitalBtn.isVisible = CurrencyEnum.ESOM in toPanelCurrencies
+        binding.peopleSomBtn.isVisible = CurrencyEnum.SOM in toPanelCurrencies
 
-        binding.peopleEthIcon.visibility = View.GONE
-        binding.peopleEthTitle.visibility = View.GONE
-        binding.peopleEth.visibility = View.GONE
-        binding.peopleEthView.visibility = View.GONE
-        binding.secondEthBtn.visibility = View.GONE
-        binding.secondDigitalBtn.visibility = View.GONE
-
-        binding.peopleFiatIcon.visibility = View.GONE
-        binding.peopleFiatTitle.visibility = View.GONE
-        binding.peopleFiat.visibility = View.GONE
+        bindPanelRow(
+            icon = binding.peopleUsdtIcon,
+            title = binding.peopleUsdtTitle,
+            suffix = binding.peopleUsdt,
+            balance = binding.peopleSum1,
+            divider = binding.peopleUsdtView,
+            currency = CurrencyEnum.USDT_TRC20.takeIf { it in toPanelCurrencies },
+            walletUSDT = usdtWallet,
+            walletESOM = esomWallet,
+            walletSOM = somWallet,
+            phone = phone
+        )
+        bindPanelRow(
+            icon = binding.peopleDigitalIcon,
+            title = binding.peopleDigitalTitle,
+            suffix = binding.peopleDigital,
+            balance = binding.peopleSum2,
+            divider = binding.peopleDigitalView,
+            currency = CurrencyEnum.ESOM.takeIf { it in toPanelCurrencies },
+            walletUSDT = usdtWallet,
+            walletESOM = esomWallet,
+            walletSOM = somWallet,
+            phone = phone
+        )
+        bindPanelRow(
+            icon = binding.peopleSomIcon,
+            title = binding.peopleSomTitle,
+            suffix = binding.peopleSom,
+            balance = binding.peopleSum3,
+            divider = binding.peopleSomView,
+            currency = CurrencyEnum.SOM.takeIf { it in toPanelCurrencies },
+            walletUSDT = usdtWallet,
+            walletESOM = esomWallet,
+            walletSOM = somWallet,
+            phone = phone
+        )
     }
 
     private fun getCurrencyIcon(currency: CurrencyEnum): Int = when (currency) {
@@ -481,40 +550,55 @@ class SwapFragment : Fragment() {
         binding.sendAvailableTitle.text =
             getString(R.string.available_title, fromBalance.formatBalanceNew())
 
-        val firstCurrency = fromPanelCurrencies.getOrElse(0) { CurrencyEnum.USDT_TRC20 }
-        val secondCurrency = fromPanelCurrencies.getOrElse(1) { CurrencyEnum.ESOM }
+        updateFromPanelViews()
+        updateToPanelViews()
+    }
 
-        val firstTargetCurrency = toPanelCurrencies.getOrElse(0) { CurrencyEnum.USDT_TRC20 }
-        val secondTargetCurrency = toPanelCurrencies.getOrElse(1) { CurrencyEnum.SOM }
+    private fun bindPanelRow(
+        icon: android.widget.ImageView,
+        title: android.widget.TextView,
+        suffix: android.widget.TextView,
+        balance: android.widget.TextView,
+        divider: android.view.View,
+        currency: CurrencyEnum?,
+        walletUSDT: WalletModel?,
+        walletESOM: WalletModel?,
+        walletSOM: WalletModel?,
+        phone: String?
+    ) {
+        if (currency == null) {
+            icon.isVisible = false
+            title.isVisible = false
+            suffix.isVisible = false
+            balance.isVisible = false
+            divider.isVisible = false
+            return
+        }
 
-        binding.sum1.text =
-            (wallets.find { it.currency == firstCurrency }?.balance ?: 0.0).formatBalanceNew()
-        binding.sum2.text =
-            (wallets.find { it.currency == secondCurrency }?.balance ?: 0.0).formatBalanceNew()
-        binding.sum3.text = "0"
-        binding.sum4.text = "0"
+        val wallet = when (currency) {
+            CurrencyEnum.USDT_TRC20 -> walletUSDT
+            CurrencyEnum.ESOM -> walletESOM
+            CurrencyEnum.SOM -> walletSOM
+        }
 
-        binding.peopleSum1.text =
-            (wallets.find { it.currency == firstTargetCurrency }?.balance ?: 0.0).formatBalanceNew()
-        binding.peopleSum2.text =
-            (wallets.find { it.currency == secondTargetCurrency }?.balance ?: 0.0).formatBalanceNew()
-        binding.peopleSum3.text = "0"
-        binding.peopleSum4.text = "0"
-
-        val firstWallet = wallets.find { it.currency == firstCurrency }
-        val secondWallet = wallets.find { it.currency == secondCurrency }
-        val firstTargetWallet = wallets.find { it.currency == firstTargetCurrency }
-        val secondTargetWallet = wallets.find { it.currency == secondTargetCurrency }
-
-        binding.usdt.text = "*${firstWallet?.address?.takeLast(3) ?: ""}"
-        binding.bitcoin.text = "*${secondWallet?.address?.takeLast(3) ?: ""}"
-        binding.eth.text = ""
-        binding.fiat.text = ""
-
-        binding.peopleUsdt.text = "*${firstTargetWallet?.address?.takeLast(3) ?: ""}"
-        binding.peopleBitcoin.text = "*${secondTargetWallet?.address?.takeLast(3) ?: ""}"
-        binding.peopleEth.text = ""
-        binding.peopleFiat.text = ""
+        icon.setImageResource(
+            when (currency) {
+                CurrencyEnum.SOM -> R.drawable.som_icon
+                CurrencyEnum.ESOM -> R.drawable.salam_icon
+                CurrencyEnum.USDT_TRC20 -> R.drawable.usdt_icon
+            }
+        )
+        icon.isVisible = true
+        title.text = getCurrencyName(currency)
+        title.isVisible = true
+        suffix.text = when (currency) {
+            CurrencyEnum.SOM -> phone?.takeLast(3)?.let { "*$it" } ?: ""
+            else -> wallet?.address?.takeLast(3)?.let { "*$it" } ?: ""
+        }
+        suffix.isVisible = true
+        balance.text = wallet?.balance?.formatBalanceNew() ?: "0"
+        balance.isVisible = true
+        divider.isVisible = true
     }
 
     private fun getAvailableFromBalance(): Double {

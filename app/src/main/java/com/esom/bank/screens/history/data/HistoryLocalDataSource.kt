@@ -4,7 +4,6 @@ import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.tencent.mmkv.MMKV
 import javax.inject.Inject
 
-// HistoryLocalDataSource.kt
 interface HistoryLocalDataSource {
     fun getCurrency(): List<CurrencyEnum>
     fun setCurrency(currency: List<CurrencyEnum>)

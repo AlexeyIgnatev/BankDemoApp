@@ -90,7 +90,6 @@ class HistoryFragment : Fragment() {
         }
 
         adapter = HistoryAdapter(
-            context = requireContext(),
             showTransfers = model.getWithoutTransactions()
         ) { transaction ->
             openSuccessTransfer(transaction)

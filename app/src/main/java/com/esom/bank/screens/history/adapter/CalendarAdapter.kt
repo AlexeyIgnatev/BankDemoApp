@@ -1,6 +1,5 @@
 package com.esom.bank.screens.history.adapter
 
-import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -12,24 +11,14 @@ import com.esom.bank.R
 import com.esom.bank.databinding.CalendarItemBinding
 
 class CalendarAdapter(
-    private val context: Context,
+    private val selectedStartDateProvider: () -> String?,
+    private val selectedEndDateProvider: () -> String?,
+    private val selectionModeProvider: () -> Int,
     private val onDayClicked: (String) -> Unit
 ) : ListAdapter<String, CalendarAdapter.DayViewHolder>(DayDiffCallback()) {
 
-    private var selectedStartDate: String? = null
-    private var selectedEndDate: String? = null
-    private var selectionMode: Int = 0
-
-    fun setSelectedDates(startDate: String?, endDate: String?, mode: Int) {
-        selectedStartDate = startDate
-        selectedEndDate = endDate
-        selectionMode = mode
-        notifyDataSetChanged()
-    }
-
     inner class DayViewHolder(
-        private val binding: CalendarItemBinding,
-        private val context: Context
+        private val binding: CalendarItemBinding
     ) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             fullDate: String,
@@ -40,21 +29,31 @@ class CalendarAdapter(
 
             binding.day.text = dayToShow
 
-            if(fullDate.isEmpty()) {
+            if (fullDate.isEmpty()) {
                 binding.day.setTextColor(Color.TRANSPARENT)
                 binding.root.background = null
             } else {
-                val isStartSelected = fullDate == selectedStartDate
-                val isEndSelected = fullDate == selectedEndDate
+                val isStartSelected = fullDate == selectedStartDateProvider()
+                val isEndSelected = fullDate == selectedEndDateProvider()
+                val isSelected = when (selectionModeProvider()) {
+                    0 -> isStartSelected
+                    1 -> isEndSelected
+                    else -> isStartSelected || isEndSelected
+                }
 
-                binding.root.background = if (isStartSelected || isEndSelected) {
-                    ContextCompat.getDrawable(context, R.drawable.background_calendar_item)
+                binding.root.background = if (isSelected) {
+                    ContextCompat.getDrawable(
+                        binding.root.context,
+                        R.drawable.background_calendar_item
+                    )
                 } else {
                     null
                 }
 
-                binding.day.setTextColor(if(isStartSelected || isEndSelected) Color.parseColor("#FFFFFF")
-                else Color.parseColor("#1D1D1B"))
+                binding.day.setTextColor(
+                    if (isSelected) ContextCompat.getColor(binding.root.context, R.color.white)
+                    else ContextCompat.getColor(binding.root.context, R.color.title)
+                )
             }
 
             binding.root.setOnClickListener {
@@ -66,8 +65,9 @@ class CalendarAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DayViewHolder {
-        val binding = CalendarItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return DayViewHolder(binding, context)
+        val binding =
+            CalendarItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return DayViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: DayViewHolder, position: Int) {

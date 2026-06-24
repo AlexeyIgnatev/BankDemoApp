@@ -14,7 +14,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class ChatAdapter() : ListAdapter<ChatAdapter.MessageItem, RecyclerView.ViewHolder>(ChatDiffCallback()) {
+class ChatAdapter() :
+    ListAdapter<ChatAdapter.MessageItem, RecyclerView.ViewHolder>(ChatDiffCallback()) {
     companion object {
         private const val TYPE_DATE = 0
         private const val TYPE_SENDER = 1
@@ -46,7 +47,11 @@ class ChatAdapter() : ListAdapter<ChatAdapter.MessageItem, RecyclerView.ViewHold
 
             when (supportMessage.role) {
                 SupportRole.USER -> items.add(MessageItem.SenderMessage(message))
-                SupportRole.ADMIN, SupportRole.ASSISTANT -> items.add(MessageItem.ReceiverMessage(message))
+                SupportRole.ADMIN, SupportRole.ASSISTANT -> items.add(
+                    MessageItem.ReceiverMessage(
+                        message
+                    )
+                )
             }
         }
 
@@ -61,7 +66,7 @@ class ChatAdapter() : ListAdapter<ChatAdapter.MessageItem, RecyclerView.ViewHold
         }
     }
 
-    inner class SenderViewHolder(private val binding: ItemMessageSenderBinding) :
+    class SenderViewHolder(private val binding: ItemMessageSenderBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(message: Message) {
             binding.time.text = message.time
@@ -69,7 +74,7 @@ class ChatAdapter() : ListAdapter<ChatAdapter.MessageItem, RecyclerView.ViewHold
         }
     }
 
-    inner class ReceiverViewHolder(private val binding: ItemMessageReceiverBinding) :
+    class ReceiverViewHolder(private val binding: ItemMessageReceiverBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(message: Message) {
             binding.name.text = message.name
@@ -78,7 +83,7 @@ class ChatAdapter() : ListAdapter<ChatAdapter.MessageItem, RecyclerView.ViewHold
         }
     }
 
-    inner class DateViewHolder(private val binding: ItemMessageDateBinding) :
+    class DateViewHolder(private val binding: ItemMessageDateBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(date: String) {
             binding.date.text = date
@@ -149,10 +154,13 @@ class ChatDiffCallback : DiffUtil.ItemCallback<ChatAdapter.MessageItem>() {
         return when {
             oldItem is ChatAdapter.MessageItem.Date && newItem is ChatAdapter.MessageItem.Date ->
                 oldItem.date == newItem.date
+
             oldItem is ChatAdapter.MessageItem.ReceiverMessage && newItem is ChatAdapter.MessageItem.ReceiverMessage ->
                 oldItem.message.message == newItem.message.message && oldItem.message.time == newItem.message.time
+
             oldItem is ChatAdapter.MessageItem.SenderMessage && newItem is ChatAdapter.MessageItem.SenderMessage ->
                 oldItem.message.message == newItem.message.message && oldItem.message.time == newItem.message.time
+
             else -> false
         }
     }

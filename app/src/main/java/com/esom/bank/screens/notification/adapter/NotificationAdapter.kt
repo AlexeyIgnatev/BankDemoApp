@@ -65,14 +65,14 @@ class NotificationAdapter :
         }
     }
 
-    inner class DateViewHolder(private val binding: ItemDataBinding) :
+    class DateViewHolder(private val binding: ItemDataBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(dateItem: NotificationListItem.DateItem) {
             binding.date.text = dateItem.date
         }
     }
 
-    inner class NotificationViewHolder(private val binding: ItemNotificationBinding) :
+    class NotificationViewHolder(private val binding: ItemNotificationBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(notificationItem: NotificationListItem.NotificationItem) {
             val notification = notificationItem.notification

@@ -39,13 +39,13 @@
             android:layout_height="@dimen/_0dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintTop_toBottomOf="@id/usdt_view"
-            app:layout_constraintBottom_toTopOf="@id/fiat_view"/>
+            app:layout_constraintBottom_toTopOf="@id/som_view"/>
         <ImageButton
             android:id="@+id/salam_btn"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_0dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            app:layout_constraintTop_toBottomOf="@id/fiat_view"
+            app:layout_constraintTop_toBottomOf="@id/som_view"
             app:layout_constraintBottom_toBottomOf="@id/digital_icon"/>
         <ImageView
             android:id="@+id/usdt_icon"
@@ -98,14 +98,14 @@
             android:layout_marginTop="@dimen/_12dp"/>
 
         <ImageView
-            android:id="@+id/fiat_icon"
+            android:id="@+id/som_icon"
             android:layout_width="@dimen/_44dp"
             android:layout_height="@dimen/_44dp"
             android:src="@drawable/som_icon"
             app:layout_constraintTop_toBottomOf="@id/usdt_view"
             android:layout_marginTop="@dimen/_10dp"/>
         <TextView
-            android:id="@+id/fiat_title"
+            android:id="@+id/som_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/som"
@@ -113,12 +113,12 @@
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_semibold"
             android:textSize="@dimen/_14sp"
-            app:layout_constraintStart_toEndOf="@id/fiat_icon"
-            app:layout_constraintTop_toTopOf="@id/fiat_icon"
+            app:layout_constraintStart_toEndOf="@id/som_icon"
+            app:layout_constraintTop_toTopOf="@id/som_icon"
             android:layout_marginStart="@dimen/_8dp"
             android:layout_marginTop="@dimen/_3dp"/>
         <TextView
-            android:id="@+id/fiat"
+            android:id="@+id/som"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#A5A5A5"
@@ -127,24 +127,24 @@
             android:textSize="@dimen/_14sp"
             android:text="*1w6"
             android:layout_marginTop="-1dp"
-            app:layout_constraintTop_toBottomOf="@id/fiat_title"
-            app:layout_constraintStart_toStartOf="@id/fiat_title"/>
+            app:layout_constraintTop_toBottomOf="@id/som_title"
+            app:layout_constraintStart_toStartOf="@id/som_title"/>
         <CheckBox
-            android:id="@+id/fiat_check"
+            android:id="@+id/som_check"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:button="@drawable/choose_check"
             android:theme="@style/Theme.AppCompat"
-            app:layout_constraintTop_toTopOf="@id/fiat_icon"
-            app:layout_constraintBottom_toBottomOf="@id/fiat_icon"
+            app:layout_constraintTop_toTopOf="@id/som_icon"
+            app:layout_constraintBottom_toBottomOf="@id/som_icon"
             app:layout_constraintEnd_toEndOf="parent"/>
         <View
-            android:id="@+id/fiat_view"
+            android:id="@+id/som_view"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:alpha="0.4"
             android:background="#B2B2B2"
-            app:layout_constraintTop_toBottomOf="@id/fiat_icon"
+            app:layout_constraintTop_toBottomOf="@id/som_icon"
             android:layout_marginTop="@dimen/_12dp"/>
 
         <ImageView
@@ -152,7 +152,7 @@
             android:layout_width="@dimen/_44dp"
             android:layout_height="@dimen/_44dp"
             android:src="@drawable/salam_icon"
-            app:layout_constraintTop_toBottomOf="@id/fiat_view"
+            app:layout_constraintTop_toBottomOf="@id/som_view"
             android:layout_marginTop="@dimen/_10dp"/>
         <TextView
             android:id="@+id/digital_title"

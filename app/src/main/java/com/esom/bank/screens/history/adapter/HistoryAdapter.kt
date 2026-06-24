@@ -1,6 +1,5 @@
 package com.esom.bank.screens.history.adapter
 
-import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -13,10 +12,10 @@ import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.wallet.adapter.TransactionAdapter
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class HistoryAdapter(
-    private val context: Context,
     private var showTransfers: Boolean = true,
     private val onTransactionClick: ((TransactionModel) -> Unit)? = null
 ) : PagingDataAdapter<TransactionModel, HistoryAdapter.HistoryGroupViewHolder>(HistoryDiffCallback()) {
@@ -77,7 +76,7 @@ class HistoryAdapter(
 
             binding.date.text = date
 
-            val adapter = TransactionAdapter(context, onTransactionClick)
+            val adapter = TransactionAdapter(binding.root.context, onTransactionClick)
             binding.transactions.adapter = adapter
             adapter.submitList(transactions)
         }
@@ -109,8 +108,8 @@ data class HistoryGroup(
 class HistoryDiffCallback : DiffUtil.ItemCallback<TransactionModel>() {
     override fun areItemsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean =
         oldItem.transactionId == newItem.transactionId &&
-            oldItem.createdAt == newItem.createdAt &&
-            oldItem.amount == newItem.amount
+                oldItem.createdAt == newItem.createdAt &&
+                oldItem.amount == newItem.amount
 
     override fun areContentsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean =
         oldItem == newItem

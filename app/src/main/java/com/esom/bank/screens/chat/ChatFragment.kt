@@ -89,10 +89,12 @@ class ChatFragment : Fragment() {
                 is UiState.Loading -> {
                     binding.swipeRefreshLayout.isRefreshing = true
                 }
+
                 is UiState.Error -> {
                     binding.swipeRefreshLayout.isRefreshing = false
                     binding.root.showErrorSnackbar(it.message)
                 }
+
                 is UiState.Success -> {
                     binding.swipeRefreshLayout.isRefreshing = false
                     adapter.submitSupportMessages(it.data)
@@ -106,10 +108,12 @@ class ChatFragment : Fragment() {
                 is UiState.Loading -> {
                     setSendingEnabled(false)
                 }
+
                 is UiState.Error -> {
                     setSendingEnabled(true)
                     binding.root.showErrorSnackbar(it.message)
                 }
+
                 is UiState.Success -> {
                     setSendingEnabled(true)
                     model.getMessages()

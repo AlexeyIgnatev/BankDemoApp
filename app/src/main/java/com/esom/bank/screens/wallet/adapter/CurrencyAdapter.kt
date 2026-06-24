@@ -18,7 +18,7 @@ class CurrencyAdapter(private val context: Context): ListAdapter<Currency, Curre
                     TypeOfCurrency.FIAT -> {
                         binding.icon.setImageResource(R.drawable.som_icon)
                         binding.title.text = context.getString(R.string.kgs)
-                        binding.currencyName.text = context.getString(R.string.fiat_som)
+                        binding.currencyName.text = context.getString(R.string.som_wallet)
                     }
                     TypeOfCurrency.USDT -> {
                         binding.icon.setImageResource(R.drawable.usdt_icon)

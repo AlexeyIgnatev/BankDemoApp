@@ -1,7 +1,6 @@
 package com.esom.bank.screens.history.dialog
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -25,14 +24,6 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentChooseDateBinding
     private val model: MainViewModel by activityViewModels()
     private val calendar = Calendar.getInstance()
-    private lateinit var adapter: CalendarAdapter
-    private val currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH).toString()
-    private val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
-    private val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-
-    private var startDate = ""
-    private var endDate = ""
-    private var selectedDateMode = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,34 +49,12 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
             updateMonthAndCalendar()
         }
         binding.startPeriodLayout.setOnClickListener {
-            binding.startPeriodIcon.setImageResource(R.drawable.white_period_icon)
-            binding.startTitle.setTextColor(getColor(requireContext(), R.color.white))
-            binding.startDate.setTextColor(getColor(requireContext(), R.color.white))
-            binding.endPeriodIcon.setImageResource(R.drawable.gray_period_icon)
-            binding.endDate.setTextColor(Color.parseColor("#535353"))
-            binding.endTitle.setTextColor(Color.parseColor("#535353"))
-
-            it.setBackgroundResource(R.drawable.start_period_background)
-            it.elevation = 0F
-            binding.endPeriodLayout.setBackgroundResource(R.drawable.currency_background)
-            binding.endPeriodLayout.elevation = 8F
-            selectedDateMode = 0
+            setSelectionMode(isStartMode = true)
             updateCalendarSelection()
         }
 
         binding.endPeriodLayout.setOnClickListener {
-            binding.endPeriodIcon.setImageResource(R.drawable.white_period_icon)
-            binding.endTitle.setTextColor(getColor(requireContext(), R.color.white))
-            binding.endDate.setTextColor(getColor(requireContext(), R.color.white))
-            binding.startPeriodIcon.setImageResource(R.drawable.gray_period_icon)
-            binding.startDate.setTextColor(Color.parseColor("#535353"))
-            binding.startTitle.setTextColor(Color.parseColor("#535353"))
-
-            it.setBackgroundResource(R.drawable.start_period_background)
-            it.elevation = 0F
-            binding.startPeriodLayout.setBackgroundResource(R.drawable.currency_background)
-            binding.startPeriodLayout.elevation = 8F
-            selectedDateMode = 1
+            setSelectionMode(isStartMode = false)
             updateCalendarSelection()
         }
         binding.chooseBtn.setOnClickListener {
@@ -123,16 +92,16 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         val fromTime = model.getFromTime()
         val toTime = model.getToTime()
 
-        startDate = formatDateToYYYYMMDD(dateFormat.format(fromTime))
-        endDate = formatDateToYYYYMMDD(dateFormat.format(toTime))
         binding.startDate.text = dateFormat.format(fromTime)
         binding.endDate.text = dateFormat.format(toTime)
+        setSelectionMode(isStartMode = true)
     }
 
     private fun setCurrentDate() {
-        calendar.set(Calendar.YEAR, currentYear)
-        calendar.set(Calendar.MONTH, currentMonth)
-        calendar.set(Calendar.DAY_OF_MONTH, currentDay.toInt())
+        val now = Calendar.getInstance()
+        calendar.set(Calendar.YEAR, now.get(Calendar.YEAR))
+        calendar.set(Calendar.MONTH, now.get(Calendar.MONTH))
+        calendar.set(Calendar.DAY_OF_MONTH, now.get(Calendar.DAY_OF_MONTH))
     }
 
     private fun updateMonthAndCalendar() {
@@ -140,17 +109,17 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
 
         val daysInMonth = generateDaysForMonth(calendar)
 
-        adapter = CalendarAdapter(
-            requireContext(),
+        val adapter = CalendarAdapter(
+            selectedStartDateProvider = { binding.startDate.text?.toString()?.ifEmpty { null } },
+            selectedEndDateProvider = { binding.endDate.text?.toString()?.ifEmpty { null } },
+            selectionModeProvider = { currentSelectionMode() }
         ) { fullDate ->
             if (fullDate.isNotEmpty()) {
                 val formattedDate = formatDateToDDMMYYYY(fullDate)
-                if (selectedDateMode == 0) {
+                if (isStartMode()) {
                     binding.startDate.text = formattedDate
-                    startDate = fullDate
                 } else {
                     binding.endDate.text = formattedDate
-                    endDate = fullDate
                 }
                 updateCalendarSelection()
             }
@@ -163,19 +132,41 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
     }
 
     private fun updateCalendarSelection() {
-        val startDateForAdapter = startDate.ifEmpty { null }
-        val endDateForAdapter = endDate.ifEmpty { null }
-        adapter.setSelectedDates(startDateForAdapter, endDateForAdapter, selectedDateMode)
+        binding.calendar.adapter?.notifyDataSetChanged()
     }
 
-    private fun formatDateToYYYYMMDD(dateString: String): String {
-        return try {
-            val inputFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val date = inputFormat.parse(dateString)
-            outputFormat.format(date)
-        } catch (e: Exception) {
-            dateString
+    private fun isStartMode(): Boolean = binding.startPeriodLayout.isSelected
+
+    private fun currentSelectionMode(): Int = if (isStartMode()) 0 else 1
+
+    private fun setSelectionMode(isStartMode: Boolean) {
+        binding.startPeriodLayout.isSelected = isStartMode
+        binding.endPeriodLayout.isSelected = !isStartMode
+
+        if (isStartMode) {
+            binding.startPeriodIcon.setImageResource(R.drawable.white_period_icon)
+            binding.startTitle.setTextColor(getColor(requireContext(), R.color.white))
+            binding.startDate.setTextColor(getColor(requireContext(), R.color.white))
+            binding.startPeriodLayout.setBackgroundResource(R.drawable.start_period_background)
+            binding.startPeriodLayout.elevation = 0F
+
+            binding.endPeriodIcon.setImageResource(R.drawable.gray_period_icon)
+            binding.endDate.setTextColor(getColor(requireContext(), R.color.period_inactive_text))
+            binding.endTitle.setTextColor(getColor(requireContext(), R.color.period_inactive_text))
+            binding.endPeriodLayout.setBackgroundResource(R.drawable.currency_background)
+            binding.endPeriodLayout.elevation = 8F
+        } else {
+            binding.endPeriodIcon.setImageResource(R.drawable.white_period_icon)
+            binding.endTitle.setTextColor(getColor(requireContext(), R.color.white))
+            binding.endDate.setTextColor(getColor(requireContext(), R.color.white))
+            binding.endPeriodLayout.setBackgroundResource(R.drawable.start_period_background)
+            binding.endPeriodLayout.elevation = 0F
+
+            binding.startPeriodIcon.setImageResource(R.drawable.gray_period_icon)
+            binding.startDate.setTextColor(getColor(requireContext(), R.color.period_inactive_text))
+            binding.startTitle.setTextColor(getColor(requireContext(), R.color.period_inactive_text))
+            binding.startPeriodLayout.setBackgroundResource(R.drawable.currency_background)
+            binding.startPeriodLayout.elevation = 8F
         }
     }
 

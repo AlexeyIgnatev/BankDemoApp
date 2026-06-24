@@ -1,6 +1,5 @@
 package com.esom.bank.screens.registration
 
-import android.graphics.Color
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -9,6 +8,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.navigation.fragment.findNavController
@@ -60,7 +60,7 @@ class RegistrationFragment : Fragment() {
 
             val builder = SpannableStringBuilder(fulltext)
             builder.setSpan(
-                ForegroundColorSpan(Color.parseColor("#E62324")),
+                ForegroundColorSpan(ContextCompat.getColor(requireContext(), R.color.red)),
                 startIndex,
                 endIndex,
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -79,7 +79,10 @@ class RegistrationFragment : Fragment() {
     private fun updateNextButtonState(enabled: Boolean) {
         binding.nextBtn.isClickable = enabled
         binding.nextBtn.setCardBackgroundColor(
-            Color.parseColor(if (enabled) "#E62324" else "#B2B2B2")
+            ContextCompat.getColor(
+                requireContext(),
+                if (enabled) R.color.red else R.color.disabled_btn_bg_color
+            )
         )
         binding.nextBtnShadow.visibility = if (enabled) View.VISIBLE else View.GONE
     }

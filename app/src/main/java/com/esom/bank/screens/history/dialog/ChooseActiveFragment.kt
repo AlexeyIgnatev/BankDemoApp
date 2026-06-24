@@ -34,7 +34,7 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
             binding.usdtCheck.isChecked = !binding.usdtCheck.isChecked
         }
         binding.somBtn.setOnClickListener {
-            binding.fiatCheck.isChecked = !binding.fiatCheck.isChecked
+            binding.somCheck.isChecked = !binding.somCheck.isChecked
         }
         binding.salamBtn.setOnClickListener {
             binding.digitalCheck.isChecked = !binding.digitalCheck.isChecked
@@ -49,7 +49,7 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
                         .find { currency -> currency.currency == CurrencyEnum.USDT_TRC20 }?.address?.takeLast(
                             3
                         )
-                    binding.fiat.text = it.data.wallets
+                    binding.som.text = it.data.wallets
                         .find { currency -> currency.currency == CurrencyEnum.SOM }?.address?.takeLast(
                             3
                         )
@@ -65,7 +65,7 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
         binding.chooseBtn.setOnClickListener {
             val currencies: MutableList<CurrencyEnum> = mutableListOf()
             if (binding.usdtCheck.isChecked) currencies.add(CurrencyEnum.USDT_TRC20)
-            if (binding.fiatCheck.isChecked) currencies.add(CurrencyEnum.SOM)
+            if (binding.somCheck.isChecked) currencies.add(CurrencyEnum.SOM)
             if (binding.digitalCheck.isChecked) currencies.add(CurrencyEnum.ESOM)
             model.setCurrency(currencies)
             val intent = Intent("ACTION_HISTORY")
@@ -81,7 +81,7 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
         val currencies = model.getCurrency()
         binding.usdtCheck.isChecked = (currencies.find { it == CurrencyEnum.USDT_TRC20 }
                 == CurrencyEnum.USDT_TRC20)
-        binding.fiatCheck.isChecked = (currencies.find { it == CurrencyEnum.SOM }
+        binding.somCheck.isChecked = (currencies.find { it == CurrencyEnum.SOM }
                 == CurrencyEnum.SOM)
         binding.digitalCheck.isChecked = (currencies.find { it == CurrencyEnum.ESOM }
                 == CurrencyEnum.ESOM)

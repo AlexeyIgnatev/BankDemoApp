@@ -3,12 +3,7 @@
     <string name="something_went_wrong">Что-то пошло не так</string>
     <string name="server_error">Ошибка сервера</string>
     <string name="check_internet">Проверьте интернет соединение</string>
-    <string name="need_auth">Ошибка авторизации. Вам необходимо заново авторизоваться в приложении</string>
     <string name="invalid_login_or_password">Неверный логин или пароль</string>
-    <string name="invalid_credentials">Неверный телефон или пароль</string>
-    <string name="failure">Ошибка</string>
-    <string name="successful">Успех</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="logged_out">Logged out</string>
     <string name="welcome">Добро пожаловать!</string>
     <string name="phone_hint">Номер телефона</string>
@@ -26,8 +21,6 @@
     <string name="enter_sms_code">Введите код из СМС</string>
     <string name="we_sent_sms_code">Мы отправили вам СМС-код</string>
     <string name="code_dont_received">Не пришел СМС-код</string>
-    <string name="write_pin">Придумайте пароль</string>
-    <string name="repeat_password">Повторите пароль</string>
     <string name="cant_login">Не могу войти</string>
     <string name="bio_log_in">Вход по биометрии</string>
     <string name="use_bio_for_log_in">Использовать биометрию \nдля входа в приложение?</string>
@@ -41,18 +34,12 @@
     <string name="som">Сом</string>
     <string name="usdt">USDT TRC20</string>
     <string name="digital">Салам</string>
-    <string name="digital_wallet">Салам</string>
-    <string name="convert_esom">Конвертировать ЕСом</string>
-    <string name="accept_esom">Принять ЕСом</string>
     <string name="rate_currency">Курс валют</string>
     <string name="kgs">KGS</string>
-    <string name="fiat_som">Фиатный сом</string>
+    <string name="som_wallet">Сом</string>
     <string name="last_trans">Последние транзакции</string>
     <string name="etc">Ещё</string>
     <string name="convert_som">Конвертация в сом</string>
-    <string name="convert_digital">Конвертация в салам</string>
-    <string name="convert_usdt">Конвертация в USDT TRC20</string>
-
     <string name="income_som">Пополнение в сом</string>
     <string name="income_digital">Пополнение в салам</string>
     <string name="income_usdt">Пополнение в USDT TRC20</string>
@@ -83,10 +70,6 @@
     <string name="saturday">Сб</string>
     <string name="sunday">Вс</string>
     <string name="choose">Выбрать</string>
-    <string name="success">Успешно!</string>
-    <string name="trans_complete">Транзакция проведена</string>
-    <string name="account_ban">Аккаунт заблокирован</string>
-    <string name="trans_not_complete">Транзакция не проведена</string>
     <string name="wallet_ban">Ваш кошелек USTD trx20 заблокирован</string>
     <string name="reject">Отклонено!</string>
     <string name="for_3_month">За последние 3 месяца</string>
@@ -118,7 +101,6 @@
     <string name="tech_help">Техподдержка</string>
     <string name="personal_call">Персональный менеджер звонок</string>
     <string name="settings">Настройки</string>
-    <string name="language">Язык</string>
     <string name="push_notifications">Push уведомления</string>
     <string name="safety">Безопасность</string>
     <string name="change_pass">Сменить пароль</string>
@@ -167,7 +149,6 @@
     <string name="all">Все</string>
     <string name="yes">Да</string>
     <string name="want_receipt_trans">Хотите сделать квитанцию по переводу?</string>
-    <string name="transfer_confirmation_title">Вы уверены, что хотите сделать перевод на сумму: %1$s, на счет: %2$?</string>
     <string name="confirm">Подтвердить</string>
     <string name="payment_successful">Платеж успешно проведен</string>
     <string name="transaction_details">Детали транзакции</string>
@@ -177,7 +158,6 @@
     <string name="recipient">Получатель</string>
     <string name="total">Итого</string>
     <string name="share_success_operation">Поделиться платежом</string>
-    <string name="success_share_text">Платеж успешно проведен\nОперация: %1$s\nСумма: %2$s\nДата и время: %3$s\nНомер квитанции: %4$s\nОплачено со счета: %5$s\nПолучатель: %6$s</string>
     <string name="empty_value">-</string>
     <string name="receipt_operation_not_found">&#1057;&#1077;&#1088;&#1074;&#1077;&#1088; &#1085;&#1077; &#1074;&#1077;&#1088;&#1085;&#1091;&#1083; &#1085;&#1086;&#1084;&#1077;&#1088; &#1086;&#1087;&#1077;&#1088;&#1072;&#1094;&#1080;&#1080; &#1076;&#1083;&#1103; &#1082;&#1074;&#1080;&#1090;&#1072;&#1085;&#1094;&#1080;&#1080;</string>
     <string name="cancel">Отменить</string>

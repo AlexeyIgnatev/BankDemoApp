@@ -1,6 +1,7 @@
 package com.esom.bank.screens.main.model
 
 import com.esom.bank.screens.main.dto.PaymentFeeDto
+import java.util.Locale
 
 data class PaymentFeeModel(
     val operation: String,
@@ -14,13 +15,25 @@ data class PaymentFeeModel(
 }
 
 fun PaymentFeeDto.toModel() = PaymentFeeModel(
-    operation = operation,
-    percentFee = percentFee.toDoubleOrNull() ?: 0.0,
-    fixedFee = fixedFee.toDoubleOrNull() ?: 0.0
+    operation = operation.orEmpty(),
+    percentFee = percentFee?.toDoubleOrNull() ?: 0.0,
+    fixedFee = fixedFee?.toDoubleOrNull() ?: 0.0
 )
 
 fun List<PaymentFeeDto>.toPaymentFeeModels(): List<PaymentFeeModel> =
     map { it.toModel() }
 
 fun List<PaymentFeeModel>.findByOperation(operation: String?): PaymentFeeModel? =
-    operation?.let { op -> firstOrNull { it.operation.equals(op, ignoreCase = true) } }
+    operation?.takeIf { it.isNotBlank() }?.let { op ->
+        val normalizedOperation = op.normalizeFeeOperationKey()
+        firstOrNull { fee ->
+            fee.operation.normalizeFeeOperationKey() == normalizedOperation
+        }
+    }
+
+private fun String.normalizeFeeOperationKey(): String {
+    return trim()
+        .uppercase(Locale.ROOT)
+        .replace(Regex("[^A-Z0-9]+"), "_")
+        .trim('_')
+}

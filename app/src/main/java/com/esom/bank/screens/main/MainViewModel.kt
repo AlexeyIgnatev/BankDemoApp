@@ -26,6 +26,7 @@ import com.esom.bank.screens.history.pagingsource.TransactionsPagingSource
 import com.esom.bank.screens.main.model.FeeModel
 import com.esom.bank.screens.main.model.PaymentFeeModel
 import com.esom.bank.screens.main.model.PaymentFeeOperationResolver
+import com.esom.bank.screens.main.model.findByOperation
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.notification.model.NotificationModel
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
@@ -138,7 +139,7 @@ class MainViewModel @Inject constructor(
 
     fun feeForOperation(operation: String?): PaymentFeeModel? {
         val state = _fees.value as? UiState.Success ?: return null
-        return state.data.firstOrNull { it.operation.equals(operation, ignoreCase = true) }
+        return state.data.findByOperation(operation)
     }
 
     fun calculateFee(amount: Double, operation: String?): Double {
@@ -154,13 +155,16 @@ class MainViewModel @Inject constructor(
     }
 
     fun calculateConvertFee(amount: Double, from: CurrencyEnum, to: CurrencyEnum): Double {
-        if (isSomEsomConversion(from, to)) {
-            return calculateSettingsSomEsomFee(amount)
-        }
-        return calculateFeeForOperations(
+        val feeFromGrid = calculateFeeForOperations(
             amount,
             PaymentFeeOperationResolver.convertOperations(from, to)
         )
+        if (feeFromGrid > 0.0) return feeFromGrid
+        return if (isSomEsomConversion(from, to)) {
+            calculateSettingsSomEsomFee(amount)
+        } else {
+            feeFromGrid
+        }
     }
 
     fun feeForTransferOperation(currency: CurrencyEnum): PaymentFeeModel? {
@@ -168,10 +172,15 @@ class MainViewModel @Inject constructor(
     }
 
     fun feeForConvertOperation(from: CurrencyEnum, to: CurrencyEnum): PaymentFeeModel? {
-        if (isSomEsomConversion(from, to)) {
-            return somEsomSettingsFeeModel()
+        val feeFromGrid = feeForOperationsWithPositiveFee(
+            PaymentFeeOperationResolver.convertOperations(from, to)
+        )
+        if (feeFromGrid != null) return feeFromGrid
+        return if (isSomEsomConversion(from, to)) {
+            somEsomSettingsFeeModel()
+        } else {
+            null
         }
-        return feeForOperationsWithPositiveFee(PaymentFeeOperationResolver.convertOperations(from, to))
     }
 
     private fun calculateFeeForOperations(amount: Double, operations: List<String>): Double {

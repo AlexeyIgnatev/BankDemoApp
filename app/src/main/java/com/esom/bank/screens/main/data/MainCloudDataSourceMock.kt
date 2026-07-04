@@ -88,6 +88,11 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                         fixedFee = "0"
                     ),
                     PaymentFeeDto(
+                        operation = "WALLET_TRANSFER_SALAM",
+                        percentFee = "0",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
                         operation = "WALLET_TRANSFER_ESOM",
                         percentFee = "0",
                         fixedFee = "0"
@@ -95,6 +100,26 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                     PaymentFeeDto(
                         operation = "WALLET_TRANSFER_USDT_TRC20",
                         percentFee = "1.5",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "CONVERT_SOM_TO_SOM",
+                        percentFee = "0",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "CONVERT_SOM_TO_ESOM",
+                        percentFee = "0.2",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "CONVERT_ESOM_TO_SOM",
+                        percentFee = "0.2",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "CONVERT_ESOM_TO_ESOM",
+                        percentFee = "0",
                         fixedFee = "0"
                     ),
                     PaymentFeeDto(
@@ -115,6 +140,11 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                     PaymentFeeDto(
                         operation = "CONVERT_USDT_TRC20_TO_ESOM",
                         percentFee = "0.2",
+                        fixedFee = "0"
+                    ),
+                    PaymentFeeDto(
+                        operation = "CONVERT_USDT_TRC20_TO_USDT_TRC20",
+                        percentFee = "0",
                         fixedFee = "0"
                     )
                 ),

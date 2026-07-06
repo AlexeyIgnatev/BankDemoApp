@@ -155,16 +155,10 @@ class MainViewModel @Inject constructor(
     }
 
     fun calculateConvertFee(amount: Double, from: CurrencyEnum, to: CurrencyEnum): Double {
-        val feeFromGrid = calculateFeeForOperations(
+        return calculateFeeForOperations(
             amount,
             PaymentFeeOperationResolver.convertOperations(from, to)
         )
-        if (feeFromGrid > 0.0) return feeFromGrid
-        return if (isSomEsomConversion(from, to)) {
-            calculateSettingsSomEsomFee(amount)
-        } else {
-            feeFromGrid
-        }
     }
 
     fun feeForTransferOperation(currency: CurrencyEnum): PaymentFeeModel? {
@@ -172,15 +166,9 @@ class MainViewModel @Inject constructor(
     }
 
     fun feeForConvertOperation(from: CurrencyEnum, to: CurrencyEnum): PaymentFeeModel? {
-        val feeFromGrid = feeForOperationsWithPositiveFee(
+        return feeForOperations(
             PaymentFeeOperationResolver.convertOperations(from, to)
         )
-        if (feeFromGrid != null) return feeFromGrid
-        return if (isSomEsomConversion(from, to)) {
-            somEsomSettingsFeeModel()
-        } else {
-            null
-        }
     }
 
     private fun calculateFeeForOperations(amount: Double, operations: List<String>): Double {
@@ -207,33 +195,6 @@ class MainViewModel @Inject constructor(
         return operations.asSequence()
             .mapNotNull { feeForOperation(it) }
             .firstOrNull { it.calculateFee(sampleAmount) > 0.0 }
-    }
-
-    private fun isSomEsomConversion(from: CurrencyEnum, to: CurrencyEnum): Boolean {
-        return (from == CurrencyEnum.SOM && to == CurrencyEnum.ESOM) ||
-            (from == CurrencyEnum.ESOM && to == CurrencyEnum.SOM)
-    }
-
-    private fun calculateSettingsSomEsomFee(amount: Double): Double {
-        if (amount <= 0.0) return 0.0
-        val settings = _settings.value as? UiState.Success<*> ?: return 0.0
-        val feeModel = settings.data as? FeeModel ?: return 0.0
-        val percent = feeModel.esomSomConversionFeePct?.coerceAtLeast(0.0) ?: 0.0
-        val minFee = feeModel.esomSomConversionFeeMin?.coerceAtLeast(0.0) ?: 0.0
-        val feeByPercent = amount * (percent / 100.0)
-        return maxOf(feeByPercent, minFee)
-    }
-
-    private fun somEsomSettingsFeeModel(): PaymentFeeModel? {
-        val settings = _settings.value as? UiState.Success<*> ?: return null
-        val feeModel = settings.data as? FeeModel ?: return null
-        val percent = feeModel.esomSomConversionFeePct?.coerceAtLeast(0.0) ?: 0.0
-        val minFee = feeModel.esomSomConversionFeeMin?.coerceAtLeast(0.0) ?: 0.0
-        return if (percent <= 0.0 && minFee <= 0.0) null else PaymentFeeModel(
-            operation = "SETTINGS_SOM_ESOM_CONVERT",
-            percentFee = percent,
-            fixedFee = minFee
-        )
     }
 
     fun convert(from: CurrencyEnum,

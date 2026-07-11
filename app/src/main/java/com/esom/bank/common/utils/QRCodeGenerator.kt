@@ -3,21 +3,20 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import com.esom.bank.common.utils.AppQrCode
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 
 object QRCodeGenerator {
-    private const val APP_QR_PREFIX = "ESOM_BANK_QR"
-
     fun generateCryptoQRCodeWithScheme(
         address: String,
         currency: CurrencyEnum,
         width: Int = 600,
         height: Int = 600
     ): Bitmap {
-        val qrContent = "$APP_QR_PREFIX|v=1|currency=${currency.name}|contact=$address"
+        val qrContent = AppQrCode.buildContent(address, currency)
         return generateRoundedQRCode(qrContent, width, height)
     }
 

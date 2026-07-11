@@ -9,6 +9,10 @@
         android:icon="@drawable/history_icon"
         android:title="@string/history"/>
     <item
+        android:id="@+id/ic_qr"
+        android:icon="@drawable/ic_qr_scan"
+        android:title="@string/qr"/>
+    <item
         android:id="@+id/ic_settings"
         android:icon="@drawable/profile_icon"
         android:title="@string/profile_title"/>

@@ -24,6 +24,7 @@ import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
 import com.esom.bank.common.utils.formatBalanceNew
+import com.esom.bank.common.utils.AppQrCode
 import com.esom.bank.common.utils.views.applyKyrgyzPhoneMask
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.isCompleteKyrgyzPhone
@@ -115,6 +116,10 @@ class TransferFragment : Fragment() {
             applyPhoneMask()
         } else {
             removePhoneMask()
+        }
+        if (args.contact.isNotBlank()) {
+            binding.contact.setText(args.contact)
+            binding.contact.setSelection(binding.contact.text?.length ?: 0)
         }
         model.getFees()
         initInitialBalances()
@@ -278,7 +283,12 @@ class TransferFragment : Fragment() {
     }
 
     private fun fillContactFromQr(rawContent: String) {
-        val contact = normalizeQrContact(rawContent)
+        val payload = AppQrCode.parsePayload(rawContent)
+        payload?.currency?.takeIf { it != currentFromCurrency }?.let { targetCurrency ->
+            toggleCurrency(targetCurrency)
+        }
+
+        val contact = payload?.contact ?: normalizeQrContact(rawContent)
         if (!isValidQrContact(contact)) {
             binding.root.showErrorSnackbar(getString(R.string.qr_scan_empty))
             return
@@ -291,6 +301,7 @@ class TransferFragment : Fragment() {
 
     private fun normalizeQrContact(rawContent: String): String {
         val value = rawContent.trim()
+        AppQrCode.parseContact(value)?.let { return it }
         parseInternalQrContact(value)?.let { return it }
 
         val schemeMatch = Regex("^([a-zA-Z][a-zA-Z0-9+.-]*):(.*)$")

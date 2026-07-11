@@ -32,6 +32,19 @@
         tools:layout="@layout/fragment_wallet" />
 
     <fragment
+        android:id="@+id/qrFragment"
+        android:name="com.esom.bank.screens.qr.QrFragment"
+        android:label="fragment_qr"
+        tools:layout="@layout/fragment_qr" />
+    <action
+        android:id="@+id/startQrFragment"
+        app:destination="@id/qrFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+
+    <fragment
         android:id="@+id/notificationFragment"
         android:name="com.esom.bank.screens.notification.NotificationFragment"
         tools:layout="@layout/fragment_notification"/>

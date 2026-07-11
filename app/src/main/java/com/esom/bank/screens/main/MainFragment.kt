@@ -44,6 +44,7 @@ class MainFragment : Fragment() {
             when (it.itemId) {
                 R.id.ic_wallet -> findMainNavController().navigate(MainNavGraphDirections.startWalletFragment())
                 R.id.ic_activity -> findMainNavController().navigate(MainNavGraphDirections.startHistoryFragment())
+                R.id.ic_qr -> findMainNavController().navigate(MainNavGraphDirections.startQrFragment())
                 R.id.ic_settings -> findMainNavController().navigate(MainNavGraphDirections.startSettingsFragment())
             }
             true
@@ -58,6 +59,9 @@ class MainFragment : Fragment() {
                     }
                     R.id.historyFragment -> {
                         binding.bottomNavigationView.selectedItemId = R.id.ic_activity
+                    }
+                    R.id.qrFragment -> {
+                        binding.bottomNavigationView.selectedItemId = R.id.ic_qr
                     }
                     R.id.settingsFragment -> {
                         binding.bottomNavigationView.selectedItemId = R.id.ic_settings

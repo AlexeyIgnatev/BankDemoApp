@@ -56,6 +56,10 @@
         <argument
             android:name="currency"
             app:argType="string"/>
+        <argument
+            android:name="contact"
+            android:defaultValue=""
+            app:argType="string" />
     </fragment>
 
     <action

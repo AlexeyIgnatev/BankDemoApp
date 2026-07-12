@@ -119,14 +119,24 @@ object PaymentFeeOperationResolver {
 
             from == CurrencyEnum.SOM && to == CurrencyEnum.USDT_TRC20 -> listOf(
                 CONVERT_SOM_TO_USDT_TRC20,
+                CONVERT_ESOM_TO_USDT_TRC20,
+                CONVERT_SALAM_TO_USDT_TRC20,
                 LEGACY_SOM_TO_USDT_TRC20,
+                LEGACY_ESOM_TO_USDT_TRC20,
+                LEGACY_SALAM_TO_USDT_TRC20,
                 "SOM_TO_USDT",
+                "ESOM_TO_USDT",
+                "SALAM_TO_USDT",
                 "SOM_TO_USDT_TRC20"
             )
 
             from == CurrencyEnum.USDT_TRC20 && to == CurrencyEnum.SOM -> listOf(
                 CONVERT_USDT_TRC20_TO_SOM,
+                CONVERT_USDT_TRC20_TO_ESOM,
+                CONVERT_USDT_TRC20_TO_SALAM,
                 LEGACY_USDT_TRC20_TO_SOM,
+                LEGACY_USDT_TRC20_TO_ESOM,
+                LEGACY_USDT_TRC20_TO_SALAM,
                 "USDT_TO_SOM"
             )
 

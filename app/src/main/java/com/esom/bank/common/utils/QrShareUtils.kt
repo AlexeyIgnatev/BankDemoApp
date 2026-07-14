@@ -244,12 +244,12 @@ object QrShareUtils {
     }
 
     fun buildTitle(currency: CurrencyEnum, name: String): String {
-        val base = when (currency) {
-            CurrencyEnum.SOM -> "QR-код для номера телефона"
-            CurrencyEnum.ESOM -> "QR-код для кошелька САЛАМ"
-            CurrencyEnum.USDT_TRC20 -> "QR-код для кошелька USDT"
+        val personSuffix = if (name.isBlank()) "" else " от $name"
+        return when (currency) {
+            CurrencyEnum.SOM -> "Это номер телефона$personSuffix"
+            CurrencyEnum.ESOM -> "Это кошелек САЛАМ$personSuffix"
+            CurrencyEnum.USDT_TRC20 -> "Это кошелек USDT$personSuffix"
         }
-        return if (name.isBlank()) base else "$base, $name"
     }
 
     fun shortUserName(firstName: String, middleName: String?, lastName: String): String {

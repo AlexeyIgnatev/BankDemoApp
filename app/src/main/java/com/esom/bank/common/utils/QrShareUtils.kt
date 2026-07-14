@@ -72,16 +72,16 @@ object QrShareUtils {
         val qrSize = min(900, width - ((padding + cardPadding) * 2).toInt())
 
         val titlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#1D1D1B")
+            color = Color.parseColor("#1A1A1A")
             textSize = titleSize
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            textAlign = Paint.Align.CENTER
+            textAlign = Paint.Align.LEFT
         }
         val subtitlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#777777")
             textSize = subtitleSize
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-            textAlign = Paint.Align.CENTER
+            textAlign = Paint.Align.LEFT
         }
         val footerPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#A5A5A5")
@@ -94,14 +94,13 @@ object QrShareUtils {
         val subtitleLayout = subtitle?.takeIf { it.isNotBlank() }?.let {
             buildTextLayout(it, subtitlePaint, width - (padding * 2).toInt())
         }
+        val headerHeight = titleLayout.height + 40f + (subtitleLayout?.height ?: 0) + if (subtitleLayout != null) 18f else 0f
         val footerLayoutHeight = 52f
         val cardHeight = qrSize + (cardPadding * 2)
         val height = (
             padding * 2 +
-            titleLayout.height +
-            18 +
-            (subtitleLayout?.height ?: 0) +
-            (if (subtitleLayout != null) 22 else 0) +
+            headerHeight +
+            10 +
             cardHeight +
             28 +
             footerLayoutHeight
@@ -112,10 +111,33 @@ object QrShareUtils {
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), bgPaint)
 
+        val contentLeft = padding
+        val contentRight = width - padding
         val centerX = width / 2f
         var y = padding
-        drawMultilineText(canvas, title, titlePaint, centerX, y, width - padding * 2)
-        y += titleLayout.height + 18f
+        val headerBottom = y + headerHeight
+        val headerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#FAFAFA")
+        }
+        val headerBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#EBEBEB")
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+        }
+        canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerPaint)
+        canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerBorderPaint)
+        canvas.drawRoundRect(
+            contentLeft + 18f,
+            y + 18f,
+            contentLeft + 92f,
+            y + 54f,
+            18f,
+            18f,
+            Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#E62324") }
+        )
+        canvas.drawText("Esom Bank", contentLeft + 104f, y + 43f, footerPaint)
+        drawMultilineText(canvas, title, titlePaint, centerX, y + 82f, width - padding * 2)
+        y += headerHeight + 10f
 
         subtitle?.takeIf { it.isNotBlank() }?.let {
             drawMultilineText(canvas, it, subtitlePaint, centerX, y, width - padding * 2)
@@ -143,8 +165,6 @@ object QrShareUtils {
         val qrLeft = cardLeft + cardPadding + ((cardRight - cardLeft) - (cardPadding * 2) - qrSize) / 2f
         val qrTop = cardTop + cardPadding
         canvas.drawBitmap(scaledQr, qrLeft, qrTop, null)
-
-        canvas.drawText("Esom Bank", centerX, cardBottom + 50f, footerPaint)
 
         if (scaledQr !== qrBitmap) scaledQr.recycle()
         return bitmap

@@ -25,6 +25,7 @@ import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.format
 import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.AppQrCode
+import com.esom.bank.common.utils.QrShareUtils
 import com.esom.bank.common.utils.views.applyKyrgyzPhoneMask
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.isCompleteKyrgyzPhone
@@ -397,22 +398,14 @@ class TransferFragment : Fragment() {
             BitmapFactory.decodeStream(input)
         } ?: return null
         return runCatching {
-            decodeQrFromBitmap(bitmap)
+            QrShareUtils.decodeQrFromBitmap(bitmap)
         }.getOrNull().also {
             bitmap.recycle()
         }
     }
 
     private fun decodeQrFromBitmap(bitmap: Bitmap): String? {
-        val pixels = IntArray(bitmap.width * bitmap.height)
-        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-        val source = RGBLuminanceSource(bitmap.width, bitmap.height, pixels)
-        val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
-        val hints = mapOf(
-            DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
-            DecodeHintType.TRY_HARDER to true
-        )
-        return MultiFormatReader().decode(binaryBitmap, hints).text
+        return QrShareUtils.decodeQrFromBitmap(bitmap)
     }
 
     private fun firstNotBlank(vararg values: String?): String =

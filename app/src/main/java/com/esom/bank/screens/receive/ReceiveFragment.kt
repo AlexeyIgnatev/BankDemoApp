@@ -17,6 +17,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
+import com.esom.bank.common.utils.QrShareUtils
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showSuccessSnackbar
 import com.esom.bank.databinding.FragmentReceiveBinding
@@ -98,5 +99,29 @@ class ReceiveFragment : Fragment() {
             else
                 binding.root.showSuccessSnackbar(getString(R.string.adres_success_copy))
         }
+
+        binding.shareBtn.setOnClickListener {
+            shareQrCode(currency, args.contact)
+        }
+    }
+
+    private fun shareQrCode(currency: CurrencyEnum, address: String) {
+        val user = (model.myData.value as? UiState.Success)?.data
+        val shortName = user?.let {
+            QrShareUtils.shortUserName(it.firstName, it.middleName, it.lastName)
+        }.orEmpty()
+        val title = QrShareUtils.buildTitle(currency, shortName)
+        val qrBitmap = QrShareUtils.createQrBitmap(address, currency)
+        val shareBitmap = QrShareUtils.createShareBitmap(
+            title = title,
+            subtitle = null,
+            qrBitmap = qrBitmap
+        )
+        QrShareUtils.shareBitmap(
+            context = requireContext(),
+            bitmap = shareBitmap,
+            fileNamePrefix = "receive_${currency.name.lowercase()}",
+            chooserTitle = getString(R.string.share)
+        )
     }
 }

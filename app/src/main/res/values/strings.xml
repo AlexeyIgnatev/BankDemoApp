@@ -103,6 +103,7 @@
     <string name="qr_salam_title">QR для кошелька SALAM</string>
     <string name="qr_usdt_title">QR для кошелька USDT</string>
     <string name="qr_copy">Скопировать</string>
+    <string name="share">Поделиться</string>
     <string name="qr_copy_phone">Номер телефона скопирован</string>
     <string name="qr_copy_address">Адрес кошелька скопирован</string>
     <string name="qr_invalid_scan">Это не QR-код из приложения</string>

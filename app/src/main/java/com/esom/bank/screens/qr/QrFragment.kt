@@ -5,8 +5,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +22,7 @@ import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.AppQrCode
+import com.esom.bank.common.utils.QrShareUtils
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.showSuccessSnackbar
@@ -31,14 +30,9 @@ import com.esom.bank.databinding.FragmentQrBinding
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.main.model.UserModel
 import com.esom.bank.screens.settigns.SettingsFragment.Companion.formatPhone
 import com.google.android.material.button.MaterialButton
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.DecodeHintType
-import com.google.zxing.MultiFormatReader
-import com.google.zxing.RGBLuminanceSource
-import com.google.zxing.common.HybridBinarizer
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,6 +45,7 @@ class QrFragment : Fragment() {
     private var phone: String = ""
     private var salamAddress: String = ""
     private var usdtAddress: String = ""
+    private var currentUser: UserModel? = null
 
     private val qrCameraLauncher = registerForActivityResult(ScanContract()) { result ->
         handleScannedContent(result.contents)
@@ -116,11 +111,13 @@ class QrFragment : Fragment() {
     private fun observeUserData() {
         model.myData.observe(viewLifecycleOwner) { state ->
             if (state is UiState.Success) {
+                currentUser = state.data
                 renderUserQrCodes(state.data.phone, state.data.wallets.find { it.currency == CurrencyEnum.ESOM }?.address.orEmpty(), state.data.wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }?.address.orEmpty())
             }
         }
 
         (model.myData.value as? UiState.Success)?.data?.let { user ->
+            currentUser = user
             renderUserQrCodes(
                 phone = user.phone,
                 salam = user.wallets.find { it.currency == CurrencyEnum.ESOM }?.address.orEmpty(),
@@ -138,9 +135,11 @@ class QrFragment : Fragment() {
             image = binding.phoneQrImage,
             value = binding.phoneQrValue,
             button = binding.phoneQrCopyBtn,
+            shareButton = binding.phoneQrShareBtn,
             text = if (phone.isBlank()) getString(R.string.empty_value) else phone.formatPhone(),
             copyText = phone,
             copySuccessMessage = getString(R.string.qr_copy_phone),
+            shareCurrency = CurrencyEnum.SOM,
             bitmap = if (phone.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
                 address = phone,
                 currency = CurrencyEnum.SOM,
@@ -152,9 +151,11 @@ class QrFragment : Fragment() {
             image = binding.salamQrImage,
             value = binding.salamQrValue,
             button = binding.salamQrCopyBtn,
+            shareButton = binding.salamQrShareBtn,
             text = if (salam.isBlank()) getString(R.string.empty_value) else salam,
             copyText = salam,
             copySuccessMessage = getString(R.string.qr_copy_address),
+            shareCurrency = CurrencyEnum.ESOM,
             bitmap = if (salam.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
                 address = salam,
                 currency = CurrencyEnum.ESOM,
@@ -166,9 +167,11 @@ class QrFragment : Fragment() {
             image = binding.usdtQrImage,
             value = binding.usdtQrValue,
             button = binding.usdtQrCopyBtn,
+            shareButton = binding.usdtQrShareBtn,
             text = if (usdt.isBlank()) getString(R.string.empty_value) else usdt,
             copyText = usdt,
             copySuccessMessage = getString(R.string.qr_copy_address),
+            shareCurrency = CurrencyEnum.USDT_TRC20,
             bitmap = if (usdt.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
                 address = usdt,
                 currency = CurrencyEnum.USDT_TRC20,
@@ -182,9 +185,11 @@ class QrFragment : Fragment() {
         image: ImageView,
         value: android.widget.TextView,
         button: MaterialButton,
+        shareButton: MaterialButton,
         text: String,
         copyText: String,
         copySuccessMessage: String,
+        shareCurrency: CurrencyEnum,
         bitmap: Bitmap?
     ) {
         value.text = text
@@ -194,11 +199,16 @@ class QrFragment : Fragment() {
             image.setImageResource(R.drawable.qr_code)
         }
         button.isEnabled = copyText.isNotBlank()
+        shareButton.isEnabled = copyText.isNotBlank()
         button.setOnClickListener {
             if (copyText.isBlank()) return@setOnClickListener
             val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             clipboard.setPrimaryClip(ClipData.newPlainText(copyText, copyText))
             binding.root.showSuccessSnackbar(copySuccessMessage)
+        }
+        shareButton.setOnClickListener {
+            if (copyText.isBlank()) return@setOnClickListener
+            shareQrCode(copyText, shareCurrency)
         }
     }
 
@@ -243,27 +253,35 @@ class QrFragment : Fragment() {
         )
     }
 
-    private fun decodeQrFromImageUri(uri: Uri): String? {
+    private fun decodeQrFromImageUri(uri: android.net.Uri): String? {
         val bitmap = requireContext().contentResolver.openInputStream(uri)?.use { input ->
-            BitmapFactory.decodeStream(input)
+            android.graphics.BitmapFactory.decodeStream(input)
         } ?: return null
 
         return runCatching {
-            decodeQrFromBitmap(bitmap)
+            QrShareUtils.decodeQrFromBitmap(bitmap)
         }.getOrNull().also {
             bitmap.recycle()
         }
     }
 
-    private fun decodeQrFromBitmap(bitmap: Bitmap): String? {
-        val pixels = IntArray(bitmap.width * bitmap.height)
-        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-        val source = RGBLuminanceSource(bitmap.width, bitmap.height, pixels)
-        val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
-        val hints = mapOf(
-            DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
-            DecodeHintType.TRY_HARDER to true
+    private fun shareQrCode(address: String, currency: CurrencyEnum) {
+        val user = currentUser ?: (model.myData.value as? UiState.Success)?.data
+        val displayName = user?.let {
+            QrShareUtils.shortUserName(it.firstName, it.middleName, it.lastName)
+        }.orEmpty()
+        val title = QrShareUtils.buildTitle(currency, displayName)
+        val qrBitmap = QrShareUtils.createQrBitmap(address, currency)
+        val shareBitmap = QrShareUtils.createShareBitmap(
+            title = title,
+            subtitle = null,
+            qrBitmap = qrBitmap
         )
-        return MultiFormatReader().decode(binaryBitmap, hints).text
+        QrShareUtils.shareBitmap(
+            context = requireContext(),
+            bitmap = shareBitmap,
+            fileNamePrefix = "qr_${currency.name.lowercase()}",
+            chooserTitle = getString(R.string.share)
+        )
     }
 }

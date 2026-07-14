@@ -272,6 +272,22 @@
                             android:text="@string/qr_copy"
                             android:textAllCaps="false"
                             android:textColor="#E62324"
+                            app:layout_constraintEnd_toStartOf="@id/phone_qr_share_btn"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/phone_qr_share_btn"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minHeight="0dp"
+                            android:paddingHorizontal="@dimen/_6dp"
+                            android:text="@string/share"
+                            android:textAllCaps="false"
+                            android:textColor="#E62324"
+                            app:icon="@drawable/ic_share_success"
+                            app:iconPadding="@dimen/_4dp"
+                            app:iconTint="#E62324"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -340,6 +356,22 @@
                             android:text="@string/qr_copy"
                             android:textAllCaps="false"
                             android:textColor="#E62324"
+                            app:layout_constraintEnd_toStartOf="@id/salam_qr_share_btn"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/salam_qr_share_btn"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minHeight="0dp"
+                            android:paddingHorizontal="@dimen/_6dp"
+                            android:text="@string/share"
+                            android:textAllCaps="false"
+                            android:textColor="#E62324"
+                            app:icon="@drawable/ic_share_success"
+                            app:iconPadding="@dimen/_4dp"
+                            app:iconTint="#E62324"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -407,6 +439,22 @@
                             android:text="@string/qr_copy"
                             android:textAllCaps="false"
                             android:textColor="#E62324"
+                            app:layout_constraintEnd_toStartOf="@id/usdt_qr_share_btn"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/usdt_qr_share_btn"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minHeight="0dp"
+                            android:paddingHorizontal="@dimen/_6dp"
+                            android:text="@string/share"
+                            android:textAllCaps="false"
+                            android:textColor="#E62324"
+                            app:icon="@drawable/ic_share_success"
+                            app:iconPadding="@dimen/_4dp"
+                            app:iconTint="#E62324"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 

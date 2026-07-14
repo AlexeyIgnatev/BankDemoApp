@@ -75,13 +75,13 @@ object QrShareUtils {
             color = Color.parseColor("#1A1A1A")
             textSize = titleSize
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            textAlign = Paint.Align.LEFT
+            textAlign = Paint.Align.CENTER
         }
         val subtitlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#777777")
             textSize = subtitleSize
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-            textAlign = Paint.Align.LEFT
+            textAlign = Paint.Align.CENTER
         }
         val footerPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#A5A5A5")
@@ -90,11 +90,14 @@ object QrShareUtils {
             textAlign = Paint.Align.CENTER
         }
 
-        val titleLayout = buildTextLayout(title, titlePaint, width - (padding * 2).toInt())
-        val subtitleLayout = subtitle?.takeIf { it.isNotBlank() }?.let {
-            buildTextLayout(it, subtitlePaint, width - (padding * 2).toInt())
-        }
-        val headerHeight = titleLayout.height + 40f + (subtitleLayout?.height ?: 0) + if (subtitleLayout != null) 18f else 0f
+        val titleMaxWidth = width - (padding * 2).toInt()
+        val subtitleMaxWidth = width - (padding * 2).toInt()
+        val fittedTitlePaint = titlePaint.fittedCopyForWidth(title, titleMaxWidth, 58f, 36f)
+        val fittedSubtitlePaint =
+            subtitle?.takeIf { it.isNotBlank() }?.let {
+                subtitlePaint.fittedCopyForWidth(it, subtitleMaxWidth, 36f, 24f)
+            }
+        val headerHeight = 160f + if (fittedSubtitlePaint != null) 48f else 0f
         val footerLayoutHeight = 52f
         val cardHeight = qrSize + (cardPadding * 2)
         val height = (
@@ -127,23 +130,24 @@ object QrShareUtils {
         canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerPaint)
         canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerBorderPaint)
         canvas.drawRoundRect(
-            contentLeft + 18f,
-            y + 18f,
-            contentLeft + 92f,
-            y + 54f,
+            contentLeft + 24f,
+            y + 24f,
+            contentLeft + 98f,
+            y + 58f,
             18f,
             18f,
             Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#E62324") }
         )
-        canvas.drawText("Esom Bank", contentLeft + 104f, y + 43f, footerPaint)
-        drawMultilineText(canvas, title, titlePaint, centerX, y + 82f, width - padding * 2)
-        y += headerHeight + 10f
+        canvas.drawText("Esom Bank", contentLeft + 112f, y + 49f, footerPaint)
+        drawCenteredFitText(canvas, title, fittedTitlePaint, centerX, y + 112f, titleMaxWidth)
 
-        subtitle?.takeIf { it.isNotBlank() }?.let {
-            drawMultilineText(canvas, it, subtitlePaint, centerX, y, width - padding * 2)
-            y += subtitleLayout?.height?.toFloat() ?: 0f
-            y += 22f
+        fittedSubtitlePaint?.let { paint ->
+            subtitle?.takeIf { it.isNotBlank() }?.let {
+                drawCenteredFitText(canvas, it, paint, centerX, y + 154f, subtitleMaxWidth)
+            }
         }
+
+        y += headerHeight + 10f
 
         val scaledQr = Bitmap.createScaledBitmap(qrBitmap, qrSize, qrSize, true)
         val cardLeft = padding
@@ -261,6 +265,41 @@ object QrShareUtils {
             .setLineSpacing(0f, 1.12f)
             .setIncludePad(false)
             .build()
+    }
+
+    private fun TextPaint.fittedCopyForWidth(
+        text: String,
+        maxWidth: Int,
+        startSize: Float,
+        minSize: Float
+    ): TextPaint {
+        val paint = TextPaint(this)
+        var size = startSize
+        paint.textSize = size
+        while (size > minSize && paint.measureText(text) > maxWidth) {
+            size -= 1f
+            paint.textSize = size
+        }
+        return paint
+    }
+
+    private fun drawCenteredFitText(
+        canvas: Canvas,
+        text: String,
+        paint: TextPaint,
+        centerX: Float,
+        baselineY: Float,
+        maxWidth: Int
+    ) {
+        if (paint.measureText(text) <= maxWidth) {
+            canvas.drawText(text, centerX, baselineY, paint)
+            return
+        }
+        val scale = max(0.72f, maxWidth / paint.measureText(text))
+        val fitted = TextPaint(paint).apply {
+            textSize = paint.textSize * scale
+        }
+        canvas.drawText(text, centerX, baselineY, fitted)
     }
 
     fun buildTitle(currency: CurrencyEnum, name: String): String {

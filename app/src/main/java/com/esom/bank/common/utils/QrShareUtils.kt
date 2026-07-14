@@ -83,12 +83,6 @@ object QrShareUtils {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
             textAlign = Paint.Align.CENTER
         }
-        val footerPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#A5A5A5")
-            textSize = 32f
-            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            textAlign = Paint.Align.CENTER
-        }
 
         val titleMaxWidth = width - (padding * 2).toInt()
         val subtitleMaxWidth = width - (padding * 2).toInt()
@@ -129,16 +123,6 @@ object QrShareUtils {
         }
         canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerPaint)
         canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerBorderPaint)
-        canvas.drawRoundRect(
-            contentLeft + 24f,
-            y + 24f,
-            contentLeft + 98f,
-            y + 58f,
-            18f,
-            18f,
-            Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#E62324") }
-        )
-        canvas.drawText("Esom Bank", contentLeft + 112f, y + 49f, footerPaint)
         drawCenteredFitText(canvas, title, fittedTitlePaint, centerX, y + 112f, titleMaxWidth)
 
         fittedSubtitlePaint?.let { paint ->

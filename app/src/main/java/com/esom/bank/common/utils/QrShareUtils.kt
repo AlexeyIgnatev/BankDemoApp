@@ -5,13 +5,19 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.text.TextPaint
 import androidx.core.content.FileProvider
+import androidx.appcompat.content.res.AppCompatResources
 import com.esom.bank.BuildConfig
+import com.esom.bank.R
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
@@ -59,17 +65,21 @@ object QrShareUtils {
     }
 
     fun createShareBitmap(
+        context: Context,
         title: String,
         subtitle: String? = null,
         qrBitmap: Bitmap
     ): Bitmap {
         val width = 1280
-        val padding = 84f
+        val padding = 80f
         val titleSize = 58f
-        val subtitleSize = 36f
+        val subtitleSize = 34f
         val cardRadius = 44f
         val cardPadding = 44f
-        val qrSize = min(900, width - ((padding + cardPadding) * 2).toInt())
+        val qrSize = min(880, width - ((padding + cardPadding) * 2).toInt())
+        val logoBoxSize = 156f
+        val logoSize = 94
+        val headerGap = 22f
 
         val titlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#1A1A1A")
@@ -91,7 +101,7 @@ object QrShareUtils {
             subtitle?.takeIf { it.isNotBlank() }?.let {
                 subtitlePaint.fittedCopyForWidth(it, subtitleMaxWidth, 36f, 24f)
             }
-        val headerHeight = 160f + if (fittedSubtitlePaint != null) 48f else 0f
+        val headerHeight = 250f + if (fittedSubtitlePaint != null) 42f else 0f
         val footerLayoutHeight = 52f
         val cardHeight = qrSize + (cardPadding * 2)
         val height = (
@@ -108,30 +118,62 @@ object QrShareUtils {
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), bgPaint)
 
+        val gradientPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = LinearGradient(
+                0f,
+                0f,
+                width.toFloat(),
+                height.toFloat(),
+                intArrayOf(
+                    Color.parseColor("#FFFDFD"),
+                    Color.parseColor("#FFF5F7"),
+                    Color.parseColor("#FFFFFF")
+                ),
+                floatArrayOf(0f, 0.45f, 1f),
+                Shader.TileMode.CLAMP
+            )
+        }
+        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
+
+        val accentPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#FDE8EC")
+            alpha = 160
+        }
+        canvas.drawCircle(width * 0.12f, height * 0.12f, 140f, accentPaint)
+        canvas.drawCircle(width * 0.90f, height * 0.88f, 180f, accentPaint)
+
         val contentLeft = padding
         val contentRight = width - padding
         val centerX = width / 2f
         var y = padding
         val headerBottom = y + headerHeight
         val headerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#FAFAFA")
+            color = Color.WHITE
         }
         val headerBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#EBEBEB")
+            color = Color.parseColor("#F0D9DE")
             style = Paint.Style.STROKE
             strokeWidth = 3f
         }
         canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerPaint)
         canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerBorderPaint)
-        drawCenteredFitText(canvas, title, fittedTitlePaint, centerX, y + 112f, titleMaxWidth)
+        drawLogoBadge(
+            context = context,
+            canvas = canvas,
+            centerX = centerX,
+            top = y + 32f,
+            boxSize = logoBoxSize,
+            iconSize = logoSize,
+        )
+        drawCenteredFitText(canvas, title, fittedTitlePaint, centerX, y + 192f, titleMaxWidth)
 
         fittedSubtitlePaint?.let { paint ->
             subtitle?.takeIf { it.isNotBlank() }?.let {
-                drawCenteredFitText(canvas, it, paint, centerX, y + 154f, subtitleMaxWidth)
+                drawCenteredFitText(canvas, it, paint, centerX, y + 238f, subtitleMaxWidth)
             }
         }
 
-        y += headerHeight + 10f
+        y += headerHeight + headerGap
 
         val scaledQr = Bitmap.createScaledBitmap(qrBitmap, qrSize, qrSize, true)
         val cardLeft = padding
@@ -143,7 +185,7 @@ object QrShareUtils {
             setShadowLayer(18f, 0f, 8f, 0x18000000)
         }
         val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#E8E8E8")
+            color = Color.parseColor("#F1DDE2")
             style = Paint.Style.STROKE
             strokeWidth = 3f
         }
@@ -284,6 +326,50 @@ object QrShareUtils {
             textSize = paint.textSize * scale
         }
         canvas.drawText(text, centerX, baselineY, fitted)
+    }
+
+    private fun drawLogoBadge(
+        context: Context,
+        canvas: Canvas,
+        centerX: Float,
+        top: Float,
+        boxSize: Float,
+        iconSize: Int
+    ) {
+        val logoBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            setShadowLayer(20f, 0f, 10f, 0x22000000)
+        }
+        val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#FFE0E6")
+            style = Paint.Style.STROKE
+            strokeWidth = 4f
+        }
+        val left = centerX - boxSize / 2f
+        val right = centerX + boxSize / 2f
+        val bottom = top + boxSize
+        val rect = RectF(left, top, right, bottom)
+        canvas.drawRoundRect(rect, boxSize / 2f, boxSize / 2f, logoBgPaint)
+        canvas.drawRoundRect(rect, boxSize / 2f, boxSize / 2f, ringPaint)
+
+        val drawable = AppCompatResources.getDrawable(context, R.drawable.ic_launcher_new_foreground)
+            ?: AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)
+            ?: return
+        val iconBitmap = drawable.toBitmap(iconSize, iconSize)
+        val iconLeft = centerX - iconSize / 2f
+        val iconTop = top + (boxSize - iconSize) / 2f
+        canvas.drawBitmap(iconBitmap, iconLeft, iconTop, null)
+        if (iconBitmap.isRecycled.not()) {
+            iconBitmap.recycle()
+        }
+    }
+
+    private fun Drawable.toBitmap(width: Int, height: Int): Bitmap {
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        setBounds(0, 0, width, height)
+        draw(canvas)
+        return bitmap
     }
 
     fun buildTitle(currency: CurrencyEnum, name: String): String {

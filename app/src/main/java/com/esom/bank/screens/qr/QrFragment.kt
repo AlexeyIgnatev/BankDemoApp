@@ -273,6 +273,7 @@ class QrFragment : Fragment() {
         val title = QrShareUtils.buildTitle(currency, displayName)
         val qrBitmap = QrShareUtils.createQrBitmap(address, currency)
         val shareBitmap = QrShareUtils.createShareBitmap(
+            context = requireContext(),
             title = title,
             subtitle = null,
             qrBitmap = qrBitmap

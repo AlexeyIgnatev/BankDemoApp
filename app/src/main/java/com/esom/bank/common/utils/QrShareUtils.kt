@@ -123,9 +123,9 @@ object QrShareUtils {
                 width.toFloat(),
                 height.toFloat(),
                 intArrayOf(
-                    Color.parseColor("#FFFDFD"),
-                    Color.parseColor("#F7FBFF"),
-                    Color.parseColor("#FFF6F8")
+                    Color.parseColor("#FBFFFD"),
+                    Color.parseColor("#F0FFF6"),
+                    Color.parseColor("#F7FFF9")
                 ),
                 floatArrayOf(0f, 0.52f, 1f),
                 Shader.TileMode.CLAMP
@@ -134,8 +134,8 @@ object QrShareUtils {
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
 
         val accentPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#E7F0FF")
-            alpha = 170
+            color = Color.parseColor("#D7F5E1")
+            alpha = 150
         }
         canvas.drawCircle(width * 0.12f, height * 0.12f, 160f, accentPaint)
         canvas.drawCircle(width * 0.90f, height * 0.86f, 200f, accentPaint)
@@ -149,7 +149,7 @@ object QrShareUtils {
             color = Color.parseColor("#FFFCFD")
         }
         val headerBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#DCE8FF")
+            color = Color.parseColor("#C9EED6")
             style = Paint.Style.STROKE
             strokeWidth = 3f
         }
@@ -157,12 +157,12 @@ object QrShareUtils {
         canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerBorderPaint)
 
         val pillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#EEF5FF")
+            color = Color.parseColor("#E6F8EC")
         }
         val pillRect = RectF(centerX - 138f, y + 28f, centerX + 138f, y + 78f)
         canvas.drawRoundRect(pillRect, 25f, 25f, pillPaint)
         val pillTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#2D6AE3")
+            color = Color.parseColor("#1A8E4D")
             textSize = 22f
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textAlign = Paint.Align.CENTER
@@ -197,7 +197,7 @@ object QrShareUtils {
             setShadowLayer(18f, 0f, 8f, 0x18000000)
         }
         val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#DCE8FF")
+            color = Color.parseColor("#C9EED6")
             style = Paint.Style.STROKE
             strokeWidth = 3f
         }
@@ -349,7 +349,7 @@ object QrShareUtils {
             setShadowLayer(20f, 0f, 10f, 0x22000000)
         }
         val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#FFE0E6")
+            color = Color.parseColor("#BEE9CF")
             style = Paint.Style.STROKE
             strokeWidth = 4f
         }
@@ -360,7 +360,10 @@ object QrShareUtils {
         canvas.drawRoundRect(rect, boxSize / 2f, boxSize / 2f, logoBgPaint)
         canvas.drawRoundRect(rect, boxSize / 2f, boxSize / 2f, ringPaint)
 
-        val drawable = AppCompatResources.getDrawable(context, R.drawable.ic_launcher_new_foreground)
+        val drawable = runCatching { context.packageManager.getApplicationIcon(context.packageName) }
+            .getOrNull()
+            ?: AppCompatResources.getDrawable(context, R.mipmap.ic_launcher_new)
+            ?: AppCompatResources.getDrawable(context, R.drawable.ic_launcher_new_foreground)
             ?: AppCompatResources.getDrawable(context, R.drawable.ic_launcher_foreground)
             ?: return
         val iconBitmap = drawable.toBitmap(iconSize, iconSize)

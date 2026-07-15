@@ -72,26 +72,24 @@ object QrShareUtils {
     ): Bitmap {
         val width = 1280
         val padding = 80f
-        val titleSize = 58f
+        val titleSize = 64f
         val subtitleSize = 34f
-        val cardRadius = 44f
-        val cardPadding = 44f
-        val qrSize = min(880, width - ((padding + cardPadding) * 2).toInt())
-        val logoBoxSize = 156f
-        val logoSize = 94
-        val headerGap = 22f
+        val cardRadius = 48f
+        val cardPadding = 52f
+        val qrSize = min(860, width - ((padding + cardPadding) * 2).toInt())
+        val logoBoxSize = 124f
+        val logoSize = 72
+        val headerGap = 28f
 
         val titlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#1A1A1A")
             textSize = titleSize
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            textAlign = Paint.Align.CENTER
         }
         val subtitlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#777777")
+            color = Color.parseColor("#6F6F7A")
             textSize = subtitleSize
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-            textAlign = Paint.Align.CENTER
         }
 
         val titleMaxWidth = width - (padding * 2).toInt()
@@ -101,7 +99,7 @@ object QrShareUtils {
             subtitle?.takeIf { it.isNotBlank() }?.let {
                 subtitlePaint.fittedCopyForWidth(it, subtitleMaxWidth, 36f, 24f)
             }
-        val headerHeight = 250f + if (fittedSubtitlePaint != null) 42f else 0f
+        val headerHeight = 316f + if (fittedSubtitlePaint != null) 44f else 0f
         val footerLayoutHeight = 52f
         val cardHeight = qrSize + (cardPadding * 2)
         val height = (
@@ -126,21 +124,21 @@ object QrShareUtils {
                 height.toFloat(),
                 intArrayOf(
                     Color.parseColor("#FFFDFD"),
-                    Color.parseColor("#FFF5F7"),
-                    Color.parseColor("#FFFFFF")
+                    Color.parseColor("#F7FBFF"),
+                    Color.parseColor("#FFF6F8")
                 ),
-                floatArrayOf(0f, 0.45f, 1f),
+                floatArrayOf(0f, 0.52f, 1f),
                 Shader.TileMode.CLAMP
             )
         }
         canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
 
         val accentPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#FDE8EC")
-            alpha = 160
+            color = Color.parseColor("#E7F0FF")
+            alpha = 170
         }
-        canvas.drawCircle(width * 0.12f, height * 0.12f, 140f, accentPaint)
-        canvas.drawCircle(width * 0.90f, height * 0.88f, 180f, accentPaint)
+        canvas.drawCircle(width * 0.12f, height * 0.12f, 160f, accentPaint)
+        canvas.drawCircle(width * 0.90f, height * 0.86f, 200f, accentPaint)
 
         val contentLeft = padding
         val contentRight = width - padding
@@ -148,28 +146,42 @@ object QrShareUtils {
         var y = padding
         val headerBottom = y + headerHeight
         val headerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
+            color = Color.parseColor("#FFFCFD")
         }
         val headerBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#F0D9DE")
+            color = Color.parseColor("#DCE8FF")
             style = Paint.Style.STROKE
             strokeWidth = 3f
         }
         canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerPaint)
         canvas.drawRoundRect(contentLeft, y, contentRight, headerBottom, 36f, 36f, headerBorderPaint)
+
+        val pillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#EEF5FF")
+        }
+        val pillRect = RectF(centerX - 138f, y + 28f, centerX + 138f, y + 78f)
+        canvas.drawRoundRect(pillRect, 25f, 25f, pillPaint)
+        val pillTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.parseColor("#2D6AE3")
+            textSize = 22f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textAlign = Paint.Align.CENTER
+        }
+        canvas.drawText("QR для перевода", centerX, y + 60f, pillTextPaint)
+
         drawLogoBadge(
             context = context,
             canvas = canvas,
             centerX = centerX,
-            top = y + 32f,
+            top = y + 100f,
             boxSize = logoBoxSize,
             iconSize = logoSize,
         )
-        drawCenteredFitText(canvas, title, fittedTitlePaint, centerX, y + 192f, titleMaxWidth)
+        drawMultilineCenteredText(canvas, title, fittedTitlePaint, centerX, y + 240f, titleMaxWidth)
 
         fittedSubtitlePaint?.let { paint ->
             subtitle?.takeIf { it.isNotBlank() }?.let {
-                drawCenteredFitText(canvas, it, paint, centerX, y + 238f, subtitleMaxWidth)
+                drawMultilineCenteredText(canvas, it, paint, centerX, y + 314f, subtitleMaxWidth)
             }
         }
 
@@ -185,7 +197,7 @@ object QrShareUtils {
             setShadowLayer(18f, 0f, 8f, 0x18000000)
         }
         val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#F1DDE2")
+            color = Color.parseColor("#DCE8FF")
             style = Paint.Style.STROKE
             strokeWidth = 3f
         }
@@ -309,23 +321,19 @@ object QrShareUtils {
         return paint
     }
 
-    private fun drawCenteredFitText(
+    private fun drawMultilineCenteredText(
         canvas: Canvas,
         text: String,
         paint: TextPaint,
         centerX: Float,
-        baselineY: Float,
+        top: Float,
         maxWidth: Int
     ) {
-        if (paint.measureText(text) <= maxWidth) {
-            canvas.drawText(text, centerX, baselineY, paint)
-            return
-        }
-        val scale = max(0.72f, maxWidth / paint.measureText(text))
-        val fitted = TextPaint(paint).apply {
-            textSize = paint.textSize * scale
-        }
-        canvas.drawText(text, centerX, baselineY, fitted)
+        val layout = buildTextLayout(text, paint, maxWidth)
+        canvas.save()
+        canvas.translate(centerX - maxWidth / 2f, top)
+        layout.draw(canvas)
+        canvas.restore()
     }
 
     private fun drawLogoBadge(

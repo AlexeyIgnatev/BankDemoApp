@@ -73,7 +73,7 @@ object ReceiptFileUtils {
         drawHeader(canvas, context, boldTypeface)
         drawStatusChip(canvas, receipt, mediumTypeface)
         drawAmount(canvas, receipt, boldTypeface, regularTypeface)
-        drawDetails(canvas, receipt, mediumTypeface, regularTypeface)
+        drawDetails(canvas, context, receipt, mediumTypeface, regularTypeface)
         drawSeal(canvas, context)
 
         return bitmap
@@ -191,6 +191,7 @@ object ReceiptFileUtils {
 
     private fun drawDetails(
         canvas: Canvas,
+        context: Context,
         receipt: ReceiptModel,
         labelTypeface: Typeface,
         valueTypeface: Typeface

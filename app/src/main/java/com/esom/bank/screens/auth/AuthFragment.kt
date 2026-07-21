@@ -13,6 +13,7 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.lifecycle.lifecycleScope
 import com.esom.bank.BuildConfig
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
@@ -23,6 +24,9 @@ import com.esom.bank.databinding.FragmentAuthBinding
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -96,21 +100,35 @@ class AuthFragment : Fragment() {
             }
         }
 
-        if (model.isAuthenticated()) {
-            navigateToLockFlow()
+        checkInitialAuthState()
+    }
+
+    private fun checkInitialAuthState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val shouldNavigate = withContext(Dispatchers.IO) {
+                model.isAuthenticated()
+            }
+            if (shouldNavigate) {
+                navigateToLockFlow()
+            }
         }
     }
 
     private fun navigateToLockFlow() {
         if (findNavController().currentDestination?.id != R.id.authFragment) return
 
-        if (pinLocalDataSource.hasLock()) {
-            findNavController().navigate(NavGraphDirections.startLogInFragment())
-        } else {
-            findNavController().navigate(
-                R.id.startPinCreateFragment,
-                bundleOf("fromSettings" to false)
-            )
+        viewLifecycleOwner.lifecycleScope.launch {
+            val hasLock = withContext(Dispatchers.IO) {
+                pinLocalDataSource.hasLock()
+            }
+            if (hasLock) {
+                findNavController().navigate(NavGraphDirections.startLogInFragment())
+            } else {
+                findNavController().navigate(
+                    R.id.startPinCreateFragment,
+                    bundleOf("fromSettings" to false)
+                )
+            }
         }
     }
 }

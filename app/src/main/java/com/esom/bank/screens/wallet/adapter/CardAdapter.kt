@@ -32,11 +32,10 @@ class CardAdapter(
             binding.convertBtn.setOnClickListener { onTransferClick(item.currency) }
             binding.acceptBtn.setOnClickListener { onReceiveClick(item.currency) }
             binding.newConvertBtn.setOnClickListener {
-                onSwapClick(
-                    CurrencyEnum.ESOM,
-                    item.currency
-                )
+                val (fromCurrency, toCurrency) = getSwapCurrencies(item.currency)
+                onSwapClick(fromCurrency, toCurrency)
             }
+            binding.convertTitle.text = getConvertTitle(item.currency)
 
             when (item.currency) {
                 CurrencyEnum.SOM -> {
@@ -53,7 +52,6 @@ class CardAdapter(
                     binding.somCount.text = item.balance.formatBalanceNew()
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
-                    binding.convertTitle.text = context.getString(R.string.buy_usdt)
                 }
 
                 CurrencyEnum.ESOM -> {
@@ -62,7 +60,6 @@ class CardAdapter(
                     binding.somCount.text = item.balance.formatBalanceNew()
                     binding.cardNumberIcon.setImageResource(R.drawable.wallet_icon)
                     binding.somIconMonth.visibility = View.GONE
-                    binding.convertTitle.text = context.getString(R.string.convert_to_salam)
                 }
             }
 
@@ -74,6 +71,20 @@ class CardAdapter(
                 else -> "*${item.address.takeLast(3)}"
             }
         }
+
+        private fun getSwapCurrencies(currency: CurrencyEnum): Pair<CurrencyEnum, CurrencyEnum> =
+            when (currency) {
+                CurrencyEnum.SOM -> CurrencyEnum.SOM to CurrencyEnum.ESOM
+                CurrencyEnum.ESOM -> CurrencyEnum.ESOM to CurrencyEnum.SOM
+                CurrencyEnum.USDT_TRC20 -> CurrencyEnum.ESOM to CurrencyEnum.USDT_TRC20
+            }
+
+        private fun getConvertTitle(currency: CurrencyEnum): String =
+            when (currency) {
+                CurrencyEnum.SOM -> context.getString(R.string.convert_from_som_to_salam)
+                CurrencyEnum.ESOM -> context.getString(R.string.convert_from_salam_to_som)
+                CurrencyEnum.USDT_TRC20 -> context.getString(R.string.convert_from_salam_to_usdt)
+            }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {

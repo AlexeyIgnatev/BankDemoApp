@@ -135,6 +135,9 @@
     <string name="get">Получить</string>
     <string name="convert_to_som">Конвертировать в СОМ</string>
     <string name="convert_to_salam">Конвертировать в САЛАМ</string>
+    <string name="convert_from_som_to_salam">Конвертировать из СОМ в САЛАМ</string>
+    <string name="convert_from_salam_to_som">Конвертировать из САЛАМ в СОМ</string>
+    <string name="convert_from_salam_to_usdt">Конвертировать из САЛАМ в USDT</string>
     <string name="login_hint">Логин</string>
     <string name="enter_login">Введите логин пользователя</string>
     <string name="enter_message">Введите сообщение</string>
@@ -175,6 +178,7 @@
     <string name="paid_from_account">Оплачено со счета</string>
     <string name="recipient">Получатель</string>
     <string name="total">Итого</string>
+    <string name="total_withdrawn_from_account">Итого снято со счета</string>
     <string name="share_success_operation">Поделиться платежом</string>
     <string name="empty_value">-</string>
     <string name="receipt_operation_not_found">&#1057;&#1077;&#1088;&#1074;&#1077;&#1088; &#1085;&#1077; &#1074;&#1077;&#1088;&#1085;&#1091;&#1083; &#1085;&#1086;&#1084;&#1077;&#1088; &#1086;&#1087;&#1077;&#1088;&#1072;&#1094;&#1080;&#1080; &#1076;&#1083;&#1103; &#1082;&#1074;&#1080;&#1090;&#1072;&#1085;&#1094;&#1080;&#1080;</string>

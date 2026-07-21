@@ -131,6 +131,7 @@ class SuccessTransferFragment : Fragment() {
             formatAccountForDisplay(data.recipient).ifBlank { getString(R.string.empty_value) }
         binding.feeValue.text = formatAmount(data.fee, data.currency)
         binding.totalValue.text = totalText
+        binding.totalWithdrawnValue.text = formatAmount(data.amount, data.currency)
     }
 
     private fun requestReceiptForShare() {
@@ -296,7 +297,7 @@ class SuccessTransferFragment : Fragment() {
     private fun formatCurrency(currency: CurrencyEnum): String =
         when (currency) {
             CurrencyEnum.SOM -> "С"
-            CurrencyEnum.ESOM -> getString(R.string.digital)
+            CurrencyEnum.ESOM -> "САЛАМ"
             CurrencyEnum.USDT_TRC20 -> "USDT"
         }
 

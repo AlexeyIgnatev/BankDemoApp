@@ -218,6 +218,8 @@ object ReceiptFileUtils {
             ?: (receipt.amount - receipt.fee).coerceAtLeast(0.0)
         val creditedAmountText =
             "${formatNumber(creditedAmount)} ${formatCurrencyForDocument(creditedCurrency)}"
+        val withdrawnAmountText =
+            "${formatNumber(receipt.amount)} ${formatCurrencyForDocument(receipt.currency)}"
         val accountDetailsValue = sanitizeOneLineValue(
             formatMaskedAccountWithVisibleTail(
                 pickBestAccountCandidate(
@@ -243,6 +245,7 @@ object ReceiptFileUtils {
             "Дата и время" to "$dateText $timeText",
             "Комиссия" to feeText,
             "\u0421\u0443\u043c\u043c\u0430 \u043a \u0437\u0430\u0447\u0438\u0441\u043b\u0435\u043d\u0438\u044e" to creditedAmountText,
+            context.getString(R.string.total_withdrawn_from_account) to withdrawnAmountText,
             "Реквизиты счета" to accountDetailsValue,
             "Получатель" to recipientValue,
             "Оплачено со счета" to paidFromAccountValue,
@@ -475,10 +478,10 @@ object ReceiptFileUtils {
     }
 
     private fun formatCurrencyForDocument(currency: String): String {
-        return if (currency.equals("SOM", ignoreCase = true)) {
-            "С"
-        } else {
-            currency
+        return when {
+            currency.equals("SOM", ignoreCase = true) -> "С"
+            currency.equals("ESOM", ignoreCase = true) -> "САЛАМ"
+            else -> currency
         }
     }
 

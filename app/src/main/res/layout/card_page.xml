@@ -160,7 +160,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="@string/convert_to_som"
+            android:text="@string/convert_from_som_to_salam"
             android:textSize="@dimen/_12sp"
             android:fontFamily="@font/mont_semibold"
             android:textColor="#E62324" />

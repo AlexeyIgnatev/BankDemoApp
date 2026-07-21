@@ -10,7 +10,8 @@ data class PaymentFeeModel(
 ) {
     fun calculateFee(amount: Double): Double {
         if (amount <= 0.0) return 0.0
-        return amount * (percentFee.coerceAtLeast(0.0) / 100.0) + fixedFee.coerceAtLeast(0.0)
+        val percentAmount = amount * (percentFee.coerceAtLeast(0.0) / 100.0)
+        return maxOf(percentAmount, fixedFee.coerceAtLeast(0.0))
     }
 }
 

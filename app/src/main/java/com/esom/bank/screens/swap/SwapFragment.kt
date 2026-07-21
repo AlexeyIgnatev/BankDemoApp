@@ -663,9 +663,28 @@ class SwapFragment : Fragment() {
         if (receivedAmount <= 0.0) return 0.0
         val netSourceAmount = invertConvertWithoutFee(receivedAmount)
         val feeModel = currentConvertFeeModel() ?: return netSourceAmount
+        val fixedFee = feeModel.fixedFee.coerceAtLeast(0.0)
         val percent = feeModel.percentFee.coerceAtLeast(0.0) / 100.0
+
+        if (percent <= 0.0) {
+            return netSourceAmount + fixedFee
+        }
+
         if (percent >= 1.0) return 0.0
-        return (netSourceAmount + feeModel.fixedFee.coerceAtLeast(0.0)) / (1.0 - percent)
+
+        val fixedThreshold = fixedFee / percent
+        val fixedRegimeSend = netSourceAmount + fixedFee
+        val percentRegimeSend = netSourceAmount / (1.0 - percent)
+
+        val fixedRegimeValid = fixedFee > 0.0 && fixedRegimeSend <= fixedThreshold
+        val percentRegimeValid = percentRegimeSend >= fixedThreshold
+
+        return when {
+            fixedRegimeValid && percentRegimeValid -> minOf(fixedRegimeSend, percentRegimeSend)
+            fixedRegimeValid -> fixedRegimeSend
+            percentRegimeValid -> percentRegimeSend
+            else -> maxOf(fixedRegimeSend, percentRegimeSend)
+        }
     }
 
     private fun isSomToEsomConversion(): Boolean {

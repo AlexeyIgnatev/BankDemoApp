@@ -235,10 +235,13 @@ class TransferFragment : Fragment() {
     }
 
     private fun setupChangeButton() {
-        val isCryptoCurrency = currentFromCurrency == CurrencyEnum.USDT_TRC20
-        binding.changeLayout.isVisible = isCryptoCurrency
+        val canSwitchRecipientMode = currentFromCurrency in listOf(
+            CurrencyEnum.USDT_TRC20,
+            CurrencyEnum.ESOM
+        )
+        binding.changeLayout.isVisible = canSwitchRecipientMode
         binding.changeLayout.setOnClickListener {
-            if (currentFromCurrency == CurrencyEnum.USDT_TRC20) {
+            if (currentFromCurrency in listOf(CurrencyEnum.USDT_TRC20, CurrencyEnum.ESOM)) {
                 isToPhoneNumber = !isToPhoneNumber
                 updateContactType()
             }
@@ -628,8 +631,8 @@ class TransferFragment : Fragment() {
 
         val totalAmount = amount - commission
 
-        binding.comissionValue.text = formatTransferAmount(commission)
-        binding.total.text = formatTransferAmount(totalAmount.coerceAtLeast(0.0))
+        binding.comissionValue.text = formatTransferAmount(commission, currentFromCurrency)
+        binding.total.text = formatTransferAmount(totalAmount.coerceAtLeast(0.0), currentFromCurrency)
     }
 
     private fun calculateTransferCommission(amount: Double, currency: CurrencyEnum): Double {
@@ -637,12 +640,14 @@ class TransferFragment : Fragment() {
         return model.calculateTransferFee(amount, currency)
     }
 
-    private fun formatTransferAmount(amount: Double): String {
-        val normalized = BigDecimal.valueOf(amount)
-            .setScale(6, RoundingMode.DOWN)
-            .stripTrailingZeros()
+    private fun formatTransferAmount(amount: Double, currency: CurrencyEnum): String {
+        val scale = when (currency) {
+            CurrencyEnum.USDT_TRC20 -> 6
+            CurrencyEnum.SOM, CurrencyEnum.ESOM -> 2
+        }
+        return BigDecimal.valueOf(amount)
+            .setScale(scale, RoundingMode.DOWN)
             .toPlainString()
-        return normalized.ifBlank { "0" }
     }
 
     private fun applyPhoneMask() {

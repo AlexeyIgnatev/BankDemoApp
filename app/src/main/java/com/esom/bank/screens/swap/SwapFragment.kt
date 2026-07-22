@@ -29,6 +29,8 @@ import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.WalletModel
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @AndroidEntryPoint
 class SwapFragment : Fragment() {
@@ -120,7 +122,7 @@ class SwapFragment : Fragment() {
 
         binding.sumAllLayout.setOnClickListener {
             val allAvailable = getAvailableFromBalance()
-            binding.sum.setText(formatInputAmount(allAvailable))
+            binding.sum.setText(formatInputAmount(allAvailable, currentFromCurrency))
             binding.sum.setSelection(binding.sum.text?.length ?: 0)
             updateAmountsFromSend(allAvailable)
         }
@@ -130,9 +132,9 @@ class SwapFragment : Fragment() {
             val maxReceived = calculateReceivedFromSend(allAvailable)
 
             isUpdatingAmounts = true
-            binding.sum.setText(formatInputAmount(allAvailable))
+            binding.sum.setText(formatInputAmount(allAvailable, currentFromCurrency))
             binding.sum.setSelection(binding.sum.text?.length ?: 0)
-            binding.peopleSum.setText(formatInputAmount(maxReceived))
+            binding.peopleSum.setText(formatInputAmount(maxReceived, currentToCurrency))
             binding.peopleSum.setSelection(binding.peopleSum.text?.length ?: 0)
             isUpdatingAmounts = false
 
@@ -610,7 +612,7 @@ class SwapFragment : Fragment() {
         val receivedAmount = calculateReceivedFromSend(fromAmount)
 
         isUpdatingAmounts = true
-        binding.peopleSum.setText(formatInputAmount(receivedAmount))
+        binding.peopleSum.setText(formatInputAmount(receivedAmount, currentToCurrency))
         binding.peopleSum.setSelection(binding.peopleSum.text?.length ?: 0)
         isUpdatingAmounts = false
 
@@ -621,7 +623,7 @@ class SwapFragment : Fragment() {
         val fromAmount = calculateSendFromReceived(receivedAmount)
 
         isUpdatingAmounts = true
-        binding.sum.setText(formatInputAmount(fromAmount))
+        binding.sum.setText(formatInputAmount(fromAmount, currentFromCurrency))
         binding.sum.setSelection(binding.sum.text?.length ?: 0)
         isUpdatingAmounts = false
 
@@ -632,18 +634,20 @@ class SwapFragment : Fragment() {
         fromAmount: Double? = null,
         convertedAmount: Double? = null
     ) {
-        val actualFromAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
-        val actualConvertedAmount = convertedAmount ?: calculateReceivedFromSend(actualFromAmount)
-        val fee = calculateFeePreview(actualFromAmount)
+        val actualTotalAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
+        val actualConvertedAmount = convertedAmount ?: calculateReceivedFromSend(actualTotalAmount)
+        val baseAmount = calculateBaseAmountFromTotal(actualTotalAmount)
+        val fee = calculateFeePreview(baseAmount)
+        val totalAmount = baseAmount + fee
 
-        binding.thirdValue.text = formatAmount(fee)
-        binding.comissionValue.text = formatAmount(actualFromAmount)
-        binding.secondValue.text = formatAmount(actualConvertedAmount)
-        binding.total.text = formatAmount(actualConvertedAmount)
+        binding.thirdValue.text = formatCurrencyAmount(fee, currentFromCurrency)
+        binding.comissionValue.text = formatCurrencyAmount(totalAmount, currentFromCurrency)
+        binding.secondValue.text = formatCurrencyAmount(actualConvertedAmount, currentToCurrency)
+        binding.total.text = formatCurrencyAmount(totalAmount, currentFromCurrency)
 
         Log.d(
             TAG,
-            "Конвертация: $actualFromAmount ${getCurrencyName(currentFromCurrency)} -> " +
+            "Конвертация: $totalAmount ${getCurrencyName(currentFromCurrency)} -> " +
                     "$actualConvertedAmount ${getCurrencyName(currentToCurrency)}"
         )
         if (!isSomToEsomConversion()) {
@@ -654,37 +658,15 @@ class SwapFragment : Fragment() {
 
     private fun calculateReceivedFromSend(fromAmount: Double): Double {
         if (fromAmount <= 0.0) return 0.0
-        val fee = calculateFeePreview(fromAmount)
-        val netSourceAmount = (fromAmount - fee).coerceAtLeast(0.0)
-        return convertWithoutFee(netSourceAmount)
+        val baseAmount = calculateBaseAmountFromTotal(fromAmount)
+        return convertWithoutFee(baseAmount)
     }
 
     private fun calculateSendFromReceived(receivedAmount: Double): Double {
         if (receivedAmount <= 0.0) return 0.0
-        val netSourceAmount = invertConvertWithoutFee(receivedAmount)
-        val feeModel = currentConvertFeeModel() ?: return netSourceAmount
-        val fixedFee = feeModel.fixedFee.coerceAtLeast(0.0)
-        val percent = feeModel.percentFee.coerceAtLeast(0.0) / 100.0
-
-        if (percent <= 0.0) {
-            return netSourceAmount + fixedFee
-        }
-
-        if (percent >= 1.0) return 0.0
-
-        val fixedThreshold = fixedFee / percent
-        val fixedRegimeSend = netSourceAmount + fixedFee
-        val percentRegimeSend = netSourceAmount / (1.0 - percent)
-
-        val fixedRegimeValid = fixedFee > 0.0 && fixedRegimeSend <= fixedThreshold
-        val percentRegimeValid = percentRegimeSend >= fixedThreshold
-
-        return when {
-            fixedRegimeValid && percentRegimeValid -> minOf(fixedRegimeSend, percentRegimeSend)
-            fixedRegimeValid -> fixedRegimeSend
-            percentRegimeValid -> percentRegimeSend
-            else -> maxOf(fixedRegimeSend, percentRegimeSend)
-        }
+        val baseAmount = invertConvertWithoutFee(receivedAmount)
+        val fee = calculateFeePreview(baseAmount)
+        return baseAmount + fee
     }
 
     private fun isSomToEsomConversion(): Boolean {
@@ -693,18 +675,14 @@ class SwapFragment : Fragment() {
     }
 
     private fun formatAmount(amount: Double): String {
-        return if (amount % 1 == 0.0) {
-            amount.toLong().toString()
-        } else {
-            amount.formatBalanceNew()
-        }
+        return formatCurrencyAmount(amount, currentFromCurrency)
     }
 
-    private fun formatInputAmount(amount: Double): String {
+    private fun formatInputAmount(amount: Double, currency: CurrencyEnum): String {
         return if (amount == 0.0) {
             "0"
         } else {
-            formatAmount(amount)
+            formatCurrencyAmount(amount, currency)
         }
     }
 
@@ -720,6 +698,31 @@ class SwapFragment : Fragment() {
     private fun calculateFeePreview(fromAmount: Double): Double {
         if (fromAmount <= 0.0) return 0.0
         return model.calculateConvertFee(fromAmount, currentFromCurrency, currentToCurrency)
+    }
+
+    private fun calculateBaseAmountFromTotal(totalAmount: Double): Double {
+        if (totalAmount <= 0.0) return 0.0
+
+        val feeModel = currentConvertFeeModel() ?: return totalAmount
+        val percent = feeModel.percentFee.coerceAtLeast(0.0) / 100.0
+        val fixedFee = feeModel.fixedFee.coerceAtLeast(0.0)
+
+        if (percent <= 0.0) {
+            return (totalAmount - fixedFee).coerceAtLeast(0.0)
+        }
+
+        val fixedThresholdBase = fixedFee / percent
+        val fixedRegimeBase = (totalAmount - fixedFee).coerceAtLeast(0.0)
+        if (fixedFee > 0.0 && fixedRegimeBase <= fixedThresholdBase) {
+            return fixedRegimeBase
+        }
+
+        val percentRegimeBase = totalAmount / (1.0 + percent)
+        return if (percentRegimeBase > fixedThresholdBase) {
+            percentRegimeBase
+        } else {
+            fixedRegimeBase
+        }
     }
 
     private fun currentConvertFeeModel() =
@@ -751,16 +754,23 @@ class SwapFragment : Fragment() {
         return if (v > 0.0) v else null
     }
 
+    private fun getUsdtRateOrNull(): Double? {
+        val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return null
+        return wallets.firstOrNull { it.currency == CurrencyEnum.USDT_TRC20 }
+            ?.buyRate
+            ?.takeIf { it > 0.0 }
+    }
+
     private fun getExchangeRate(): Double {
-        val esomPerUsd = getEsomPerUsdOrNull()
+        val usdtRate = getUsdtRateOrNull() ?: getEsomPerUsdOrNull()
 
         return when {
             currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM -> 1.0
             currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM -> 1.0
             (currentFromCurrency == CurrencyEnum.ESOM || currentFromCurrency == CurrencyEnum.SOM) &&
-                    currentToCurrency == CurrencyEnum.USDT_TRC20 -> esomPerUsd ?: 1.0
+                    currentToCurrency == CurrencyEnum.USDT_TRC20 -> usdtRate ?: 1.0
             currentFromCurrency == CurrencyEnum.USDT_TRC20 &&
-                    (currentToCurrency == CurrencyEnum.ESOM || currentToCurrency == CurrencyEnum.SOM) -> esomPerUsd ?: 1.0
+                    (currentToCurrency == CurrencyEnum.ESOM || currentToCurrency == CurrencyEnum.SOM) -> usdtRate ?: 1.0
             else -> 1.0
         }
     }
@@ -792,7 +802,7 @@ class SwapFragment : Fragment() {
     }
 
     private fun showConvertConfirmation(amount: Double) {
-        val amountText = "${amount.formatBalanceNew()} ${getCurrencyName(currentFromCurrency)}"
+        val amountText = "${formatCurrencyAmount(amount, currentFromCurrency)} ${getCurrencyName(currentFromCurrency)}"
         val target = getCurrencyName(currentToCurrency)
         val creditedAmount = calculateReceivedFromSend(amount)
         parentFragmentManager.setFragmentResult(
@@ -814,6 +824,17 @@ class SwapFragment : Fragment() {
             )
         )
         findNavController().navigate(NavGraphDirections.startTransferConfirmationFragment())
+    }
+
+    private fun formatCurrencyAmount(amount: Double, currency: CurrencyEnum): String {
+        val scale = when (currency) {
+            CurrencyEnum.USDT_TRC20 -> 6
+            CurrencyEnum.SOM, CurrencyEnum.ESOM -> 2
+        }
+
+        return BigDecimal.valueOf(amount)
+            .setScale(scale, RoundingMode.DOWN)
+            .toPlainString()
     }
 
     private fun getAccountForSuccess(currency: CurrencyEnum): String {

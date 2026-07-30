@@ -634,20 +634,19 @@ class SwapFragment : Fragment() {
         fromAmount: Double? = null,
         convertedAmount: Double? = null
     ) {
-        val actualTotalAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
-        val actualConvertedAmount = convertedAmount ?: calculateReceivedFromSend(actualTotalAmount)
-        val baseAmount = calculateBaseAmountFromTotal(actualTotalAmount)
-        val fee = calculateFeePreview(baseAmount)
-        val totalAmount = baseAmount + fee
+        val grossAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
+        val fee = calculateFeePreview(grossAmount)
+        val netAmount = (grossAmount - fee).coerceAtLeast(0.0)
+        val actualConvertedAmount = convertedAmount ?: convertWithoutFee(netAmount)
 
         binding.thirdValue.text = formatCurrencyAmount(fee, currentFromCurrency)
-        binding.comissionValue.text = formatCurrencyAmount(totalAmount, currentFromCurrency)
+        binding.comissionValue.text = formatCurrencyAmount(grossAmount, currentFromCurrency)
         binding.secondValue.text = formatCurrencyAmount(actualConvertedAmount, currentToCurrency)
-        binding.total.text = formatCurrencyAmount(totalAmount, currentFromCurrency)
+        binding.total.text = formatCurrencyAmount(netAmount, currentFromCurrency)
 
         Log.d(
             TAG,
-            "Конвертация: $totalAmount ${getCurrencyName(currentFromCurrency)} -> " +
+            "Conversion: $grossAmount ${getCurrencyName(currentFromCurrency)} -> " +
                     "$actualConvertedAmount ${getCurrencyName(currentToCurrency)}"
         )
         if (!isSomToEsomConversion()) {
@@ -658,8 +657,9 @@ class SwapFragment : Fragment() {
 
     private fun calculateReceivedFromSend(fromAmount: Double): Double {
         if (fromAmount <= 0.0) return 0.0
-        val baseAmount = calculateBaseAmountFromTotal(fromAmount)
-        return convertWithoutFee(baseAmount)
+        val fee = calculateFeePreview(fromAmount)
+        val netAmount = (fromAmount - fee).coerceAtLeast(0.0)
+        return convertWithoutFee(netAmount)
     }
 
     private fun calculateSendFromReceived(receivedAmount: Double): Double {

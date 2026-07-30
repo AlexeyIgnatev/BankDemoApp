@@ -51,6 +51,7 @@ class WalletFragment : Fragment() {
     private var currentCurrency: CurrencyEnum = CurrencyEnum.SOM
     private var currentPosition: Int = 1
     private var isUserSwiping: Boolean = false
+    private var latestWallets: List<WalletModel> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -318,10 +319,17 @@ class WalletFragment : Fragment() {
                 is UiState.Success -> {
                     binding.swipeRefreshLayout.isRefreshing = false
                     binding.title.text = "${it.data.firstName} ${it.data.lastName}"
+                    latestWallets = it.data.wallets
                     updateCards(it.data.wallets)
                     updateCurrencies(it.data.wallets)
                     updateTotalBalance(it.data.wallets)
                 }
+            }
+        }
+        model.settings.observe(viewLifecycleOwner) { state ->
+            if (state is UiState.Success && latestWallets.isNotEmpty()) {
+                updateCurrencies(latestWallets)
+                updateTotalBalance(latestWallets)
             }
         }
     }
@@ -405,8 +413,8 @@ class WalletFragment : Fragment() {
 
                 CurrencyEnum.USDT_TRC20 -> Currency(
                     TypeOfCurrency.USDT,
-                    wallet.buyRate.formatBalanceNew(),
-                    wallet.sellRate.formatBalanceNew()
+                    getUsdBuyRate().formatBalanceNew(),
+                    getUsdSellRate().formatBalanceNew()
                 )
             }
         }
@@ -423,11 +431,30 @@ class WalletFragment : Fragment() {
     private fun updateTotalBalance(wallets: List<WalletModel>) {
         var totalBalanceInSoms = 0.0
         wallets.forEach { wallet ->
-            val balanceInSoms = wallet.balance * wallet.buyRate
-            Log.e("totalBalanceInSoms", wallet.balance.toString() + " " + wallet.buyRate.toString())
+            val rate = if (wallet.currency == CurrencyEnum.USDT_TRC20) {
+                getUsdBuyRate()
+            } else {
+                wallet.buyRate
+            }
+            val balanceInSoms = wallet.balance * rate
+            Log.e("totalBalanceInSoms", wallet.balance.toString() + " " + rate.toString())
             totalBalanceInSoms += balanceInSoms
         }
         binding.totalWaste.text = totalBalanceInSoms.format(2)
+    }
+
+    private fun getUsdBuyRate(): Double {
+        val settings = (model.settings.value as? UiState.Success)?.data
+        return settings?.usdBuyRate?.takeIf { it > 0.0 }
+            ?: settings?.esomPerUsd?.takeIf { it > 0.0 }
+            ?: 0.0
+    }
+
+    private fun getUsdSellRate(): Double {
+        val settings = (model.settings.value as? UiState.Success)?.data
+        return settings?.usdSellRate?.takeIf { it > 0.0 }
+            ?: settings?.esomPerUsd?.takeIf { it > 0.0 }
+            ?: 0.0
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

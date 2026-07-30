@@ -7,6 +7,10 @@ data class FeeDto(
     val id: Int = 0,
     @SerializedName("esom_per_usd")
     val esomPerUsd: Double,
+    @SerializedName("usd_buy_rate")
+    val usdBuyRate: Double = 0.0,
+    @SerializedName("usd_sell_rate")
+    val usdSellRate: Double = 0.0,
     @SerializedName(
         value = "esom_som_conversion_fee_pct",
         alternate = [

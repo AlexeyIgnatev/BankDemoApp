@@ -761,23 +761,25 @@ class SwapFragment : Fragment() {
         return if (v > 0.0) v else null
     }
 
-    private fun getUsdtRateOrNull(): Double? {
-        val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return null
-        return wallets.firstOrNull { it.currency == CurrencyEnum.USDT_TRC20 }
-            ?.buyRate
-            ?.takeIf { it > 0.0 }
+    private fun getUsdBuyRateOrNull(): Double? {
+        val settings = (model.settings.value as? UiState.Success)?.data ?: return null
+        return settings.usdBuyRate.takeIf { it > 0.0 } ?: getEsomPerUsdOrNull()
+    }
+
+    private fun getUsdSellRateOrNull(): Double? {
+        val settings = (model.settings.value as? UiState.Success)?.data ?: return null
+        return settings.usdSellRate.takeIf { it > 0.0 } ?: getEsomPerUsdOrNull()
     }
 
     private fun getExchangeRate(): Double {
-        val usdtRate = getUsdtRateOrNull() ?: getEsomPerUsdOrNull()
-
         return when {
             currentFromCurrency == CurrencyEnum.ESOM && currentToCurrency == CurrencyEnum.SOM -> 1.0
             currentFromCurrency == CurrencyEnum.SOM && currentToCurrency == CurrencyEnum.ESOM -> 1.0
             (currentFromCurrency == CurrencyEnum.ESOM || currentFromCurrency == CurrencyEnum.SOM) &&
-                    currentToCurrency == CurrencyEnum.USDT_TRC20 -> usdtRate ?: 1.0
+                    currentToCurrency == CurrencyEnum.USDT_TRC20 -> getUsdSellRateOrNull() ?: 1.0
             currentFromCurrency == CurrencyEnum.USDT_TRC20 &&
-                    (currentToCurrency == CurrencyEnum.ESOM || currentToCurrency == CurrencyEnum.SOM) -> usdtRate ?: 1.0
+                    (currentToCurrency == CurrencyEnum.ESOM || currentToCurrency == CurrencyEnum.SOM) ->
+                getUsdBuyRateOrNull() ?: 1.0
             else -> 1.0
         }
     }

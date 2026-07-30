@@ -35,6 +35,8 @@ fun UserDto.toModel() = UserModel(
 data class FeeModel(
     val id: Int,
     val esomPerUsd: Double,
+    val usdBuyRate: Double = 0.0,
+    val usdSellRate: Double = 0.0,
     val esomSomConversionFeePct: Double? = null,
     val esomSomConversionFeeMin: Double? = null
 ): Parcelable
@@ -42,6 +44,8 @@ data class FeeModel(
 fun FeeDto.toModel() = FeeModel(
     id = id,
     esomPerUsd = esomPerUsd,
+    usdBuyRate = usdBuyRate,
+    usdSellRate = usdSellRate,
     esomSomConversionFeePct = esomSomConversionFeePct?.toDoubleOrNull(),
     esomSomConversionFeeMin = esomSomConversionFeeMin?.toDoubleOrNull()
 )

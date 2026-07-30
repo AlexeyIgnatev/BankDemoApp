@@ -20,6 +20,7 @@ import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
+import com.esom.bank.common.utils.views.setTextProgrammatically
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentSwapBinding
 import com.esom.bank.screens.history.enums.ConversionSide
@@ -612,7 +613,9 @@ class SwapFragment : Fragment() {
         val grossConvertedAmount = convertWithoutFee(fromAmount)
 
         isUpdatingAmounts = true
-        binding.peopleSum.setText(formatInputAmount(grossConvertedAmount, currentToCurrency))
+        binding.peopleSum.setTextProgrammatically(
+            formatInputAmount(grossConvertedAmount, currentToCurrency)
+        )
         binding.peopleSum.setSelection(binding.peopleSum.text?.length ?: 0)
         isUpdatingAmounts = false
 
@@ -623,8 +626,12 @@ class SwapFragment : Fragment() {
         val fromAmount = calculateSendFromReceived(receivedAmount)
 
         isUpdatingAmounts = true
-        binding.sum.setText(formatInputAmount(fromAmount, currentFromCurrency))
+        binding.sum.setTextProgrammatically(formatInputAmount(fromAmount, currentFromCurrency))
         binding.sum.setSelection(binding.sum.text?.length ?: 0)
+        binding.peopleSum.setTextProgrammatically(
+            formatInputAmount(receivedAmount, currentToCurrency)
+        )
+        binding.peopleSum.setSelection(binding.peopleSum.text?.length ?: 0)
         isUpdatingAmounts = false
 
         updateCommissionAndTotal(fromAmount, receivedAmount)
@@ -635,10 +642,10 @@ class SwapFragment : Fragment() {
         convertedAmount: Double? = null
     ) {
         val grossAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
-        val fee = calculateFeePreview(grossAmount)
-        val netAmount = (grossAmount - fee).coerceAtLeast(0.0)
         val actualConvertedAmount = convertedAmount ?: convertWithoutFee(grossAmount)
-        val netConvertedAmount = convertWithoutFee(netAmount)
+        val fee = calculateFeePreview(grossAmount)
+        val convertedFee = convertWithoutFee(fee)
+        val netConvertedAmount = (actualConvertedAmount - convertedFee).coerceAtLeast(0.0)
 
         binding.thirdValue.text = formatCurrencyAmount(fee, currentFromCurrency)
         binding.comissionValue.text = formatCurrencyAmount(grossAmount, currentFromCurrency)

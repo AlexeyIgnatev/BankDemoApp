@@ -1,10 +1,13 @@
 package com.esom.bank.screens.swap
 
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.core.os.bundleOf
 import androidx.core.view.WindowInsetsCompat
@@ -28,10 +31,13 @@ import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.dialog.TransferConfirmationFragment
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.WalletModel
+import com.esom.bank.screens.templates.data.RecentTemplateStore
+import com.esom.bank.screens.templates.data.SwapTemplate
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.math.RoundingMode
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SwapFragment : Fragment() {
@@ -48,6 +54,10 @@ class SwapFragment : Fragment() {
     private var toPanelCurrencies: List<CurrencyEnum> = emptyList()
 
     private var isUpdatingAmounts = false
+    private var pendingTemplate: SwapTemplate? = null
+
+    @Inject
+    lateinit var recentTemplateStore: RecentTemplateStore
 
     companion object {
         private const val TAG = "SwapFragment"
@@ -80,6 +90,7 @@ class SwapFragment : Fragment() {
         setupQuickAmounts()
         setupClickListeners()
         setupTransferConfirmationResultListener()
+        renderTemplates()
 
         if (binding.sum.text.isNullOrBlank()) {
             binding.sum.setText("0")
@@ -161,6 +172,12 @@ class SwapFragment : Fragment() {
             ) ?: return@setFragmentResultListener
             val amount = bundle.getDouble(TransferConfirmationFragment.AMOUNT_KEY)
             val creditedAmount = bundle.getDouble(TransferConfirmationFragment.CREDITED_AMOUNT_KEY)
+
+            pendingTemplate = SwapTemplate(
+                amount = amount,
+                fromCurrency = fromCurrency.name,
+                toCurrency = toCurrency.name
+            )
 
             model.setLastSuccessOperation(
                 SuccessOperationModel(
@@ -313,12 +330,15 @@ class SwapFragment : Fragment() {
 
             when (it) {
                 is UiState.Error -> {
+                    pendingTemplate = null
                     findNavController().navigate(
                         NavGraphDirections.startFailTransferFragment(it.message)
                     )
                 }
 
                 is UiState.Success -> {
+                    pendingTemplate?.let(recentTemplateStore::addSwapTemplate)
+                    pendingTemplate = null
                     model.updateUserData()
                     model.updateLastSuccessOperationReceipt(
                         transactionId = it.data.transactionId,
@@ -357,6 +377,73 @@ class SwapFragment : Fragment() {
             }
         }
     }
+
+    private fun renderTemplates() {
+        val templates = recentTemplateStore.getSwapTemplates()
+        binding.templatesSection.isVisible = templates.isNotEmpty()
+        binding.templatesContainer.removeAllViews()
+
+        templates.forEach { template ->
+            val from = CurrencyEnum.fromNameOrNull(template.fromCurrency) ?: return@forEach
+            val to = CurrencyEnum.fromNameOrNull(template.toCurrency) ?: return@forEach
+            val label = buildString {
+                append(getCurrencyName(from))
+                append(" -> ")
+                append(getCurrencyName(to))
+                append('\n')
+                append(formatTemplateAmount(template.amount))
+            }
+            binding.templatesContainer.addView(
+                createTemplateView(label) { applyTemplate(template) }
+            )
+        }
+    }
+
+    private fun createTemplateView(label: String, onClick: () -> Unit): TextView {
+        return TextView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginEnd = dp(8)
+            }
+            minWidth = dp(132)
+            maxWidth = dp(190)
+            setPadding(dp(12), dp(9), dp(12), dp(9))
+            setBackgroundResource(R.drawable.recent_template_background)
+            text = label
+            textSize = 12f
+            setTextColor(android.graphics.Color.parseColor("#1D1D1B"))
+            maxLines = 2
+            ellipsize = TextUtils.TruncateAt.END
+            setOnClickListener { onClick() }
+        }
+    }
+
+    private fun applyTemplate(template: SwapTemplate) {
+        val from = CurrencyEnum.fromNameOrNull(template.fromCurrency) ?: return
+        val to = CurrencyEnum.fromNameOrNull(template.toCurrency) ?: return
+        if (from == to) return
+
+        currentFromCurrency = from
+        currentToCurrency = to
+        fromPanelCurrencies = CurrencyEnum.supportedValues.filter { it != from }
+        toPanelCurrencies = CurrencyEnum.supportedValues.filter { it != to }
+        updateCurrencyViews()
+        updateFromPanelViews()
+        updateToPanelViews()
+        onCurrencySelectionChanged()
+
+        binding.sum.setTextProgrammatically(formatTemplateAmount(template.amount))
+        binding.sum.setSelection(binding.sum.text?.length ?: 0)
+        updateAmountsFromSend(template.amount)
+    }
+
+    private fun formatTemplateAmount(amount: Double): String =
+        BigDecimal.valueOf(amount).stripTrailingZeros().toPlainString()
+
+    private fun dp(value: Int): Int =
+        (value * resources.displayMetrics.density).toInt()
 
     private fun selectFromCurrency(currency: CurrencyEnum) {
         val previousCurrency = currentFromCurrency

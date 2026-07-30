@@ -6,9 +6,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.text.TextWatcher
+import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
@@ -37,6 +40,8 @@ import com.esom.bank.screens.main.dialog.TransferConfirmationFragment
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.WalletModel
+import com.esom.bank.screens.templates.data.RecentTemplateStore
+import com.esom.bank.screens.templates.data.TransferTemplate
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.zxing.BarcodeFormat
@@ -51,6 +56,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Locale
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class TransferFragment : Fragment() {
@@ -61,7 +67,11 @@ class TransferFragment : Fragment() {
     private var currentFromCurrency: CurrencyEnum = CurrencyEnum.ESOM
     private var isToPhoneNumber = false
     private var currencyPanelOptions: List<CurrencyEnum> = emptyList()
+    private var pendingTemplate: TransferTemplate? = null
     private val args: TransferFragmentArgs by navArgs()
+
+    @Inject
+    lateinit var recentTemplateStore: RecentTemplateStore
     private val qrCameraLauncher = registerForActivityResult(ScanContract()) { result ->
         val content = result.contents
         if (content.isNullOrBlank()) {
@@ -151,6 +161,7 @@ class TransferFragment : Fragment() {
 
         binding.sendBtn.setOnClickListener { handleTransferButtonClick() }
         setupTransferConfirmationResultListener()
+        renderTemplates()
 
         model.myData.observe(viewLifecycleOwner) {
             if (it is UiState.Success) {
@@ -174,6 +185,7 @@ class TransferFragment : Fragment() {
                 }
 
                 is UiState.Error -> {
+                    pendingTemplate = null
                     binding.sendText.isVisible = true
                     binding.indicator.isVisible = false
                     findNavController().navigate(
@@ -182,6 +194,8 @@ class TransferFragment : Fragment() {
                 }
 
                 is UiState.Success -> {
+                    pendingTemplate?.let(recentTemplateStore::addTransferTemplate)
+                    pendingTemplate = null
                     model.updateUserData()
                     model.updateLastSuccessOperationReceipt(
                         transactionId = it.data.transactionId,
@@ -217,6 +231,14 @@ class TransferFragment : Fragment() {
                 ?: return@setFragmentResultListener
             val phone = bundle.getString(TransferConfirmationFragment.PHONE_KEY).orEmpty()
             val address = bundle.getString(TransferConfirmationFragment.ADDRESS_KEY)
+            val recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty()
+
+            pendingTemplate = TransferTemplate(
+                amount = amount,
+                currency = currency.name,
+                recipient = recipient,
+                isPhone = phone.isNotBlank()
+            )
 
             model.setLastSuccessOperation(
                 SuccessOperationModel(
@@ -225,7 +247,7 @@ class TransferFragment : Fragment() {
                     operationTitle = bundle.getString(TransferConfirmationFragment.OPERATION_TITLE_KEY)
                         ?: getString(R.string.transfer),
                     paidFromAccount = bundle.getString(TransferConfirmationFragment.PAID_FROM_KEY).orEmpty(),
-                    recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty(),
+                    recipient = recipient,
                     receiptNumber = "",
                     fee = calculateTransferCommission(amount, currency)
                 )
@@ -233,6 +255,75 @@ class TransferFragment : Fragment() {
             model.transferToUser(amount, phone, address, currency)
         }
     }
+
+    private fun renderTemplates() {
+        val templates = recentTemplateStore.getTransferTemplates()
+        binding.templatesSection.isVisible = templates.isNotEmpty()
+        binding.templatesContainer.removeAllViews()
+
+        templates.forEach { template ->
+            val currency = CurrencyEnum.fromNameOrNull(template.currency) ?: return@forEach
+            val label = buildString {
+                append(template.recipient)
+                append('\n')
+                append(formatTemplateAmount(template.amount))
+                append(' ')
+                append(getCurrencyName(currency))
+            }
+            binding.templatesContainer.addView(
+                createTemplateView(label) { applyTemplate(template) }
+            )
+        }
+    }
+
+    private fun createTemplateView(label: String, onClick: () -> Unit): TextView {
+        return TextView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginEnd = dp(8)
+            }
+            minWidth = dp(132)
+            maxWidth = dp(190)
+            setPadding(dp(12), dp(9), dp(12), dp(9))
+            setBackgroundResource(R.drawable.recent_template_background)
+            text = label
+            textSize = 12f
+            setTextColor(android.graphics.Color.parseColor("#1D1D1B"))
+            maxLines = 2
+            ellipsize = TextUtils.TruncateAt.END
+            setOnClickListener { onClick() }
+        }
+    }
+
+    private fun applyTemplate(template: TransferTemplate) {
+        val currency = CurrencyEnum.fromNameOrNull(template.currency) ?: return
+        currentFromCurrency = currency
+        isToPhoneNumber = template.isPhone
+
+        updateCurrencyIcon(currency)
+        updateWalletBalances()
+        setupChangeButton()
+        setContactHint()
+        if (isToPhoneNumber) {
+            applyPhoneMask()
+        } else {
+            removePhoneMask()
+        }
+
+        binding.contact.setText(template.recipient)
+        binding.contact.setSelection(binding.contact.text?.length ?: 0)
+        binding.sumInput.setText(formatTemplateAmount(template.amount))
+        binding.sumInput.setSelection(binding.sumInput.text?.length ?: 0)
+        updateCommissionAndTotal(binding.sumInput.text.toString())
+    }
+
+    private fun formatTemplateAmount(amount: Double): String =
+        BigDecimal.valueOf(amount).stripTrailingZeros().toPlainString()
+
+    private fun dp(value: Int): Int =
+        (value * resources.displayMetrics.density).toInt()
 
     private fun setupChangeButton() {
         val canSwitchRecipientMode = currentFromCurrency in listOf(

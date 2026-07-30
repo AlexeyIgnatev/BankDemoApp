@@ -14,10 +14,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.BuildConfig
-import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
+import com.esom.bank.activities.MainActivity
 import com.esom.bank.common.views.patternlock.PatternLockView
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.databinding.FragmentLogInBinding
@@ -220,6 +221,13 @@ class LogInFragment : Fragment() {
     }
 
     private fun onUnlockSuccess() {
-        findNavController().navigate(NavGraphDirections.startMainFragment())
+        (activity as? MainActivity)?.markUserAuthenticated()
+        findNavController().navigate(
+            R.id.mainFragment,
+            null,
+            NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .build()
+        )
     }
 }

@@ -129,16 +129,16 @@ class SwapFragment : Fragment() {
 
         binding.peopleSumAllLayout.setOnClickListener {
             val allAvailable = getAvailableFromBalance()
-            val maxReceived = calculateReceivedFromSend(allAvailable)
+            val grossConvertedAmount = convertWithoutFee(allAvailable)
 
             isUpdatingAmounts = true
             binding.sum.setText(formatInputAmount(allAvailable, currentFromCurrency))
             binding.sum.setSelection(binding.sum.text?.length ?: 0)
-            binding.peopleSum.setText(formatInputAmount(maxReceived, currentToCurrency))
+            binding.peopleSum.setText(formatInputAmount(grossConvertedAmount, currentToCurrency))
             binding.peopleSum.setSelection(binding.peopleSum.text?.length ?: 0)
             isUpdatingAmounts = false
 
-            updateCommissionAndTotal(allAvailable, maxReceived)
+            updateCommissionAndTotal(allAvailable, grossConvertedAmount)
         }
     }
 
@@ -666,9 +666,7 @@ class SwapFragment : Fragment() {
 
     private fun calculateSendFromReceived(receivedAmount: Double): Double {
         if (receivedAmount <= 0.0) return 0.0
-        val baseAmount = invertConvertWithoutFee(receivedAmount)
-        val fee = calculateFeePreview(baseAmount)
-        return baseAmount + fee
+        return invertConvertWithoutFee(receivedAmount)
     }
 
     private fun isSomToEsomConversion(): Boolean {

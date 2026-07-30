@@ -609,14 +609,14 @@ class SwapFragment : Fragment() {
     }
 
     private fun updateAmountsFromSend(fromAmount: Double) {
-        val receivedAmount = calculateReceivedFromSend(fromAmount)
+        val grossConvertedAmount = convertWithoutFee(fromAmount)
 
         isUpdatingAmounts = true
-        binding.peopleSum.setText(formatInputAmount(receivedAmount, currentToCurrency))
+        binding.peopleSum.setText(formatInputAmount(grossConvertedAmount, currentToCurrency))
         binding.peopleSum.setSelection(binding.peopleSum.text?.length ?: 0)
         isUpdatingAmounts = false
 
-        updateCommissionAndTotal(fromAmount, receivedAmount)
+        updateCommissionAndTotal(fromAmount, grossConvertedAmount)
     }
 
     private fun updateAmountsFromReceive(receivedAmount: Double) {
@@ -637,7 +637,7 @@ class SwapFragment : Fragment() {
         val grossAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
         val fee = calculateFeePreview(grossAmount)
         val netAmount = (grossAmount - fee).coerceAtLeast(0.0)
-        val actualConvertedAmount = convertedAmount ?: convertWithoutFee(netAmount)
+        val actualConvertedAmount = convertedAmount ?: convertWithoutFee(grossAmount)
 
         binding.thirdValue.text = formatCurrencyAmount(fee, currentFromCurrency)
         binding.comissionValue.text = formatCurrencyAmount(grossAmount, currentFromCurrency)

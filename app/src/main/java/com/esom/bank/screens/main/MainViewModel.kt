@@ -176,7 +176,7 @@ class MainViewModel @Inject constructor(
         return operations.asSequence()
             .mapNotNull { feeForOperation(it) }
             .map { it.calculateFee(amount) }
-            .firstOrNull { it > 0.0 }
+            .maxOrNull()
             ?: 0.0
     }
 

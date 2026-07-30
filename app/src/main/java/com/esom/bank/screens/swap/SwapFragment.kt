@@ -638,16 +638,18 @@ class SwapFragment : Fragment() {
         val fee = calculateFeePreview(grossAmount)
         val netAmount = (grossAmount - fee).coerceAtLeast(0.0)
         val actualConvertedAmount = convertedAmount ?: convertWithoutFee(grossAmount)
+        val netConvertedAmount = convertWithoutFee(netAmount)
 
         binding.thirdValue.text = formatCurrencyAmount(fee, currentFromCurrency)
         binding.comissionValue.text = formatCurrencyAmount(grossAmount, currentFromCurrency)
         binding.secondValue.text = formatCurrencyAmount(actualConvertedAmount, currentToCurrency)
-        binding.total.text = formatCurrencyAmount(netAmount, currentFromCurrency)
+        binding.total.text = formatCurrencyAmount(netConvertedAmount, currentToCurrency)
 
         Log.d(
             TAG,
             "Conversion: $grossAmount ${getCurrencyName(currentFromCurrency)} -> " +
-                    "$actualConvertedAmount ${getCurrencyName(currentToCurrency)}"
+                    "$actualConvertedAmount ${getCurrencyName(currentToCurrency)}; " +
+                    "net=$netConvertedAmount ${getCurrencyName(currentToCurrency)}"
         )
         if (!isSomToEsomConversion()) {
             Log.d(TAG, "Курс обмена: ${getExchangeRate()}")

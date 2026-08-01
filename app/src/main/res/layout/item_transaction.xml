@@ -34,8 +34,24 @@
         android:letterSpacing="-0.02"
         app:layout_constraintStart_toEndOf="@id/icon"
         app:layout_constraintTop_toTopOf="@id/icon"
-        app:layout_constraintBottom_toBottomOf="@id/icon"
         android:layout_marginStart="@dimen/_18dp"/>
+
+    <TextView
+        android:id="@+id/counterparty"
+        android:layout_width="@dimen/_175dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_18dp"
+        android:layout_marginTop="@dimen/_2dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/mont_regular"
+        android:maxLines="1"
+        android:textColor="#777777"
+        android:textSize="@dimen/_11sp"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/icon"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        tools:text="Кому: Кылыч Абдраев"
+        tools:visibility="visible" />
     <TextView
         android:id="@+id/sum"
         android:layout_width="wrap_content"

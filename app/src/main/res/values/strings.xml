@@ -55,6 +55,10 @@
     <string name="transfer_som">Исходящий перевод в сом</string>
     <string name="transfer_digital">Исходящий перевод в салам</string>
     <string name="transfer_usdt">Исходящий перевод в USDT TRC20</string>
+    <string name="history_recipient_name">&#1050;&#1086;&#1084;&#1091;: %1$s</string>
+    <string name="history_sender_name">&#1054;&#1090; &#1082;&#1086;&#1075;&#1086;: %1$s</string>
+    <string name="history_incoming_transfer">&#1055;&#1086;&#1087;&#1086;&#1083;&#1085;&#1077;&#1085;&#1080;&#1077;</string>
+    <string name="own_funds_conversion">&#1050;&#1086;&#1085;&#1074;&#1077;&#1088;&#1090;&#1072;&#1094;&#1080;&#1103;\n&#1089;&#1086;&#1073;&#1089;&#1090;&#1074;&#1077;&#1085;&#1085;&#1099;&#1093; &#1089;&#1088;&#1077;&#1076;&#1089;&#1090;&#1074;</string>
 
     <string name="search">Поиск</string>
     <string name="actives">Активы</string>

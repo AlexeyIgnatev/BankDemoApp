@@ -56,9 +56,13 @@ class HistoryAdapter(
 
     private fun regroup() {
         val allItems = snapshot().items
-        val transferFiltered = if (withoutTransfers)
-            allItems.filterNot { it.isUserTransfer() }
-        else allItems
+        val transferFiltered = if (withoutTransfers) {
+            allItems.filter {
+                it.type == TransactionEnum.CONVERSION && !it.isUserTransfer()
+            }
+        } else {
+            allItems
+        }
         val filtered = if (searchQuery.isBlank()) {
             transferFiltered
         } else {

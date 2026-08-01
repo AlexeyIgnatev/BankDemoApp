@@ -237,7 +237,7 @@
                         android:fontFamily="@font/mont_bold"
                         android:text="0"
                         android:textColor="#1D1D1B"
-                        android:textSize="@dimen/_18sp"
+                        android:textSize="@dimen/_15sp"
                         app:layout_constraintTop_toBottomOf="@id/expences_title" />
                     <ImageView
                         android:layout_width="@dimen/_7dp"
@@ -285,7 +285,7 @@
                         android:fontFamily="@font/mont_bold"
                         android:text="0"
                         android:textColor="#1D1D1B"
-                        android:textSize="@dimen/_18sp"
+                        android:textSize="@dimen/_15sp"
                         app:layout_constraintTop_toBottomOf="@id/income_title" />
                     <ImageView
                         android:layout_width="@dimen/_7dp"

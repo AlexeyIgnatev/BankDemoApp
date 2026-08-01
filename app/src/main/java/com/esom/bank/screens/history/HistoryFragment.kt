@@ -151,7 +151,9 @@ class HistoryFragment : Fragment() {
 
     private fun updatePeriodStats(transactions: List<TransactionModel>) {
         val visibleTransactions = if (model.getWithoutTransactions()) {
-            transactions.filterNot { it.isUserTransfer() }
+            transactions.filter {
+                it.type == TransactionEnum.CONVERSION && !it.isUserTransfer()
+            }
         } else {
             transactions
         }

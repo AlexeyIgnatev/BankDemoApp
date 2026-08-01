@@ -67,6 +67,10 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
             if (binding.usdtCheck.isChecked) currencies.add(CurrencyEnum.USDT_TRC20)
             if (binding.somCheck.isChecked) currencies.add(CurrencyEnum.SOM)
             if (binding.digitalCheck.isChecked) currencies.add(CurrencyEnum.ESOM)
+            if (currencies.isEmpty()) {
+                binding.root.showErrorSnackbar("Выберите хотя бы одну валюту")
+                return@setOnClickListener
+            }
             model.setCurrency(currencies)
             val intent = Intent("ACTION_HISTORY")
             LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(intent)

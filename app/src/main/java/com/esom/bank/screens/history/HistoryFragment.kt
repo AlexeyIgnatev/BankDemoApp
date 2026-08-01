@@ -5,13 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.core.widget.doAfterTextChanged
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -27,30 +27,36 @@ import com.esom.bank.screens.history.adapter.HistoryAdapter
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.TransactionSuccessMapper
+import com.esom.bank.screens.history.model.isUserTransfer
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
+import com.esom.bank.screens.main.enums.CurrencyEnum
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class HistoryFragment : Fragment() {
     private lateinit var binding: FragmentHistoryBinding
     private val model: MainViewModel by activityViewModels()
-
     private lateinit var adapter: HistoryAdapter
+    private var historyJob: Job? = null
 
     private val historyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            loadTransactions()
-            model.monthTransactions()
+            refreshData()
         }
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHistoryBinding.inflate(inflater, container, false)
@@ -59,159 +65,29 @@ class HistoryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.root.doOnApplyWindowInsets { view, insets, rect ->
-            view.updatePadding(
+        binding.root.doOnApplyWindowInsets { root, insets, rect ->
+            root.updatePadding(
                 top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
             )
             insets
         }
+
         LocalBroadcastManager.getInstance(requireContext())
-            .registerReceiver(historyReceiver, IntentFilter("ACTION_HISTORY"))
-
-        binding.swipeRefreshLayout.setOnRefreshListener {
-            refreshData()
-        }
-
-        val currentMonth = getCurrentMonthInPrepositional()
-        binding.titleMonth.text = currentMonth
-        if(model.getWithoutTransactions()) {
-            binding.nonTransactionLayout.setBackgroundResource(R.drawable.data_period_background)
-            binding.nonTransactionTitle.setTextColor(requireContext().getColor(R.color.white))
-        }
-        binding.nonTransactionBtn.setOnClickListener {
-            val newValue = !model.getWithoutTransactions()
-            model.setWithoutTransactions(newValue)
-            if(model.getWithoutTransactions())
-                binding.nonTransactionLayout.setBackgroundResource(R.drawable.data_period_background)
-            else
-                binding.nonTransactionLayout.setBackgroundResource(R.drawable.gray_period_background)
-
-            adapter.updateFilter(newValue)
-        }
+            .registerReceiver(historyReceiver, IntentFilter(ACTION_HISTORY))
 
         adapter = HistoryAdapter(
-            showTransfers = model.getWithoutTransactions()
-        ) { transaction ->
-            openSuccessTransfer(transaction)
-        }
+            withoutTransfers = model.getWithoutTransactions(),
+            onTransactionClick = ::openSuccessTransfer
+        )
         binding.history.adapter = adapter
 
-        refreshData()
-        model.month.observe(viewLifecycleOwner) { it ->
-            when (it) {
-                is UiState.Loading -> {}
-                is UiState.Error -> {
-                    binding.swipeRefreshLayout.isRefreshing = false
-                    binding.root.showErrorSnackbar(it.message)
-                }
-                is UiState.Success -> {
-                    binding.swipeRefreshLayout.isRefreshing = false
-                    Log.d("MONTH_STATS", "Received data: ${it.data.size} transactions")
-
-                    it.data.forEachIndexed { index, tx ->
-                        Log.d("MONTH_STATS", "Transaction $index: type=${tx?.type}, amount=${tx?.amount}, amountType=${tx?.amount?.javaClass}, createdAt=${tx?.createdAt}, date=${if (tx?.createdAt != null) Date(tx.createdAt) else "null"}")
-                    }
-
-                    val calendar = java.util.Calendar.getInstance()
-                    val currentYear = calendar.get(java.util.Calendar.YEAR)
-                    val currentMonth = calendar.get(java.util.Calendar.MONTH)
-
-                    val calendarStart = java.util.Calendar.getInstance().apply {
-                        set(currentYear, currentMonth, 1, 0, 0, 0)
-                        set(java.util.Calendar.MILLISECOND, 0)
-                    }
-                    val calendarEnd = java.util.Calendar.getInstance().apply {
-                        set(currentYear, currentMonth, getActualMaximum(java.util.Calendar.DAY_OF_MONTH), 23, 59, 59)
-                        set(java.util.Calendar.MILLISECOND, 999)
-                    }
-
-                    val fromTimeMonth = calendarStart.timeInMillis
-                    val toTimeMonth = calendarEnd.timeInMillis
-
-                    Log.d("MONTH_STATS", "Time range: $fromTimeMonth - $toTimeMonth")
-                    Log.d("MONTH_STATS", "Calendar start: ${Date(fromTimeMonth)}")
-                    Log.d("MONTH_STATS", "Calendar end: ${Date(toTimeMonth)}")
-
-                    val monthFormat = java.text.SimpleDateFormat("MMMM", Locale.getDefault())
-                    val monthText = monthFormat.format(Date(fromTimeMonth))
-
-                    val monthInPrepositional = when (monthText.lowercase(Locale.getDefault())) {
-                        "january" -> "Январь"
-                        "february" -> "Февраль"
-                        "march" -> "Март"
-                        "april" -> "Апрель"
-                        "may" -> "Май"
-                        "june" -> "Июнь"
-                        "july" -> "Июль"
-                        "august" -> "Август"
-                        "september" -> "Сентябрь"
-                        "october" -> "Октябрь"
-                        "november" -> "Ноябрь"
-                        "december" -> "Декабрь"
-                        else -> monthText
-                    }
-
-                    val monthTransactions = it.data.filter { tx ->
-                        val inRange = tx!!.createdAt in fromTimeMonth..toTimeMonth
-                        Log.d("MONTH_STATS", "Transaction filter: createdAt=${tx.createdAt}, date=${Date(tx.createdAt ?: 0L)}, inRange=$inRange, amount=${tx.amount}, amountType=${tx.amount?.javaClass}")
-                        inRange
-                    }
-
-                    Log.d("MONTH_STATS", "Filtered month transactions: ${monthTransactions.size}")
-
-                    val incomeTransactions = monthTransactions
-                        .filterNotNull()
-                        .filter {
-                            val isIncome = it.type == TransactionEnum.INCOME || it.type == TransactionEnum.INFLOW
-                            Log.d("MONTH_STATS", "Income check: type=${it.type}, isIncome=$isIncome, amount=${it.amount}, amountType=${it.amount?.javaClass}, amountNull=${it.amount == null}")
-                            isIncome
-                        }
-
-                    val expenseTransactions = monthTransactions
-                        .filterNotNull()
-                        .filter {
-                            val isExpense = it.type == TransactionEnum.EXPENSE || it.type == TransactionEnum.TRANSFER
-                            Log.d("MONTH_STATS", "Expense check: type=${it.type}, isExpense=$isExpense, amount=${it.amount}, amountType=${it.amount?.javaClass}, amountNull=${it.amount == null}")
-                            isExpense
-                        }
-
-                    Log.d("MONTH_STATS", "Income transactions: ${incomeTransactions.size}")
-                    Log.d("MONTH_STATS", "Expense transactions: ${expenseTransactions.size}")
-
-                    incomeTransactions.forEachIndexed { index, transaction ->
-                        Log.d("MONTH_STATS", "Income transaction $index: amount=${transaction.amount}, amountType=${transaction.amount?.javaClass}, toDouble=${transaction.amount?.toDouble()}")
-                    }
-
-                    expenseTransactions.forEachIndexed { index, transaction ->
-                        Log.d("MONTH_STATS", "Expense transaction $index: amount=${transaction.amount}, amountType=${transaction.amount?.javaClass}, toDouble=${transaction.amount?.toDouble()}")
-                    }
-
-                    val incomeSum = incomeTransactions.sumOf { amount ->
-                        val amountValue = amount.amount
-                        val doubleValue = amountValue?.toDouble() ?: 0.0
-                        Log.d("MONTH_STATS", "Adding income: amount=$amountValue, toDouble=$doubleValue, amountType=${amountValue?.javaClass}")
-                        doubleValue
-                    }
-
-                    val expenseSum = expenseTransactions.sumOf { amount ->
-                        val amountValue = amount.amount
-                        val doubleValue = amountValue?.toDouble() ?: 0.0
-                        Log.d("MONTH_STATS", "Adding expense: amount=$amountValue, toDouble=$doubleValue, amountType=${amountValue?.javaClass}")
-                        doubleValue
-                    }
-
-                    Log.d("MONTH_STATS", "Final income sum: $incomeSum (type: ${incomeSum.javaClass})")
-                    Log.d("MONTH_STATS", "Final expense sum: $expenseSum (type: ${expenseSum.javaClass})")
-
-                    binding.incomeTitle.text = "Доходы за $monthInPrepositional"
-                    binding.expencesTitle.text = "Расходы за $monthInPrepositional"
-
-                    binding.income.text = incomeSum.formatBalanceNew()
-                    binding.expences.text = expenseSum.formatBalanceNew()
-
-                    Log.d("MONTH_STATS", "UI updated - Income: ${binding.income.text}, Expense: ${binding.expences.text}")
-                }
-            }
+        binding.searchInput.doAfterTextChanged { adapter.updateSearch(it?.toString().orEmpty()) }
+        binding.swipeRefreshLayout.setOnRefreshListener(::refreshData)
+        binding.nonTransactionBtn.setOnClickListener {
+            val withoutTransfers = !model.getWithoutTransactions()
+            model.setWithoutTransactions(withoutTransfers)
+            adapter.updateFilter(withoutTransfers)
+            updateFilterLabels()
         }
         binding.dataPeriodBtn.setOnClickListener {
             findParentNavController().navigate(NavGraphDirections.startChooseDateFragment())
@@ -223,72 +99,137 @@ class HistoryFragment : Fragment() {
             findParentNavController().navigate(NavGraphDirections.startChooseActiveFragment())
         }
 
-    }
-
-    private fun getCurrentMonthInPrepositional(): String {
-        val calendar = java.util.Calendar.getInstance()
-        val russianLocale = Locale("ru", "RU")
-        val monthFormat = java.text.SimpleDateFormat("MMMM", russianLocale)
-        val monthText = monthFormat.format(calendar.time)
-
-        return when (monthText.lowercase(russianLocale)) {
-            "january" -> "Январь"
-            "february" -> "Февраль"
-            "march" -> "Март"
-            "april" -> "Апрель"
-            "may" -> "Май"
-            "june" -> "Июнь"
-            "july" -> "Июль"
-            "august" -> "Август"
-            "september" -> "Сентябрь"
-            "october" -> "Октябрь"
-            "november" -> "Ноябрь"
-            "december" -> "Декабрь"
-            else -> monthText
+        model.month.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Loading -> Unit
+                is UiState.Error -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    binding.root.showErrorSnackbar(state.message)
+                }
+                is UiState.Success -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    updatePeriodStats(state.data.filterNotNull())
+                }
+            }
         }
+
+        refreshData()
     }
 
     private fun refreshData() {
+        updateFilterLabels()
         loadTransactions()
         model.monthTransactions()
     }
 
-    private fun openSuccessTransfer(transaction: TransactionModel) {
-        val user = (model.myData.value as? UiState.Success)?.data
-        val operation = TransactionSuccessMapper.toSuccessOperation(
-            context = requireContext(),
-            transaction = transaction,
-            user = user
-        )
-        model.setLastSuccessOperation(operation)
-        findParentNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
-    }
-
     private fun loadTransactions() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                Log.d("HistoryFragment", "Starting to collect paging data")
-                Log.d("HistoryFragment", "Filter transfers: ${!model.getWithoutTransactions()}")
-                binding.swipeRefreshLayout.isRefreshing = false
+        historyJob?.cancel()
+        historyJob = viewLifecycleOwner.lifecycleScope.launch {
+            runCatching {
                 model.historyPaging(
                     currencyEnum = model.getCurrency(),
                     fromTime = model.getFromTime(),
                     toTime = model.getToTime()
                 ).collectLatest { pagingData ->
                     adapter.submitData(PagingData.empty())
-
-                    Log.d("HistoryFragment", "Received filtered paging data, submitting to adapter")
                     adapter.submitData(pagingData)
                 }
-            } catch (e: Exception) {
-                Log.e("HistoryFragment", "Error loading transactions: ${e.message}")
+            }.onFailure {
                 binding.swipeRefreshLayout.isRefreshing = false
+                binding.root.showErrorSnackbar(it.message ?: getString(R.string.something_went_wrong))
             }
         }
     }
 
+    private fun updatePeriodStats(transactions: List<TransactionModel>) {
+        val visibleTransactions = if (model.getWithoutTransactions()) {
+            transactions.filterNot { it.isUserTransfer() }
+        } else {
+            transactions
+        }
+        val income = visibleTransactions
+            .filter { it.type == TransactionEnum.INCOME || it.type == TransactionEnum.INFLOW }
+            .sumOf { it.amount ?: 0.0 }
+        val expenses = visibleTransactions
+            .filter {
+                it.type == TransactionEnum.EXPENSE ||
+                    it.type == TransactionEnum.TRANSFER ||
+                    !it.recipientFullName.isNullOrBlank()
+            }
+            .sumOf { it.amount ?: 0.0 }
+        val label = statsPeriodLabel()
+
+        binding.incomeTitle.text = "Доходы за $label"
+        binding.expencesTitle.text = "Расходы за $label"
+        binding.income.text = income.formatBalanceNew()
+        binding.expences.text = expenses.formatBalanceNew()
+    }
+
+    private fun updateFilterLabels() {
+        val withoutTransfers = model.getWithoutTransactions()
+        binding.nonTransactionLayout.setBackgroundResource(
+            if (withoutTransfers) R.drawable.data_period_background
+            else R.drawable.gray_period_background
+        )
+        binding.nonTransactionTitle.setTextColor(
+            requireContext().getColor(if (withoutTransfers) R.color.white else R.color.title)
+        )
+
+        val from = model.getFromTime()
+        val to = model.getToTime()
+        binding.titleMonth.text =
+            SimpleDateFormat("LLLL", RUSSIAN_LOCALE).format(Date(to))
+
+        val currencies = model.getCurrency()
+        binding.active.text = if (currencies.size == CurrencyEnum.supportedValues.size) {
+            getString(R.string.actives)
+        } else {
+            "Активы: ${currencies.size}"
+        }
+
+        val days = TimeUnit.MILLISECONDS.toDays((to - from).coerceAtLeast(0L))
+        binding.periodTitle.text = when {
+            days <= 8 -> "Неделя"
+            days <= 32 -> "1 месяц"
+            days <= 95 -> "3 месяца"
+            else -> "Период"
+        }
+    }
+
+    private fun statsPeriodLabel(): String =
+        if (isSameMonth(model.getFromTime(), model.getToTime())) {
+            SimpleDateFormat("LLLL", RUSSIAN_LOCALE).format(Date(model.getFromTime()))
+        } else {
+            "выбранный период"
+        }
+
+    private fun isSameMonth(from: Long, to: Long): Boolean {
+        val start = Calendar.getInstance().apply { timeInMillis = from }
+        val end = Calendar.getInstance().apply { timeInMillis = to }
+        return start.get(Calendar.YEAR) == end.get(Calendar.YEAR) &&
+            start.get(Calendar.MONTH) == end.get(Calendar.MONTH)
+    }
+
+    private fun openSuccessTransfer(transaction: TransactionModel) {
+        val user = (model.myData.value as? UiState.Success)?.data
+        model.setLastSuccessOperation(
+            TransactionSuccessMapper.toSuccessOperation(
+                context = requireContext(),
+                transaction = transaction,
+                user = user
+            )
+        )
+        findParentNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
+    }
+
     override fun onDestroyView() {
-        super.onDestroyView()
+        historyJob?.cancel()
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(historyReceiver)
+        super.onDestroyView()
+    }
+
+    private companion object {
+        const val ACTION_HISTORY = "ACTION_HISTORY"
+        val RUSSIAN_LOCALE = Locale("ru", "RU")
     }
 }

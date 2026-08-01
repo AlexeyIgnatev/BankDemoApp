@@ -262,6 +262,18 @@
                             app:layout_constraintStart_toStartOf="@id/phone_qr_title"
                             app:layout_constraintTop_toBottomOf="@id/phone_qr_title" />
 
+                        <ImageButton
+                            android:id="@+id/phone_primary_btn"
+                            android:layout_width="@dimen/_40dp"
+                            android:layout_height="@dimen/_40dp"
+                            android:layout_marginTop="@dimen/_8dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Основная валюта"
+                            android:padding="@dimen/_8dp"
+                            android:src="@drawable/ic_star_selected"
+                            app:layout_constraintStart_toStartOf="@id/phone_qr_value"
+                            app:layout_constraintTop_toBottomOf="@id/phone_qr_value" />
+
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/phone_qr_copy_btn"
                             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -346,6 +358,18 @@
                             app:layout_constraintStart_toStartOf="@id/salam_qr_title"
                             app:layout_constraintTop_toBottomOf="@id/salam_qr_title" />
 
+                        <ImageButton
+                            android:id="@+id/salam_primary_btn"
+                            android:layout_width="@dimen/_40dp"
+                            android:layout_height="@dimen/_40dp"
+                            android:layout_marginTop="@dimen/_8dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Сделать основной валютой"
+                            android:padding="@dimen/_8dp"
+                            android:src="@drawable/ic_star_unselected"
+                            app:layout_constraintStart_toStartOf="@id/salam_qr_value"
+                            app:layout_constraintTop_toBottomOf="@id/salam_qr_value" />
+
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/salam_qr_copy_btn"
                             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -428,6 +452,18 @@
                             app:layout_constraintEnd_toStartOf="@id/usdt_qr_image"
                             app:layout_constraintStart_toStartOf="@id/usdt_qr_title"
                             app:layout_constraintTop_toBottomOf="@id/usdt_qr_title" />
+
+                        <ImageButton
+                            android:id="@+id/usdt_primary_btn"
+                            android:layout_width="@dimen/_40dp"
+                            android:layout_height="@dimen/_40dp"
+                            android:layout_marginTop="@dimen/_8dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Сделать основной валютой"
+                            android:padding="@dimen/_8dp"
+                            android:src="@drawable/ic_star_unselected"
+                            app:layout_constraintStart_toStartOf="@id/usdt_qr_value"
+                            app:layout_constraintTop_toBottomOf="@id/usdt_qr_value" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/usdt_qr_copy_btn"

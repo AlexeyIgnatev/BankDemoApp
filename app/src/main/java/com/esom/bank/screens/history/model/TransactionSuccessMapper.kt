@@ -19,6 +19,10 @@ object TransactionSuccessMapper {
         val account = user.accountFor(currency)
         val paidFromAccount = transaction.paidFromAccount(account)
         val recipient = transaction.recipientAccount(account)
+        val recipientName = when (transaction.type) {
+            TransactionEnum.INCOME, TransactionEnum.INFLOW -> transaction.senderFullName
+            else -> transaction.recipientFullName
+        }.orEmpty()
 
         return SuccessOperationModel(
             amount = transaction.amount ?: 0.0,
@@ -31,7 +35,9 @@ object TransactionSuccessMapper {
             transactionId = transaction.transactionId,
             conversionSide = transaction.conversionSide,
             createdAt = transaction.createdAt ?: System.currentTimeMillis(),
-            loadReceiptAutomatically = true
+            loadReceiptAutomatically = true,
+            recipientName = recipientName,
+            openedFromHistory = true
         )
     }
 
@@ -53,10 +59,18 @@ object TransactionSuccessMapper {
             absAccount = "",
             absFromAccount = "",
             absToAccount = "",
-            receiptNumber = operation.receiptNumber
+            receiptNumber = operation.receiptNumber,
+            totalDebitedAmount = operation.totalDebitedAmount
         )
 
     private fun TransactionModel.title(context: Context, currency: CurrencyEnum): String {
+        if (conversionSide != null) {
+            return "Конвертация собственных средств"
+        }
+        if (!recipientFullName.isNullOrBlank()) {
+            return context.getString(R.string.transfer)
+        }
+
         val titleRes = when (type) {
             TransactionEnum.CONVERSION -> null
             TransactionEnum.INCOME -> when (currency) {
@@ -85,7 +99,7 @@ object TransactionSuccessMapper {
         return if (titleRes != null) {
             context.getString(titleRes)
         } else {
-            context.getString(R.string.convertation)
+            "Конвертация собственных средств"
         }
     }
 
@@ -108,8 +122,8 @@ object TransactionSuccessMapper {
             TransactionEnum.INFLOW,
             TransactionEnum.CONVERSION -> account
             TransactionEnum.EXPENSE,
-            TransactionEnum.TRANSFER,
-            null -> ""
+            TransactionEnum.TRANSFER -> accountDetails.orEmpty()
+            null -> accountDetails.orEmpty()
         }
 
     private fun UserModel?.accountFor(currency: CurrencyEnum): String {

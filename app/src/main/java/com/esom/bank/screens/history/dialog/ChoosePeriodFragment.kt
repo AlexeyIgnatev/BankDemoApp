@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.databinding.FragmentChoosePeriodBinding
+import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.screens.main.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,6 +53,13 @@ class ChoosePeriodFragment : BottomSheetDialogFragment() {
             }
         }
         binding.chooseBtn.setOnClickListener {
+            if (!binding.last3monthCheck.isChecked &&
+                !binding.lastMonthCheck.isChecked &&
+                !binding.lastWeekCheck.isChecked
+            ) {
+                binding.root.showErrorSnackbar("Выберите период")
+                return@setOnClickListener
+            }
             if(binding.last3monthCheck.isChecked) {
                 val calendar = Calendar.getInstance()
 

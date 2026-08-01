@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/mont_regular"
+        android:text="Сумма перевода"
+        android:textColor="#777777"
+        android:textSize="@dimen/_13sp" />
+    <TextView
+        android:id="@+id/amount_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_2dp"
+        android:fontFamily="@font/mont_bold"
+        android:text="-"
+        android:textColor="@color/title"
+        android:textSize="@dimen/_18sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10dp"
+        android:fontFamily="@font/mont_regular"
+        android:text="Комиссия"
+        android:textColor="#777777"
+        android:textSize="@dimen/_13sp" />
+    <TextView
+        android:id="@+id/fee_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/mont_semibold"
+        android:text="-"
+        android:textColor="@color/title"
+        android:textSize="@dimen/_16sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10dp"
+        android:fontFamily="@font/mont_regular"
+        android:text="Получит"
+        android:textColor="#777777"
+        android:textSize="@dimen/_13sp" />
+    <TextView
+        android:id="@+id/credited_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/mont_bold"
+        android:text="-"
+        android:textColor="#38C72E"
+        android:textSize="@dimen/_18sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10dp"
+        android:fontFamily="@font/mont_regular"
+        android:text="Списано со счёта"
+        android:textColor="#777777"
+        android:textSize="@dimen/_13sp" />
+    <TextView
+        android:id="@+id/total_debited_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/mont_bold"
+        android:text="-"
+        android:textColor="#E62324"
+        android:textSize="@dimen/_19sp" />
+</LinearLayout>

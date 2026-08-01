@@ -315,19 +315,15 @@ class MainViewModel @Inject constructor(
     }
 
     fun monthTransactions() {
-        val now = System.currentTimeMillis()
-        val calendar = java.util.Calendar.getInstance().apply { timeInMillis = now }
-        calendar.add(java.util.Calendar.MONTH, -1)
-        val from = calendar.timeInMillis
         mainRepository.history(
             listOf(
                 CurrencyEnum.SOM,
                 CurrencyEnum.ESOM,
                 CurrencyEnum.USDT_TRC20
             ),
-            from,
-            System.currentTimeMillis(),
-            50,
+            getFromTime(),
+            getToTime(),
+            100,
             0
         ).onEach { uiState ->
             _month.value = when (uiState) {

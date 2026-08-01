@@ -25,7 +25,7 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="@dimen/_145dp"
+        android:layout_width="@dimen/_175dp"
         android:layout_height="wrap_content"
         android:text="@string/convert_som"
         android:fontFamily="@font/mont_regular"

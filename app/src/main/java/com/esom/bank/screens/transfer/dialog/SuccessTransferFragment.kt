@@ -57,8 +57,8 @@ class SuccessTransferFragment : Fragment() {
         operation = model.lastSuccessOperation.value ?: buildFallbackOperation()
         bindOperation(operation)
 
-        binding.backBtn.setOnClickListener { findNavController().navigate(NavGraphDirections.startMainFragment()) }
-        binding.cancelBtn.setOnClickListener { findNavController().navigate(NavGraphDirections.startMainFragment()) }
+        binding.backBtn.setOnClickListener { closeSuccessScreen() }
+        binding.cancelBtn.setOnClickListener { closeSuccessScreen() }
         binding.shareBtn.setOnClickListener { requestReceiptForShare() }
 
         model.lastSuccessOperation.observe(viewLifecycleOwner) { state ->
@@ -88,10 +88,21 @@ class SuccessTransferFragment : Fragment() {
                         receiptNumber = state.data.receiptNumber,
                         createdAt = state.data.createdAt,
                         fee = state.data.fee,
+                        operationTitle = resolveOperationTitle(state.data, operation),
                         paidFromAccount = resolvePaidFromAccount(state.data),
                         recipient = resolveRecipientAccount(state.data),
+                        recipientName = state.data.recipientFullName.ifBlank {
+                            operation?.recipientName.orEmpty()
+                        },
                         creditedAmount = creditedAmount,
-                        amountIsNet = false
+                        amountIsNet = false,
+                        totalDebitedAmount = state.data.totalDebitedAmount
+                            ?: operation?.totalDebitedAmount
+                            ?: if (operation?.conversionSide == null && operation?.targetCurrency == null) {
+                                state.data.amount + state.data.fee
+                            } else {
+                                state.data.amount
+                            }
                     )
                     val enrichedReceipt = fillOnlyBlankReceiptFields(state.data)
                     bindOperation(operation)
@@ -115,6 +126,8 @@ class SuccessTransferFragment : Fragment() {
         val amountText = formatAmount(data.amount, data.currency)
         val totalAmount = data.creditedAmount ?: if (data.amountIsNet) {
             data.amount
+        } else if (data.conversionSide == null && data.targetCurrency == null) {
+            data.amount
         } else {
             (data.amount - data.fee).coerceAtLeast(0.0)
         }
@@ -127,11 +140,32 @@ class SuccessTransferFragment : Fragment() {
         binding.receiptValue.text = data.receiptNumber.ifBlank { getString(R.string.empty_value) }
         binding.paidFromValue.text =
             formatAccountForDisplay(data.paidFromAccount).ifBlank { getString(R.string.empty_value) }
-        binding.recipientValue.text =
-            formatAccountForDisplay(data.recipient).ifBlank { getString(R.string.empty_value) }
+        binding.recipientValue.text = formatRecipientForDisplay(data)
         binding.feeValue.text = formatAmount(data.fee, data.currency)
         binding.totalValue.text = totalText
-        binding.totalWithdrawnValue.text = formatAmount(data.amount, data.currency)
+        binding.totalWithdrawnValue.text = formatAmount(
+            data.totalDebitedAmount ?: data.amount,
+            data.currency
+        )
+    }
+
+    private fun closeSuccessScreen() {
+        if (operation?.openedFromHistory == true) {
+            findNavController().popBackStack()
+        } else {
+            findNavController().navigate(NavGraphDirections.startMainFragment())
+        }
+    }
+
+    private fun formatRecipientForDisplay(operation: SuccessOperationModel): String {
+        val account = formatAccountForDisplay(operation.recipient)
+        return when {
+            operation.recipientName.isNotBlank() && account.isNotBlank() ->
+                "${operation.recipientName}\n$account"
+            operation.recipientName.isNotBlank() -> operation.recipientName
+            account.isNotBlank() -> account
+            else -> getString(R.string.empty_value)
+        }
     }
 
     private fun requestReceiptForShare() {
@@ -186,7 +220,8 @@ class SuccessTransferFragment : Fragment() {
                 currentOperation.receiptNumber
             },
             creditedAmount = currentOperation.creditedAmount,
-            targetCurrency = currentOperation.targetCurrency?.name.orEmpty()
+            targetCurrency = currentOperation.targetCurrency?.name.orEmpty(),
+            totalDebitedAmount = currentOperation.totalDebitedAmount
         )
     }
 
@@ -208,6 +243,22 @@ class SuccessTransferFragment : Fragment() {
             receipt.absAccount,
             currentOperation?.recipient.orEmpty()
         )
+    }
+
+    private fun resolveOperationTitle(
+        receipt: ReceiptModel,
+        currentOperation: SuccessOperationModel?
+    ): String {
+        val type = receipt.type.lowercase(Locale.ROOT)
+        return when {
+            receipt.conversionSide != null || type.contains("convert") ->
+                "Конвертация собственных средств"
+            type.contains("income") || type.contains("inflow") ->
+                "Пополнение"
+            type.contains("transfer") || type.contains("expense") ->
+                getString(R.string.transfer)
+            else -> currentOperation?.operationTitle.orEmpty()
+        }
     }
 
     private fun showReceiptError(message: String) {

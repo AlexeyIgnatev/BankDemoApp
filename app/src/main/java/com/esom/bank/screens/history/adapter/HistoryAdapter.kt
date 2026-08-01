@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.databinding.ItemHistoryBinding
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
+import com.esom.bank.screens.history.model.isUserTransfer
 import com.esom.bank.screens.wallet.adapter.TransactionAdapter
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
@@ -16,7 +17,7 @@ import java.util.Date
 import java.util.Locale
 
 class HistoryAdapter(
-    private var showTransfers: Boolean = true,
+    private var withoutTransfers: Boolean = false,
     private val onTransactionClick: ((TransactionModel) -> Unit)? = null
 ) : PagingDataAdapter<TransactionModel, HistoryAdapter.HistoryGroupViewHolder>(HistoryDiffCallback()) {
 
@@ -35,6 +36,7 @@ class HistoryAdapter(
     }
 
     private var groupedItems: List<HistoryGroup> = emptyList()
+    private var searchQuery: String = ""
 
     init {
         addOnPagesUpdatedListener {
@@ -42,16 +44,28 @@ class HistoryAdapter(
         }
     }
 
-    fun updateFilter(showTransfers: Boolean) {
-        this.showTransfers = showTransfers
+    fun updateFilter(withoutTransfers: Boolean) {
+        this.withoutTransfers = withoutTransfers
+        regroup()
+    }
+
+    fun updateSearch(query: String) {
+        searchQuery = query.trim().lowercase(Locale.getDefault())
         regroup()
     }
 
     private fun regroup() {
         val allItems = snapshot().items
-        val filtered = if (!showTransfers)
-            allItems.filter { it.type != TransactionEnum.TRANSFER }
+        val transferFiltered = if (withoutTransfers)
+            allItems.filterNot { it.isUserTransfer() }
         else allItems
+        val filtered = if (searchQuery.isBlank()) {
+            transferFiltered
+        } else {
+            transferFiltered.filter { transaction ->
+                transaction.searchableText().contains(searchQuery)
+            }
+        }
 
         groupedItems = filtered
             .groupBy { dateFormat.format(Date(it.createdAt ?: 0L)) }
@@ -65,6 +79,18 @@ class HistoryAdapter(
 
         notifyDataSetChanged()
     }
+
+    private fun TransactionModel.searchableText(): String = buildString {
+        append(type?.name.orEmpty())
+        append(' ')
+        append(currencyEnum?.name.orEmpty())
+        append(' ')
+        append(amount?.toString().orEmpty())
+        append(' ')
+        append(recipientFullName.orEmpty())
+        append(' ')
+        append(senderFullName.orEmpty())
+    }.lowercase(Locale.getDefault())
 
     inner class HistoryGroupViewHolder(private val binding: ItemHistoryBinding) :
         RecyclerView.ViewHolder(binding.root) {

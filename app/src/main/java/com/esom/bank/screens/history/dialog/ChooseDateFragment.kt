@@ -37,7 +37,6 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setInitialDates()
-        setCurrentDate()
         updateMonthAndCalendar()
         binding.previousMonth.setOnClickListener {
             calendar.add(Calendar.MONTH, -1)
@@ -94,14 +93,8 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
 
         binding.startDate.text = dateFormat.format(fromTime)
         binding.endDate.text = dateFormat.format(toTime)
+        calendar.timeInMillis = fromTime
         setSelectionMode(isStartMode = true)
-    }
-
-    private fun setCurrentDate() {
-        val now = Calendar.getInstance()
-        calendar.set(Calendar.YEAR, now.get(Calendar.YEAR))
-        calendar.set(Calendar.MONTH, now.get(Calendar.MONTH))
-        calendar.set(Calendar.DAY_OF_MONTH, now.get(Calendar.DAY_OF_MONTH))
     }
 
     private fun updateMonthAndCalendar() {
@@ -110,14 +103,24 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         val daysInMonth = generateDaysForMonth(calendar)
 
         val adapter = CalendarAdapter(
-            selectedStartDateProvider = { binding.startDate.text?.toString()?.ifEmpty { null } },
-            selectedEndDateProvider = { binding.endDate.text?.toString()?.ifEmpty { null } },
+            selectedStartDateProvider = {
+                displayDateToIso(binding.startDate.text?.toString()).ifEmpty { null }
+            },
+            selectedEndDateProvider = {
+                displayDateToIso(binding.endDate.text?.toString()).ifEmpty { null }
+            },
             selectionModeProvider = { currentSelectionMode() }
         ) { fullDate ->
             if (fullDate.isNotEmpty()) {
                 val formattedDate = formatDateToDDMMYYYY(fullDate)
                 if (isStartMode()) {
                     binding.startDate.text = formattedDate
+                    val currentEnd = parseDisplayDate(binding.endDate.text?.toString())
+                    val selectedStart = parseDisplayDate(formattedDate)
+                    if (selectedStart != null && (currentEnd == null || currentEnd.before(selectedStart))) {
+                        binding.endDate.text = formattedDate
+                    }
+                    setSelectionMode(isStartMode = false)
                 } else {
                     binding.endDate.text = formattedDate
                 }
@@ -180,6 +183,17 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
             dateString
         }
     }
+
+    private fun displayDateToIso(value: String?): String {
+        val date = parseDisplayDate(value) ?: return ""
+        return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date)
+    }
+
+    private fun parseDisplayDate(value: String?) = runCatching {
+        SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).apply {
+            isLenient = false
+        }.parse(value.orEmpty())
+    }.getOrNull()
 
     private fun updateMonthTitle() {
         val monthName = SimpleDateFormat("LLLL yyyy", Locale.getDefault())

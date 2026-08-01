@@ -34,5 +34,10 @@ data class ReceiptResponseDto(
     @SerializedName(value = "abs_to_account", alternate = ["absToAccount", "to_abs_account"])
     val absToAccount: String?,
     @SerializedName(value = "receipt_number", alternate = ["receipt_id", "receiptId", "id"])
-    val receiptNumber: String?
+    val receiptNumber: String?,
+    @SerializedName(
+        value = "total_debited_amount",
+        alternate = ["debited_amount", "withdrawn_amount", "total_amount"]
+    )
+    val totalDebitedAmount: Double? = null
 )

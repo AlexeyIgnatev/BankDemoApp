@@ -21,5 +21,20 @@ data class TransactionDto(
     @SerializedName("successful")
     val successful: Boolean?,
     @SerializedName("created_at")
-    val createdAt: Long?
+    val createdAt: Long?,
+    @SerializedName(
+        value = "recipient_full_name",
+        alternate = ["recipient_name", "recipient", "to_user_name"]
+    )
+    val recipientFullName: String? = null,
+    @SerializedName(
+        value = "sender_full_name",
+        alternate = ["sender_name", "sender", "from_user_name"]
+    )
+    val senderFullName: String? = null,
+    @SerializedName(
+        value = "account_details",
+        alternate = ["recipient_account", "to_account", "address", "phone_number"]
+    )
+    val accountDetails: String? = null
 )

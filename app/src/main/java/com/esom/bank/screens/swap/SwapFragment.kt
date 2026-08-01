@@ -172,6 +172,8 @@ class SwapFragment : Fragment() {
             ) ?: return@setFragmentResultListener
             val amount = bundle.getDouble(TransferConfirmationFragment.AMOUNT_KEY)
             val creditedAmount = bundle.getDouble(TransferConfirmationFragment.CREDITED_AMOUNT_KEY)
+            val fee = bundle.getDouble(TransferConfirmationFragment.FEE_KEY)
+            val totalDebited = bundle.getDouble(TransferConfirmationFragment.TOTAL_DEBITED_KEY)
 
             pendingTemplate = SwapTemplate(
                 amount = amount,
@@ -188,10 +190,11 @@ class SwapFragment : Fragment() {
                     paidFromAccount = bundle.getString(TransferConfirmationFragment.PAID_FROM_KEY).orEmpty(),
                     recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty(),
                     receiptNumber = "",
-                    fee = calculateFeePreview(amount),
+                    fee = fee,
                     creditedAmount = creditedAmount,
                     conversionSide = getConversionSide(fromCurrency, toCurrency),
-                    targetCurrency = toCurrency
+                    targetCurrency = toCurrency,
+                    totalDebitedAmount = totalDebited
                 )
             )
             model.convert(fromCurrency, toCurrency, amount)
@@ -912,6 +915,8 @@ class SwapFragment : Fragment() {
                 TransferConfirmationFragment.OPERATION_KEY to OPERATION_CONVERT,
                 TransferConfirmationFragment.AMOUNT_KEY to amount,
                 TransferConfirmationFragment.CREDITED_AMOUNT_KEY to creditedAmount,
+                TransferConfirmationFragment.FEE_KEY to calculateFeePreview(amount),
+                TransferConfirmationFragment.TOTAL_DEBITED_KEY to amount,
                 TransferConfirmationFragment.FROM_CURRENCY_KEY to currentFromCurrency.name,
                 TransferConfirmationFragment.TO_CURRENCY_KEY to currentToCurrency.name,
                 TransferConfirmationFragment.OPERATION_TITLE_KEY to getString(R.string.convertation),

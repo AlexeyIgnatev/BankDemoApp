@@ -71,10 +71,15 @@ class TransactionAdapter(
                 CurrencyEnum.USDT_TRC20 -> "Конвертация в USDT"
                 null -> "Конвертация"
             }
-            binding.title.text = if (item.type == TransactionEnum.CONVERSION) {
-                conversionTitle
-            } else {
-                context.getString(stringResId)
+            binding.title.text = when {
+                item.type == TransactionEnum.CONVERSION && item.recipientFullName.isNullOrBlank() ->
+                    "Конвертация\nсобственных средств"
+                !item.recipientFullName.isNullOrBlank() ->
+                    "Перевод\nКому: ${item.recipientFullName}"
+                !item.senderFullName.isNullOrBlank() ->
+                    "Пополнение\nОт: ${item.senderFullName}"
+                item.type == TransactionEnum.CONVERSION -> conversionTitle
+                else -> context.getString(stringResId)
             }
 
             val (sign, color) = when (item.type) {

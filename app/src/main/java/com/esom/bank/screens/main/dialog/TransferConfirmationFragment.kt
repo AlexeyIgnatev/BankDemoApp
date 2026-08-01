@@ -5,9 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import com.esom.bank.R
 import com.esom.bank.databinding.FragmentTransferConfirmationBinding
+import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @AndroidEntryPoint
 class TransferConfirmationFragment : BottomSheetDialogFragment() {
@@ -29,7 +33,7 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
             viewLifecycleOwner
         ) { _, bundle ->
             confirmationData = Bundle(bundle)
-            binding.title.text = bundle.getString(TITLE_KEY).orEmpty()
+            bindConfirmation(bundle)
         }
 
         binding.confirmBtn.setOnClickListener {
@@ -50,6 +54,45 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
         }
     }
 
+    private fun bindConfirmation(data: Bundle) {
+        val operation = data.getString(OPERATION_KEY)
+        val fromCurrency = CurrencyEnum.fromNameOrNull(data.getString(FROM_CURRENCY_KEY))
+            ?: CurrencyEnum.SOM
+        val toCurrency = CurrencyEnum.fromNameOrNull(data.getString(TO_CURRENCY_KEY))
+            ?: fromCurrency
+        val amount = data.getDouble(AMOUNT_KEY)
+        val creditedAmount = data.getDouble(CREDITED_AMOUNT_KEY, amount)
+        val fee = data.getDouble(FEE_KEY)
+        val totalDebited = data.getDouble(TOTAL_DEBITED_KEY, amount)
+
+        binding.title.text = if (operation == OPERATION_CONVERT) {
+            "Подтверждение конвертации"
+        } else {
+            "Подтверждение перевода"
+        }
+        binding.recipientValue.text = data.getString(RECIPIENT_KEY)
+            .orEmpty()
+            .ifBlank { getString(R.string.empty_value) }
+        binding.amounts.amountValue.text = formatAmount(amount, fromCurrency)
+        binding.amounts.feeValue.text = formatAmount(fee, fromCurrency)
+        binding.amounts.creditedValue.text = formatAmount(creditedAmount, toCurrency)
+        binding.amounts.totalDebitedValue.text = formatAmount(totalDebited, fromCurrency)
+    }
+
+    private fun formatAmount(amount: Double, currency: CurrencyEnum): String {
+        val scale = if (currency == CurrencyEnum.USDT_TRC20) 6 else 2
+        val value = BigDecimal.valueOf(amount)
+            .setScale(scale, RoundingMode.HALF_UP)
+            .stripTrailingZeros()
+            .toPlainString()
+        val currencyName = when (currency) {
+            CurrencyEnum.SOM -> "Сом"
+            CurrencyEnum.ESOM -> "САЛАМ"
+            CurrencyEnum.USDT_TRC20 -> "USDT"
+        }
+        return "$value $currencyName"
+    }
+
     companion object {
         const val DATA_REQUEST_KEY = "transfer_confirmation_data"
         const val RESULT_REQUEST_KEY = "transfer_confirmation_result"
@@ -65,5 +108,8 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
         const val OPERATION_TITLE_KEY = "transfer_confirmation_operation_title"
         const val PAID_FROM_KEY = "transfer_confirmation_paid_from"
         const val RECIPIENT_KEY = "transfer_confirmation_recipient"
+        const val FEE_KEY = "transfer_confirmation_fee"
+        const val TOTAL_DEBITED_KEY = "transfer_confirmation_total_debited"
+        private const val OPERATION_CONVERT = "convert"
     }
 }

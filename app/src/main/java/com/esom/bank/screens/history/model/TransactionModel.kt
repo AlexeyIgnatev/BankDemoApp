@@ -17,7 +17,10 @@ data class TransactionModel(
     val conversionSide: ConversionSide?,
     val amount: Double?,
     val successful: Boolean?,
-    val createdAt: Long?
+    val createdAt: Long?,
+    val recipientFullName: String? = null,
+    val senderFullName: String? = null,
+    val accountDetails: String? = null
 ): Parcelable
 
 fun TransactionDto?.toModel(): TransactionModel? =
@@ -29,10 +32,18 @@ fun TransactionDto?.toModel(): TransactionModel? =
             conversionSide = it.conversionSide,
             amount = it.amount,
             successful = it.successful,
-            createdAt = it.createdAt
+            createdAt = it.createdAt,
+            recipientFullName = it.recipientFullName,
+            senderFullName = it.senderFullName,
+            accountDetails = it.accountDetails
         )
     }
 
 fun List<TransactionDto?>.toModel(): List<TransactionModel?> {
     return this.map { it.toModel() }
 }
+
+fun TransactionModel.isUserTransfer(): Boolean =
+    type == TransactionEnum.TRANSFER ||
+        (conversionSide == null &&
+            (!recipientFullName.isNullOrBlank() || !senderFullName.isNullOrBlank()))

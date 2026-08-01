@@ -31,7 +31,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:fontFamily">@font/mont_medium</item>
         <item name="android:textColor">@color/subtitle</item>
-        <item name="android:textSize">@dimen/_14sp</item>
+        <item name="android:textSize">@dimen/_15sp</item>
     </style>
 
     <style name="SuccessDetailsValue">
@@ -42,6 +42,6 @@
         <item name="android:gravity">end</item>
         <item name="android:maxLines">2</item>
         <item name="android:textColor">@color/edittext_title</item>
-        <item name="android:textSize">@dimen/_14sp</item>
+        <item name="android:textSize">@dimen/_16sp</item>
     </style>
 </resources>

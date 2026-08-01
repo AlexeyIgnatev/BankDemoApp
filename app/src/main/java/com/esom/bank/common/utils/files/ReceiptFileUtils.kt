@@ -215,12 +215,20 @@ object ReceiptFileUtils {
         val (dateText, timeText) = formatDateAndTime(receipt.createdAt)
         val feeText = "${formatNumber(receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
         val creditedCurrency = resolveCreditedCurrency(receipt)
-        val creditedAmount = receipt.creditedAmount
-            ?: (receipt.amount - receipt.fee).coerceAtLeast(0.0)
+        val creditedAmount = receipt.creditedAmount ?: if (isConversionReceipt(receipt)) {
+            (receipt.amount - receipt.fee).coerceAtLeast(0.0)
+        } else {
+            receipt.amount
+        }
         val creditedAmountText =
             "${formatNumber(creditedAmount)} ${formatCurrencyForDocument(creditedCurrency)}"
+        val withdrawnAmount = receipt.totalDebitedAmount ?: if (isConversionReceipt(receipt)) {
+            receipt.amount
+        } else {
+            receipt.amount + receipt.fee
+        }
         val withdrawnAmountText =
-            "${formatNumber(receipt.amount)} ${formatCurrencyForDocument(receipt.currency)}"
+            "${formatNumber(withdrawnAmount)} ${formatCurrencyForDocument(receipt.currency)}"
         val accountDetailsValue = sanitizeOneLineValue(
             formatMaskedAccountWithVisibleTail(
                 pickBestAccountCandidate(
@@ -422,6 +430,11 @@ object ReceiptFileUtils {
             null -> receipt.currency
         }
     }
+
+    private fun isConversionReceipt(receipt: ReceiptModel): Boolean =
+        receipt.conversionSide != null ||
+            receipt.type.contains("convert", ignoreCase = true) ||
+            receipt.type.contains("conversion", ignoreCase = true)
 
     private fun firstNotBlank(vararg values: String): String {
         return values.firstOrNull { it.isNotBlank() } ?: ""

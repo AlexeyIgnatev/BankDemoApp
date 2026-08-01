@@ -232,6 +232,8 @@ class TransferFragment : Fragment() {
             val phone = bundle.getString(TransferConfirmationFragment.PHONE_KEY).orEmpty()
             val address = bundle.getString(TransferConfirmationFragment.ADDRESS_KEY)
             val recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty()
+            val fee = bundle.getDouble(TransferConfirmationFragment.FEE_KEY)
+            val totalDebited = bundle.getDouble(TransferConfirmationFragment.TOTAL_DEBITED_KEY)
 
             pendingTemplate = TransferTemplate(
                 amount = amount,
@@ -249,7 +251,9 @@ class TransferFragment : Fragment() {
                     paidFromAccount = bundle.getString(TransferConfirmationFragment.PAID_FROM_KEY).orEmpty(),
                     recipient = recipient,
                     receiptNumber = "",
-                    fee = calculateTransferCommission(amount, currency)
+                    fee = fee,
+                    creditedAmount = amount,
+                    totalDebitedAmount = totalDebited
                 )
             )
             model.transferToUser(amount, phone, address, currency)
@@ -720,7 +724,7 @@ class TransferFragment : Fragment() {
         val amount = amountText.toDoubleOrNull() ?: 0.0
         val commission = calculateTransferCommission(amount, currentFromCurrency)
 
-        val totalAmount = amount - commission
+        val totalAmount = amount + commission
 
         binding.comissionValue.text = formatTransferAmount(commission, currentFromCurrency)
         binding.total.text = formatTransferAmount(totalAmount.coerceAtLeast(0.0), currentFromCurrency)
@@ -798,7 +802,8 @@ class TransferFragment : Fragment() {
         val walletBalance =
             (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currentFromCurrency }?.balance
                 ?: 0.0
-        if (sum > walletBalance) {
+        val fee = calculateTransferCommission(sum, currentFromCurrency)
+        if (sum + fee > walletBalance) {
             val currencyName = getCurrencyName(currentFromCurrency)
             binding.root.showErrorSnackbar("Недостаточно $currencyName на балансе")
             return
@@ -839,6 +844,14 @@ class TransferFragment : Fragment() {
                 ),
                 TransferConfirmationFragment.OPERATION_KEY to OPERATION_TRANSFER,
                 TransferConfirmationFragment.AMOUNT_KEY to amount,
+                TransferConfirmationFragment.CREDITED_AMOUNT_KEY to amount,
+                TransferConfirmationFragment.FEE_KEY to calculateTransferCommission(
+                    amount,
+                    currentFromCurrency
+                ),
+                TransferConfirmationFragment.TOTAL_DEBITED_KEY to (
+                    amount + calculateTransferCommission(amount, currentFromCurrency)
+                ),
                 TransferConfirmationFragment.FROM_CURRENCY_KEY to currentFromCurrency.name,
                 TransferConfirmationFragment.PHONE_KEY to phone,
                 TransferConfirmationFragment.ADDRESS_KEY to address,

@@ -21,7 +21,8 @@ data class ReceiptModel(
     val absFromAccount: String,
     val absToAccount: String,
     val receiptNumber: String,
-    val targetCurrency: String = ""
+    val targetCurrency: String = "",
+    val totalDebitedAmount: Double? = null
 )
 
 fun ReceiptResponseDto.toModel(requestedConversionSide: ConversionSide? = null): ReceiptModel =
@@ -39,5 +40,6 @@ fun ReceiptResponseDto.toModel(requestedConversionSide: ConversionSide? = null):
         absAccount = absAccount.orEmpty(),
         absFromAccount = absFromAccount.orEmpty(),
         absToAccount = absToAccount.orEmpty(),
-        receiptNumber = receiptNumber.orEmpty()
+        receiptNumber = receiptNumber.orEmpty(),
+        totalDebitedAmount = totalDebitedAmount
     )

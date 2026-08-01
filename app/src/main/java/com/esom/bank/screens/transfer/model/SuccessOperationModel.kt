@@ -17,5 +17,8 @@ data class SuccessOperationModel(
     val targetCurrency: CurrencyEnum? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val loadReceiptAutomatically: Boolean = true,
-    val amountIsNet: Boolean = false
+    val amountIsNet: Boolean = false,
+    val recipientName: String = "",
+    val openedFromHistory: Boolean = false,
+    val totalDebitedAmount: Double? = null
 )

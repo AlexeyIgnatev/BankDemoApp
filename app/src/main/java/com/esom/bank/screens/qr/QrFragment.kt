@@ -36,6 +36,7 @@ import com.google.android.material.button.MaterialButton
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class QrFragment : Fragment() {
@@ -46,6 +47,10 @@ class QrFragment : Fragment() {
     private var salamAddress: String = ""
     private var usdtAddress: String = ""
     private var currentUser: UserModel? = null
+    private var primaryCurrency: CurrencyEnum = CurrencyEnum.SOM
+
+    @Inject
+    lateinit var primaryCurrencyStore: PrimaryCurrencyStore
 
     private val qrCameraLauncher = registerForActivityResult(ScanContract()) { result ->
         handleScannedContent(result.contents)
@@ -85,6 +90,8 @@ class QrFragment : Fragment() {
         }
 
         binding.backBtn.setOnClickListener { findNavController().popBackStack() }
+        primaryCurrency = primaryCurrencyStore.get()
+        setupPrimaryCurrencyActions()
         setupTabs()
         setupScanActions()
         observeUserData()
@@ -139,10 +146,10 @@ class QrFragment : Fragment() {
             text = if (phone.isBlank()) getString(R.string.empty_value) else phone.formatPhone(),
             copyText = phone,
             copySuccessMessage = getString(R.string.qr_copy_phone),
-            shareCurrency = CurrencyEnum.SOM,
+            shareCurrency = primaryCurrency,
             bitmap = if (phone.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
                 address = phone,
-                currency = CurrencyEnum.SOM,
+                currency = primaryCurrency,
                 width = 600,
                 height = 600
             )
@@ -179,6 +186,47 @@ class QrFragment : Fragment() {
                 height = 600
             )
         )
+        renderPrimaryCurrency()
+    }
+
+    private fun setupPrimaryCurrencyActions() {
+        binding.phonePrimaryBtn.setOnClickListener { selectPrimaryCurrency(CurrencyEnum.SOM) }
+        binding.salamPrimaryBtn.setOnClickListener { selectPrimaryCurrency(CurrencyEnum.ESOM) }
+        binding.usdtPrimaryBtn.setOnClickListener { selectPrimaryCurrency(CurrencyEnum.USDT_TRC20) }
+    }
+
+    private fun selectPrimaryCurrency(currency: CurrencyEnum) {
+        primaryCurrency = currency
+        primaryCurrencyStore.set(currency)
+        renderPrimaryCurrency()
+        if (phone.isNotBlank()) {
+            renderUserQrCodes(phone, salamAddress, usdtAddress)
+        }
+    }
+
+    private fun renderPrimaryCurrency() {
+        listOf(
+            binding.phonePrimaryBtn to CurrencyEnum.SOM,
+            binding.salamPrimaryBtn to CurrencyEnum.ESOM,
+            binding.usdtPrimaryBtn to CurrencyEnum.USDT_TRC20
+        ).forEach { (button, currency) ->
+            val selected = currency == primaryCurrency
+            button.setImageResource(
+                if (selected) R.drawable.ic_star_selected else R.drawable.ic_star_unselected
+            )
+            button.contentDescription = if (selected) {
+                "Основная валюта"
+            } else {
+                "Сделать основной валютой"
+            }
+        }
+        binding.phoneQrTitle.text = "QR для номера телефона (${currencyName(primaryCurrency)})"
+    }
+
+    private fun currencyName(currency: CurrencyEnum): String = when (currency) {
+        CurrencyEnum.SOM -> "Сом"
+        CurrencyEnum.ESOM -> "Салам"
+        CurrencyEnum.USDT_TRC20 -> "USDT"
     }
 
     private fun bindQrCard(

@@ -14,6 +14,7 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.paging.PagingData
 import com.esom.bank.NavGraphDirections
@@ -33,6 +34,7 @@ import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -125,7 +127,7 @@ class HistoryFragment : Fragment() {
     private fun loadTransactions() {
         historyJob?.cancel()
         historyJob = viewLifecycleOwner.lifecycleScope.launch {
-            runCatching {
+            try {
                 model.historyPaging(
                     currencyEnum = model.getCurrency(),
                     fromTime = model.getFromTime(),
@@ -134,9 +136,15 @@ class HistoryFragment : Fragment() {
                     adapter.submitData(PagingData.empty())
                     adapter.submitData(pagingData)
                 }
-            }.onFailure {
-                binding.swipeRefreshLayout.isRefreshing = false
-                binding.root.showErrorSnackbar(it.message ?: getString(R.string.something_went_wrong))
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    binding.root.showErrorSnackbar(
+                        error.message ?: getString(R.string.something_went_wrong)
+                    )
+                }
             }
         }
     }

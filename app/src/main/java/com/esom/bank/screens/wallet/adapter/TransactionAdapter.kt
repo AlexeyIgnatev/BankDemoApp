@@ -68,12 +68,6 @@ class TransactionAdapter(
             if (item.type == TransactionEnum.CONVERSION && !isTransfer) {
                 return context.getString(R.string.own_funds_conversion)
             }
-            if (!item.recipientFullName.isNullOrBlank()) {
-                return context.getString(R.string.transfer)
-            }
-            if (!item.senderFullName.isNullOrBlank()) {
-                return context.getString(R.string.history_incoming_transfer)
-            }
 
             val stringRes = when (item.type) {
                 TransactionEnum.CONVERSION, TransactionEnum.TRANSFER -> transferTitle(item.currencyEnum)

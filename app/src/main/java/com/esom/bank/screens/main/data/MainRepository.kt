@@ -198,14 +198,22 @@ class MainRepositoryImpl @Inject constructor(
     override fun authenticate(login: String, password: String): Flow<UiState<UserModel>> = flow {
         authLocalDataSource.setLogin(login)
         authLocalDataSource.setPassword(password)
-        emitAll(
-            mainCloudDataSource.getUserInfo().map { response ->
-                when (response) {
-                    is ApiResponse.Success -> return@map UiState.Success(response.data.toModel())
-                    is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
+        var authenticated = false
+        try {
+            emitAll(
+                mainCloudDataSource.getUserInfo().map { response ->
+                    when (response) {
+                        is ApiResponse.Success -> {
+                            authenticated = true
+                            UiState.Success(response.data.toModel())
+                        }
+                        is ApiResponse.Error -> UiState.Error(response.toString(context))
+                    }
                 }
-            }
-        )
+            )
+        } finally {
+            if (!authenticated) authLocalDataSource.clearAuthData()
+        }
     }
 
     override fun getUserInfo(): Flow<UiState<UserModel>> =

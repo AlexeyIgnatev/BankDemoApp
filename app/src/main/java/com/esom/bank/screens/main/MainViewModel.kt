@@ -98,19 +98,22 @@ class MainViewModel @Inject constructor(
     private val supportMessagesUiState = MutableStateFlow(SupportMessagesUiState())
 
     fun clearAllDataAndNavigate() {
-        _myData.value = UiState.Loading()
-        _swapRes.value = UiState.Loading()
-        _transferRes.value = UiState.Loading()
-        _history.value = UiState.Loading()
-        _month.value = UiState.Loading()
-        _receipt.value = UiState.Loading()
-        _messages.value = UiState.Loading()
-        _sendMessage.value = UiState.Loading()
-        _notifications.value = UiState.Loading()
-        _settings.value = UiState.Loading()
-        _fees.value = UiState.Loading()
-        _financialReport.value = UiState.Loading()
         mainRepository.clearAllLocalData()
+        _myData.value = null
+        _swapRes.clear()
+        _transferRes.clear()
+        _history.clear()
+        _month.clear()
+        _receipt.clear()
+        _messages.value = null
+        _sendMessage.clear()
+        _notifications.value = null
+        _settings.value = null
+        _fees.value = null
+        _financialReport.clear()
+        _hasUnreadNotifications.value = false
+        _lastSuccessOperation.value = null
+        _lastSuccessReceipt.value = null
     }
 
 

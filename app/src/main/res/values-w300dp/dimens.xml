@@ -109,4 +109,6 @@
     <dimen name="_28sp">22sp</dimen>
     <dimen name="_32sp">26sp</dimen>
     <dimen name="_34sp">27sp</dimen>
+    <dimen name="home_wallet_card_width">140dp</dimen>
+    <dimen name="home_wallet_balance_text_size">15sp</dimen>
 </resources>

@@ -38,6 +38,12 @@ class SingleLiveEvent<T> : MutableLiveData<T>() {
         value = null
     }
 
+    @MainThread
+    fun clear() {
+        mPending.set(false)
+        super.setValue(null)
+    }
+
     companion object {
         private const val TAG = "SingleLiveEvent"
     }

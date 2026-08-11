@@ -41,18 +41,10 @@ class TransactionsPagingSource(
 
             when (val finalResult = result) {
                 is UiState.Success -> {
-                    val transactions = finalResult.data.map { dto ->
-                        TransactionModel(
-                            transactionId = dto?.transactionId,
-                            currencyEnum = dto?.currencyEnum,
-                            type = dto?.type,
-                            conversionSide = dto?.conversionSide,
-                            amount = dto?.amount,
-                            successful = dto?.successful,
-                            createdAt = dto?.createdAt
-                        )
-
-                    }
+                    // The repository has already mapped the complete DTO. Keep that model intact:
+                    // sender/recipient/account fields are required to distinguish server-side
+                    // INCOME/EXPENSE transfers from other operations.
+                    val transactions = finalResult.data.filterNotNull()
 
                     Log.d("PAGING", "Loaded ${transactions.size} transactions")
 

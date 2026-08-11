@@ -258,7 +258,7 @@ class HistoryFragment : Fragment() {
         fields.addView(from)
         fields.addView(to)
         content.addView(fields)
-        content.addView(actionButton("Применить").apply {
+        content.addView(actionButton(getString(R.string.apply_filter)).apply {
             setOnClickListener {
                 uiModel.setAmountFilter(from.number(), to.number())
                 (binding.history.adapter as HistoryAdapter).regroup()
@@ -319,7 +319,8 @@ class HistoryFragment : Fragment() {
         text = label
         gravity = android.view.Gravity.CENTER
         textSize = 18f
-        setTextColor(context.getColor(R.color.white))
+        setTextColor(context.getColor(R.color.red))
+        typeface = context.getFontCompat(R.font.mont_bold)
         setBackgroundResource(R.drawable.accept_btn_background)
         layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 58.dp).apply {
             topMargin = 22.dp

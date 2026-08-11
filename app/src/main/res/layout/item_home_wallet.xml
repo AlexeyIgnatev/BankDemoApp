@@ -41,7 +41,7 @@
 
         <com.esom.bank.common.utils.views.AnimatedBalanceView
             android:id="@+id/balance"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:fontFamily="@font/mont_semibold"
             android:includeFontPadding="false"
@@ -49,6 +49,7 @@
             android:textColor="@color/title"
             android:textSize="@dimen/home_wallet_balance_text_size"
             app:layout_constraintBottom_toTopOf="@id/account"
+            app:layout_constraintEnd_toStartOf="@id/som_sign"
             app:layout_constraintStart_toStartOf="parent"
             tools:text="1 011,36" />
 
@@ -69,9 +70,11 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_4dp"
             android:fontFamily="@font/mont_semibold"
+            android:maxLines="1"
             android:textColor="@color/title"
-            android:textSize="@dimen/_11sp"
+            android:textSize="@dimen/home_wallet_currency_text_size"
             app:layout_constraintBottom_toBottomOf="@id/balance"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/som_sign"
             app:layout_constraintTop_toTopOf="@id/balance"
             tools:text="USDT" />

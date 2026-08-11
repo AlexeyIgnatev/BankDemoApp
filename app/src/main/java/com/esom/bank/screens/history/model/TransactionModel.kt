@@ -49,3 +49,9 @@ fun TransactionModel.isUserTransfer(): Boolean =
             (!recipientFullName.isNullOrBlank() ||
                 !senderFullName.isNullOrBlank() ||
                 !accountDetails.isNullOrBlank()))
+
+fun TransactionModel.isDisplayedAsIncome(): Boolean =
+    type == TransactionEnum.CONVERSION ||
+        type == TransactionEnum.INCOME ||
+        type == TransactionEnum.INFLOW ||
+        !senderFullName.isNullOrBlank()

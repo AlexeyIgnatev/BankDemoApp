@@ -12,6 +12,7 @@ import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.databinding.ItemTransactionBinding
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.isUserTransfer
+import com.esom.bank.screens.history.model.isDisplayedAsIncome
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.wallet.model.HomeTransactionItem
 import java.text.SimpleDateFormat
@@ -40,15 +41,8 @@ class HomeTransactionAdapter(
                 SimpleDateFormat("dd MMM, HH:mm", Locale("ru")).format(Date(it))
             }.orEmpty()
 
-            val isIncome = transaction.type == TransactionEnum.INCOME ||
-                transaction.type == TransactionEnum.INFLOW ||
-                !transaction.senderFullName.isNullOrBlank() ||
-                transaction.conversionSide?.name == "IN"
-            val sign = when {
-                item.conversionFrom != null && item.conversionTo != null -> "+"
-                isIncome -> "+"
-                else -> "-"
-            }
+            val isIncome = transaction.isDisplayedAsIncome()
+            val sign = if (isIncome) "+" else "-"
             val amount = "$sign${(transaction.amount ?: 0.0).formatBalanceNew()} ${currencyShort(transaction.currencyEnum)}"
             binding.sum.setBalance(amount, balancesVisibleProvider())
             binding.sum.setTextColor(

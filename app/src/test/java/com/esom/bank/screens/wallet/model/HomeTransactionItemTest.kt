@@ -3,12 +3,27 @@ package com.esom.bank.screens.wallet.model
 import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
+import com.esom.bank.screens.history.model.isDisplayedAsIncome
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class HomeTransactionItemTest {
+
+    @Test
+    fun `conversion to som with out side is displayed as income`() {
+        val conversion = transaction(
+            id = 633,
+            currency = CurrencyEnum.SOM,
+            side = ConversionSide.OUT,
+            createdAt = 1_786_439_816_068,
+            amount = 99.0
+        )
+
+        assertTrue(conversion.isDisplayedAsIncome())
+    }
 
     @Test
     fun `conversion sides are merged into one operation`() {

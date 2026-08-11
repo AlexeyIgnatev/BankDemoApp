@@ -34,14 +34,15 @@ import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentHistoryBinding
 import com.esom.bank.screens.history.adapter.HistoryAdapter
 import com.esom.bank.screens.history.model.HistoryTypeFilter
-import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.TransactionSuccessMapper
-import com.esom.bank.screens.history.model.isUserTransfer
+import com.esom.bank.screens.history.model.filterHistoryTransactions
+import com.esom.bank.screens.history.model.isHistoryExpenseTransaction
+import com.esom.bank.screens.history.model.isHistoryIncomeTransaction
+import com.esom.bank.screens.history.model.isHistoryTransferTransaction
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
-import com.esom.bank.screens.main.model.WalletModel
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
@@ -102,6 +103,7 @@ class HistoryFragment : Fragment() {
             uiModel.setTypeFilter(HistoryTypeFilter.TRANSFERS)
             adapter.regroup()
             binding.typeFilter.text = "Переводы"
+            renderStats(model.balancesVisible.value ?: true)
         }
 
         model.balancesVisible.observe(viewLifecycleOwner) { visible ->
@@ -163,9 +165,9 @@ class HistoryFragment : Fragment() {
 
     private fun renderStats(visible: Boolean) {
         val transactions = visiblePeriodTransactions()
-        val income = transactions.filter { it.isIncome() }.sumOf(::amountInSom)
-        val transfers = transactions.filter { it.isUserTransfer() && !it.isIncome() }.sumOf(::amountInSom)
-        val expenses = transactions.filter { it.isExpense() }.sumOf(::amountInSom)
+        val income = transactions.filter { it.isHistoryIncomeTransaction() }.sumOf(::amountInSom)
+        val transfers = transactions.filter { it.isHistoryTransferTransaction() && !it.isHistoryIncomeTransaction() }.sumOf(::amountInSom)
+        val expenses = transactions.filter { it.isHistoryExpenseTransaction() }.sumOf(::amountInSom)
         binding.expensesTitle.text = "Расходы за ${statsPeriodLabel()}"
         binding.expenses.setBalance("${expenses.formatBalanceNew()} сом", visible)
         binding.transfers.setBalance("${transfers.formatBalanceNew()} сом", visible)
@@ -173,11 +175,9 @@ class HistoryFragment : Fragment() {
     }
 
     private fun visiblePeriodTransactions(): List<TransactionModel> =
-        if (model.getWithoutTransactions()) {
-            uiModel.uiState.value.periodTransactions.filter { it.type == TransactionEnum.CONVERSION && !it.isUserTransfer() }
-        } else {
-            uiModel.uiState.value.periodTransactions
-        }
+        uiModel.uiState.value.periodTransactions
+            .filter { it.currencyEnum == null || it.currencyEnum in model.getCurrency() }
+            .filterHistoryTransactions(uiModel.uiState.value.adapterState)
 
     private fun amountInSom(transaction: TransactionModel): Double {
         val rate = when (transaction.currencyEnum) {
@@ -203,6 +203,7 @@ class HistoryFragment : Fragment() {
             uiModel.setTypeFilter(filter)
             (binding.history.adapter as HistoryAdapter).regroup()
             binding.typeFilter.text = label
+            renderStats(model.balancesVisible.value ?: true)
         }
     }
 
@@ -241,6 +242,7 @@ class HistoryFragment : Fragment() {
         ) { label, currencies ->
             model.setCurrency(currencies)
             binding.walletFilter.text = label
+            renderStats(model.balancesVisible.value ?: true)
             refreshData()
         }
     }
@@ -266,6 +268,7 @@ class HistoryFragment : Fragment() {
                     to.text.isNotBlank() -> "До ${to.text}"
                     else -> "Сумма"
                 }
+                renderStats(model.balancesVisible.value ?: true)
                 dialog.dismiss()
             }
         })
@@ -367,14 +370,6 @@ class HistoryFragment : Fragment() {
         return start.get(Calendar.YEAR) == end.get(Calendar.YEAR) &&
             start.get(Calendar.MONTH) == end.get(Calendar.MONTH)
     }
-
-    private fun TransactionModel.isIncome() =
-        type == TransactionEnum.INCOME || type == TransactionEnum.INFLOW ||
-            (!senderFullName.isNullOrBlank() && recipientFullName.isNullOrBlank())
-
-    private fun TransactionModel.isExpense() =
-        type != TransactionEnum.CONVERSION &&
-            !isIncome() && (type == TransactionEnum.EXPENSE || isUserTransfer())
 
     private fun openAnalysis(mode: String) {
         findNavController().navigate(MainNavGraphDirections.startFinancialAnalysisFragment(mode))

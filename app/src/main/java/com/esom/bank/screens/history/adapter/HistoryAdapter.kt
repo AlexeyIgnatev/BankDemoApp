@@ -7,12 +7,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.databinding.ItemHistoryBinding
-import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
-import com.esom.bank.screens.history.model.isUserTransfer
 import com.esom.bank.screens.history.model.HistoryAdapterUiState
 import com.esom.bank.screens.history.model.HistoryGroup
-import com.esom.bank.screens.history.model.HistoryTypeFilter
+import com.esom.bank.screens.history.model.filterHistoryTransactions
 import com.esom.bank.screens.wallet.adapter.HomeTransactionAdapter
 import com.esom.bank.screens.wallet.model.toHomeTransactionItems
 import java.text.DateFormatSymbols
@@ -45,28 +43,7 @@ class HistoryAdapter(
 
     fun regroup() {
         val state = stateProvider()
-        val filtered = snapshot().items
-            .asSequence()
-            .filter { !state.withoutTransfers || it.type == TransactionEnum.CONVERSION && !it.isUserTransfer() }
-            .filter { transaction ->
-                when (state.typeFilter) {
-                    HistoryTypeFilter.ALL -> true
-                    HistoryTypeFilter.TRANSFERS -> transaction.isUserTransfer()
-                    HistoryTypeFilter.CONVERSIONS ->
-                        transaction.type == TransactionEnum.CONVERSION && !transaction.isUserTransfer()
-                    HistoryTypeFilter.INCOME ->
-                        transaction.type == TransactionEnum.INCOME || transaction.type == TransactionEnum.INFLOW
-                    HistoryTypeFilter.EXPENSES ->
-                        transaction.type == TransactionEnum.EXPENSE || transaction.isUserTransfer()
-                }
-            }
-            .filter { transaction ->
-                val amount = transaction.amount ?: 0.0
-                (state.minimumAmount == null || amount >= state.minimumAmount) &&
-                    (state.maximumAmount == null || amount <= state.maximumAmount)
-            }
-            .filter { state.searchQuery.isBlank() || it.searchableText().contains(state.searchQuery) }
-            .toList()
+        val filtered = snapshot().items.filterHistoryTransactions(state)
 
         val groups = filtered
             .groupBy { dateFormat.format(Date(it.createdAt ?: 0L)) }
@@ -74,18 +51,6 @@ class HistoryAdapter(
             .sortedByDescending { it.list.firstOrNull()?.createdAt ?: 0L }
         this.groups.submitList(groups)
     }
-
-    private fun TransactionModel.searchableText(): String = buildString {
-        append(type?.name.orEmpty())
-        append(' ')
-        append(currencyEnum?.name.orEmpty())
-        append(' ')
-        append(amount?.toString().orEmpty())
-        append(' ')
-        append(recipientFullName.orEmpty())
-        append(' ')
-        append(senderFullName.orEmpty())
-    }.lowercase(Locale.getDefault())
 
     inner class HistoryGroupViewHolder(private val binding: ItemHistoryBinding) :
         RecyclerView.ViewHolder(binding.root) {

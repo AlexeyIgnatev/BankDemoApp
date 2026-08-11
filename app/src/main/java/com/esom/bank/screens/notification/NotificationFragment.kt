@@ -6,7 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
+import androidx.core.view.updateLayoutParams
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.R
@@ -35,10 +36,11 @@ class NotificationFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.root.doOnApplyWindowInsets { view, insets, rect ->
-            view.updatePadding(
-                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
-            )
+        binding.backLayout.doOnApplyWindowInsets { insetView, insets, _ ->
+            insetView.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                topMargin = resources.getDimensionPixelSize(R.dimen._6dp) +
+                    insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
+            }
             insets
         }
         binding.backBtn.setOnClickListener {
@@ -57,6 +59,7 @@ class NotificationFragment : Fragment() {
                     binding.swipeRefreshLayout.isRefreshing = false
                     val sortedList = it.data.sortedByDescending { notification -> notification.createdAt }
                     adapter.submitNotifications(sortedList)
+                    model.markNotificationsSeen(it.data)
                 }
             }
         }

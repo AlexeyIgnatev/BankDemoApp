@@ -1,87 +1,78 @@
 package com.esom.bank.screens.history.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
 import com.esom.bank.databinding.ItemHistoryBinding
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.isUserTransfer
-import com.esom.bank.screens.wallet.adapter.TransactionAdapter
+import com.esom.bank.screens.history.model.HistoryAdapterUiState
+import com.esom.bank.screens.history.model.HistoryGroup
+import com.esom.bank.screens.history.model.HistoryTypeFilter
+import com.esom.bank.screens.wallet.adapter.HomeTransactionAdapter
+import com.esom.bank.screens.wallet.model.toHomeTransactionItems
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class HistoryAdapter(
-    private var withoutTransfers: Boolean = false,
+    private val stateProvider: () -> HistoryAdapterUiState,
+    private val balancesVisibleProvider: () -> Boolean,
     private val onTransactionClick: ((TransactionModel) -> Unit)? = null
 ) : PagingDataAdapter<TransactionModel, HistoryAdapter.HistoryGroupViewHolder>(HistoryDiffCallback()) {
-
-    companion object {
-        private const val TAG = "HistoryAdapter"
-    }
-
-    private val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("ru")).apply {
-        val months = arrayOf(
-            "января", "февраля", "марта", "апреля", "мая", "июня",
-            "июля", "августа", "сентября", "октября", "ноября", "декабря"
-        )
-        dateFormatSymbols = object : DateFormatSymbols(Locale("ru")) {
-            override fun getMonths(): Array<String> = months
+    private val groups = AsyncListDiffer(this, HistoryGroupDiffCallback())
+    private val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("ru", "RU")).apply {
+        dateFormatSymbols = object : DateFormatSymbols(Locale("ru", "RU")) {
+            override fun getMonths(): Array<String> = arrayOf(
+                "января", "февраля", "марта", "апреля", "мая", "июня",
+                "июля", "августа", "сентября", "октября", "ноября", "декабря"
+            )
         }
     }
-
-    private var groupedItems: List<HistoryGroup> = emptyList()
-    private var searchQuery: String = ""
 
     init {
-        addOnPagesUpdatedListener {
-            regroup()
-        }
+        addOnPagesUpdatedListener(::regroup)
     }
 
-    fun updateFilter(withoutTransfers: Boolean) {
-        this.withoutTransfers = withoutTransfers
-        regroup()
+    fun refreshBalanceVisibility() {
+        notifyItemRangeChanged(0, itemCount)
     }
 
-    fun updateSearch(query: String) {
-        searchQuery = query.trim().lowercase(Locale.getDefault())
-        regroup()
-    }
-
-    private fun regroup() {
-        val allItems = snapshot().items
-        val transferFiltered = if (withoutTransfers) {
-            allItems.filter {
-                it.type == TransactionEnum.CONVERSION && !it.isUserTransfer()
+    fun regroup() {
+        val state = stateProvider()
+        val filtered = snapshot().items
+            .asSequence()
+            .filter { !state.withoutTransfers || it.type == TransactionEnum.CONVERSION && !it.isUserTransfer() }
+            .filter { transaction ->
+                when (state.typeFilter) {
+                    HistoryTypeFilter.ALL -> true
+                    HistoryTypeFilter.TRANSFERS -> transaction.isUserTransfer()
+                    HistoryTypeFilter.CONVERSIONS ->
+                        transaction.type == TransactionEnum.CONVERSION && !transaction.isUserTransfer()
+                    HistoryTypeFilter.INCOME ->
+                        transaction.type == TransactionEnum.INCOME || transaction.type == TransactionEnum.INFLOW
+                    HistoryTypeFilter.EXPENSES ->
+                        transaction.type == TransactionEnum.EXPENSE || transaction.isUserTransfer()
+                }
             }
-        } else {
-            allItems
-        }
-        val filtered = if (searchQuery.isBlank()) {
-            transferFiltered
-        } else {
-            transferFiltered.filter { transaction ->
-                transaction.searchableText().contains(searchQuery)
+            .filter { transaction ->
+                val amount = transaction.amount ?: 0.0
+                (state.minimumAmount == null || amount >= state.minimumAmount) &&
+                    (state.maximumAmount == null || amount <= state.maximumAmount)
             }
-        }
+            .filter { state.searchQuery.isBlank() || it.searchableText().contains(state.searchQuery) }
+            .toList()
 
-        groupedItems = filtered
+        val groups = filtered
             .groupBy { dateFormat.format(Date(it.createdAt ?: 0L)) }
             .map { (date, list) -> HistoryGroup(date, list.sortedByDescending { it.createdAt }) }
             .sortedByDescending { it.list.firstOrNull()?.createdAt ?: 0L }
-
-        Log.d(TAG, "Regrouped items (${groupedItems.size} days):")
-        groupedItems.forEach {
-            Log.d(TAG, " - ${it.date}: ${it.list.map { t -> "${t.type}-${t.amount}" }}")
-        }
-
-        notifyDataSetChanged()
+        this.groups.submitList(groups)
     }
 
     private fun TransactionModel.searchableText(): String = buildString {
@@ -98,48 +89,39 @@ class HistoryAdapter(
 
     inner class HistoryGroupViewHolder(private val binding: ItemHistoryBinding) :
         RecyclerView.ViewHolder(binding.root) {
-
         fun bind(group: HistoryGroup) {
-            val date = group.date
-            val transactions = group.list
-            Log.d(TAG, "Binding group for date $date with ${transactions.size} transactions")
-
-            binding.date.text = date
-
-            val adapter = TransactionAdapter(binding.root.context, onTransactionClick)
-            binding.transactions.adapter = adapter
-            adapter.submitList(transactions)
+            binding.date.text = group.date
+            binding.transactions.adapter = HomeTransactionAdapter(
+                context = binding.root.context,
+                balancesVisibleProvider = balancesVisibleProvider,
+                onTransactionClick = { item -> onTransactionClick?.invoke(item.transaction) }
+            ).apply {
+                submitList(group.list.toHomeTransactionItems(group.list.size))
+            }
         }
     }
 
-    override fun getItemCount(): Int = groupedItems.size
+    override fun getItemCount(): Int = groups.currentList.size
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryGroupViewHolder {
-        val binding = ItemHistoryBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return HistoryGroupViewHolder(binding)
-    }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryGroupViewHolder =
+        HistoryGroupViewHolder(ItemHistoryBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: HistoryGroupViewHolder, position: Int) {
-        val group = groupedItems.getOrNull(position)
-        if (group != null) holder.bind(group)
-        else Log.w(TAG, "No group found for position $position")
+        groups.currentList.getOrNull(position)?.let(holder::bind)
     }
 }
 
-data class HistoryGroup(
-    val date: String,
-    val list: List<TransactionModel>
-)
+private class HistoryGroupDiffCallback : DiffUtil.ItemCallback<HistoryGroup>() {
+    override fun areItemsTheSame(oldItem: HistoryGroup, newItem: HistoryGroup): Boolean =
+        oldItem.date == newItem.date
+
+    override fun areContentsTheSame(oldItem: HistoryGroup, newItem: HistoryGroup): Boolean =
+        oldItem == newItem
+}
 
 class HistoryDiffCallback : DiffUtil.ItemCallback<TransactionModel>() {
     override fun areItemsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean =
-        oldItem.transactionId == newItem.transactionId &&
-                oldItem.createdAt == newItem.createdAt &&
-                oldItem.amount == newItem.amount
+        oldItem.transactionId == newItem.transactionId && oldItem.createdAt == newItem.createdAt
 
     override fun areContentsTheSame(oldItem: TransactionModel, newItem: TransactionModel): Boolean =
         oldItem == newItem

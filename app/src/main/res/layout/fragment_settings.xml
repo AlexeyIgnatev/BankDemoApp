@@ -4,454 +4,239 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingHorizontal="@dimen/_20dp"
-    tools:ignore="MissingConstraints"
+    android:background="#0B090C"
     tools:context=".screens.settigns.SettingsFragment">
-    <androidx.core.widget.NestedScrollView
+
+    <ImageView
+        android:id="@+id/gradient_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
-        <androidx.constraintlayout.widget.ConstraintLayout
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/light_atmosphere_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingTop="@dimen/_68dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingBottom="@dimen/_16dp">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/_32dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/hero_avatar"
+                android:layout_width="@dimen/_104dp"
+                android:layout_height="@dimen/_104dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/_4dp"
+                app:cardBackgroundColor="#FF263B"
+                app:cardCornerRadius="@dimen/_34dp"
+                app:cardElevation="@dimen/_8dp"
+                app:strokeColor="#33FFFFFF"
+                app:strokeWidth="@dimen/_1dp">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="@dimen/_20dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/profile_icon"
+                    app:tint="@color/white" />
+            </com.google.android.material.card.MaterialCardView>
+
             <TextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
+                android:id="@+id/fio"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_16dp"
                 android:fontFamily="@font/mont_bold"
-                android:text="@string/profile"
-                android:textColor="#1D1D1B"
+                android:gravity="center"
+                android:textColor="@color/title"
                 android:textSize="@dimen/_27sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/data_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="@dimen/_16dp"
-                android:background="@drawable/currency_background"
-                app:layout_constraintTop_toBottomOf="@id/title"
-                android:layout_marginTop="@dimen/_30dp">
-                <TextView
-                    android:id="@+id/fio_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/user_fio"
-                    android:textColor="#B2B2B2"
-                    android:textSize="@dimen/_12sp"
-                    android:letterSpacing="-0.01"
-                    android:fontFamily="@font/mont_semibold"/>
-                <TextView
-                    android:id="@+id/fio"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Асанов Асан Асанович"
-                    android:letterSpacing="-0.01"
-                    android:textSize="@dimen/_16sp"
-                    android:fontFamily="@font/mont_semibold"
-                    android:textColor="#1D1D1B"
-                    app:layout_constraintTop_toBottomOf="@id/fio_title"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginTop="@dimen/_4dp"/>
-                <View
-                    android:id="@+id/fio_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#B2B2B2"
-                    android:alpha="0.4"
-                    app:layout_constraintTop_toBottomOf="@id/fio"
-                    android:layout_marginTop="@dimen/_9dp"/>
-
-                <TextView
-                    android:id="@+id/phone_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/number_phone"
-                    android:textColor="#B2B2B2"
-                    android:textSize="@dimen/_12sp"
-                    android:letterSpacing="-0.01"
-                    android:fontFamily="@font/mont_semibold"
-                    app:layout_constraintTop_toBottomOf="@id/fio_view"
-                    android:layout_marginTop="@dimen/_9dp"/>
-                <TextView
-                    android:id="@+id/phone"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="+(996) 555-123-123"
-                    android:letterSpacing="-0.01"
-                    android:textSize="@dimen/_16sp"
-                    android:fontFamily="@font/mont_semibold"
-                    android:textColor="#1D1D1B"
-                    app:layout_constraintTop_toBottomOf="@id/phone_title"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginTop="@dimen/_4dp"/>
-                <View
-                    android:id="@+id/phone_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#B2B2B2"
-                    android:alpha="0.4"
-                    app:layout_constraintTop_toBottomOf="@id/phone"
-                    android:layout_marginTop="@dimen/_9dp"/>
-
-                <TextView
-                    android:id="@+id/mail_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/email"
-                    android:textColor="#B2B2B2"
-                    android:textSize="@dimen/_12sp"
-                    android:letterSpacing="-0.01"
-                    android:fontFamily="@font/mont_semibold"
-                    app:layout_constraintTop_toBottomOf="@id/phone_view"
-                    android:layout_marginTop="@dimen/_9dp"/>
-                <TextView
-                    android:id="@+id/mail"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="asanov@gmail.com"
-                    android:letterSpacing="-0.01"
-                    android:textSize="@dimen/_16sp"
-                    android:fontFamily="@font/mont_semibold"
-                    android:textColor="#1D1D1B"
-                    app:layout_constraintTop_toBottomOf="@id/mail_title"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginTop="@dimen/_4dp"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/help_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/help"
-                android:textColor="#1D1D1B"
-                android:fontFamily="@font/mont_bold"
-                android:textSize="@dimen/_16sp"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="@dimen/_10dp"
-                app:layout_constraintTop_toBottomOf="@id/data_layout"
-                android:layout_marginTop="@dimen/_20dp"/>
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/help_btn"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/_61dp"
-                android:background="@drawable/copy_background"
-                app:layout_constraintTop_toBottomOf="@id/help_title"
-                android:layout_marginTop="@dimen/_5dp">
-                <ImageView
-                    android:id="@+id/help_icon"
-                    android:layout_width="@dimen/_22dp"
-                    android:layout_height="@dimen/_20dp"
-                    android:src="@drawable/help_icon"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="@dimen/_16dp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tech_help"
-                    android:textColor="@color/white"
-                    android:fontFamily="@font/mont_semibold"
-                    android:textSize="@dimen/_16sp"
-                    app:layout_constraintStart_toEndOf="@id/help_icon"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:layout_marginStart="@dimen/_20dp" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/call_btn"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/_61dp"
-                android:background="@drawable/currency_background"
-                app:layout_constraintTop_toBottomOf="@id/help_btn"
-                android:layout_marginTop="@dimen/_5dp">
-                <ImageView
-                    android:id="@+id/call_icon"
-                    android:layout_width="@dimen/_22dp"
-                    android:layout_height="@dimen/_20dp"
-                    android:src="@drawable/call_icon_shadow"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="@dimen/_16dp"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/personal_call"
-                    android:textColor="#535353"
-                    android:fontFamily="@font/mont_semibold"
-                    android:textSize="@dimen/_15sp"
-                    android:letterSpacing="-0.02"
-                    app:layout_constraintStart_toEndOf="@id/call_icon"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:layout_marginStart="@dimen/_20dp" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/settings_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/settings"
-                android:textSize="@dimen/_16sp"
-                android:textColor="#1D1D1B"
-                android:fontFamily="@font/mont_bold"
-                app:layout_constraintTop_toBottomOf="@id/call_btn"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="@dimen/_10dp"
-                android:layout_marginTop="@dimen/_20dp"/>
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/dop_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingStart="@dimen/_16dp"
-                android:paddingEnd="@dimen/_16dp"
-                android:paddingTop="@dimen/_7dp"
-                android:paddingBottom="@dimen/_7dp"
-                android:background="@drawable/currency_background"
-                app:layout_constraintTop_toBottomOf="@id/settings_title"
-                android:layout_marginTop="@dimen/_5dp">
-
-                <TextView
-                    android:id="@+id/push"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/push_notifications"
-                    android:letterSpacing="-0.01"
-                    android:textSize="@dimen/_16sp"
-                    android:fontFamily="@font/mont_semibold"
-                    android:textColor="#535353"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"/>
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/push_switch"
-                    android:theme="@style/Theme.MaterialComponents"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:thumb="@drawable/thumb_new"
-                    app:track="@drawable/track_new"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/push"
-                    app:layout_constraintBottom_toBottomOf="@id/push"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/safety_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/safety"
-                android:textSize="@dimen/_16sp"
-                android:textColor="#1D1D1B"
-                android:fontFamily="@font/mont_bold"
-                app:layout_constraintTop_toBottomOf="@id/dop_layout"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="@dimen/_10dp"
-                android:layout_marginTop="@dimen/_20dp"/>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/change_pass_btn"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/_61dp"
-                android:background="@drawable/currency_background"
-                app:layout_constraintTop_toBottomOf="@id/safety_title"
-                android:paddingStart="@dimen/_16dp"
-                android:layout_marginTop="@dimen/_5dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/change_pass"
-                    android:textColor="#535353"
-                    android:fontFamily="@font/mont_semibold"
-                    android:textSize="@dimen/_16sp"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/bio_btn"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/_61dp"
-                android:layout_marginTop="@dimen/_5dp"
-                android:background="@drawable/currency_background"
-                android:paddingStart="@dimen/_16dp"
-                android:paddingEnd="@dimen/_16dp"
-                app:layout_constraintTop_toBottomOf="@id/change_pass_btn">
-
-                <TextView
-                    android:id="@+id/bio_title"
-                    android:layout_width="@dimen/_0dp"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/mont_semibold"
-                    android:text="@string/bio_log_in"
-                    android:textColor="#535353"
-                    android:textSize="@dimen/_16sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/bio_switch"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/bio_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:theme="@style/Theme.MaterialComponents"
-                    android:thumb="@drawable/thumb_new"
-                    app:layout_constraintBottom_toBottomOf="@id/bio_title"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/bio_title"
-                    app:track="@drawable/track_new" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/finance_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/finance"
-                android:textSize="@dimen/_16sp"
-                android:textColor="#1D1D1B"
-                android:fontFamily="@font/mont_bold"
-                app:layout_constraintTop_toBottomOf="@id/bio_btn"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="@dimen/_10dp"
-                android:layout_marginTop="@dimen/_20dp"/>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/finance_btn"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/_61dp"
-                android:background="@drawable/currency_background"
-                app:layout_constraintTop_toBottomOf="@id/finance_title"
-                android:paddingStart="@dimen/_16dp"
-                android:layout_marginTop="@dimen/_5dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/finance_opinion"
-                    android:textColor="#535353"
-                    android:fontFamily="@font/mont_semibold"
-                    android:textSize="@dimen/_16sp"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/etc_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/etc_title"
-                android:textSize="@dimen/_16sp"
-                android:textColor="#1D1D1B"
-                android:fontFamily="@font/mont_bold"
-                app:layout_constraintTop_toBottomOf="@id/finance_btn"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="@dimen/_10dp"
-                android:layout_marginTop="@dimen/_20dp"/>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/etc_btn"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/_105dp"
-                android:background="@drawable/currency_background"
-                app:layout_constraintTop_toBottomOf="@id/etc_title"
-                android:paddingStart="@dimen/_16dp"
-                android:layout_marginTop="@dimen/_5dp">
-                <TextView
-                    android:id="@+id/about_app"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/about_app"
-                    android:textColor="#535353"
-                    android:fontFamily="@font/mont_semibold"
-                    android:textSize="@dimen/_16sp"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toTopOf="@id/etc_view"/>
-                <View
-                    android:id="@+id/etc_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#B2B2B2"
-                    android:layout_marginEnd="@dimen/_16dp"
-                    app:layout_constraintTop_toBottomOf="@id/about_app"
-                    app:layout_constraintBottom_toTopOf="@id/privacy_policy"/>
-                <TextView
-                    android:id="@+id/privacy_policy"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/privacy_policy"
-                    android:textColor="#535353"
-                    android:fontFamily="@font/mont_semibold"
-                    android:textSize="@dimen/_16sp"
-                    app:layout_constraintTop_toBottomOf="@id/etc_view"
-                    app:layout_constraintBottom_toBottomOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <ImageView
-                android:layout_width="@dimen/_0dp"
-                android:layout_height="@dimen/_0dp"
-                android:scaleX="1.6"
-                android:scaleY="1.55"
-                android:src="@drawable/button_background"
-                app:layout_constraintBottom_toBottomOf="@id/log_in_btn"
-                app:layout_constraintEnd_toEndOf="@id/log_in_btn"
-                app:layout_constraintStart_toStartOf="@id/log_in_btn"
-                app:layout_constraintTop_toTopOf="@id/log_in_btn" />
+                tools:text="Богдан" />
 
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/log_in_btn"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_40dp"
-                android:layout_marginHorizontal="@dimen/_22dp"
-                android:layout_marginTop="@dimen/_25dp"
-                app:cardBackgroundColor="#E62324"
-                app:cardCornerRadius="@dimen/_12dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_16dp"
+                android:layout_marginTop="@dimen/_28dp"
+                app:cardBackgroundColor="@color/card_bg"
+                app:cardCornerRadius="@dimen/_22dp"
                 app:cardElevation="@dimen/_0dp"
-                app:layout_constraintTop_toBottomOf="@id/etc_btn"
                 app:strokeWidth="@dimen/_0dp">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/_18dp">
                     <TextView
-                        android:id="@+id/log_in_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="@font/mont_bold"
+                        android:text="Контактные данные"
+                        android:textColor="@color/title"
+                        android:textSize="@dimen/_18sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_15dp"
+                        android:fontFamily="@font/mont_regular"
+                        android:text="Номер телефона"
+                        android:textColor="@color/subtitle"
+                        android:textSize="@dimen/_11sp" />
+                    <TextView
+                        android:id="@+id/phone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_3dp"
                         android:fontFamily="@font/mont_semibold"
-                        android:text="@string/logout"
-                        android:textColor="@color/white"
-                        android:textSize="@dimen/_18sp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <com.google.android.material.progressindicator.CircularProgressIndicator
-                        android:id="@+id/indicator"
+                        android:textColor="@color/title"
+                        android:textSize="@dimen/_16sp"
+                        tools:text="+996 (555) 123-123" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginVertical="@dimen/_13dp" android:background="@color/lock_pattern_regular" />
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:indeterminate="true"
-                        android:visibility="gone"
-                        app:indicatorColor="@color/white"
-                        app:indicatorSize="@dimen/_38dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:trackThickness="@dimen/_5dp" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
+                        android:fontFamily="@font/mont_regular"
+                        android:text="Электронная почта"
+                        android:textColor="@color/subtitle"
+                        android:textSize="@dimen/_11sp" />
+                    <TextView
+                        android:id="@+id/mail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_3dp"
+                        android:fontFamily="@font/mont_semibold"
+                        android:textColor="@color/title"
+                        android:textSize="@dimen/_16sp"
+                        tools:text="user@fcb.kg" />
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/call_btn"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_72dp"
+                android:layout_marginHorizontal="@dimen/_16dp"
+                android:layout_marginTop="@dimen/_12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="#E62324"
+                app:cardCornerRadius="@dimen/_22dp"
+                app:cardElevation="@dimen/_0dp"
+                app:strokeWidth="@dimen/_0dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:gravity="center_vertical" android:orientation="horizontal" android:paddingHorizontal="@dimen/_18dp">
+                    <ImageView android:layout_width="@dimen/_28dp" android:layout_height="@dimen/_28dp" android:src="@drawable/call_icon_shadow" app:tint="@color/white" />
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="@dimen/_14dp" android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:fontFamily="@font/mont_bold" android:text="Персональный менеджер" android:textColor="@color/white" android:textSize="@dimen/_16sp" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/_2dp" android:fontFamily="@font/mont_regular" android:text="Позвонить прямо сейчас" android:textColor="#CCFFFFFF" android:textSize="@dimen/_11sp" />
+                    </LinearLayout>
+                    <ImageView android:layout_width="@dimen/_18dp" android:layout_height="@dimen/_18dp" android:rotation="-90" android:src="@drawable/arrow_bottom" app:tint="@color/white" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/_20dp"
+                android:layout_marginTop="@dimen/_28dp"
+                android:fontFamily="@font/mont_bold"
+                android:text="Услуги"
+                android:textColor="@color/title"
+                android:textSize="@dimen/_23sp" />
+
+            <LinearLayout
+                android:id="@+id/services_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/_16dp"
+                android:paddingTop="@dimen/_10dp" />
+        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <ImageView
+        android:id="@+id/header_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/light_atmosphere_background"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_68dp"
+        android:background="@android:color/transparent"
+        android:paddingHorizontal="@dimen/_12dp"
+        app:layout_constraintTop_toTopOf="parent">
+        <ImageView
+            android:id="@+id/back_btn"
+            android:layout_width="@dimen/_48dp"
+            android:layout_height="@dimen/_48dp"
+            android:padding="@dimen/_12dp"
+            android:src="@drawable/arrow_left"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#9F1922" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/compact_avatar"
+            android:layout_width="@dimen/_42dp"
+            android:layout_height="@dimen/_42dp"
+            android:layout_marginStart="@dimen/_4dp"
+            android:alpha="0"
+            app:cardBackgroundColor="#FF263B"
+            app:cardCornerRadius="@dimen/_14dp"
+            app:cardElevation="@dimen/_0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/back_btn"
+            app:layout_constraintTop_toTopOf="parent">
+            <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:padding="@dimen/_9dp" android:src="@drawable/profile_icon" app:tint="@color/white" />
+        </com.google.android.material.card.MaterialCardView>
+        <TextView
+            android:id="@+id/compact_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_10dp"
+            android:alpha="0"
+            android:ellipsize="end"
+            android:fontFamily="@font/mont_bold"
+            android:maxLines="1"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_18sp"
+            app:layout_constraintEnd_toStartOf="@id/settings_btn"
+            app:layout_constraintStart_toEndOf="@id/compact_avatar"
+            app:layout_constraintTop_toTopOf="@id/compact_avatar"
+            app:layout_constraintBottom_toBottomOf="@id/compact_avatar"
+            tools:text="Богдан" />
+        <ImageView
+            android:id="@+id/settings_btn"
+            android:layout_width="@dimen/_44dp"
+            android:layout_height="@dimen/_44dp"
+            android:padding="@dimen/_7dp"
+            android:src="@drawable/ic_settings_gear"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#9F1922" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

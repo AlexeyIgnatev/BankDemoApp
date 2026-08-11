@@ -73,9 +73,6 @@ object PaymentFeeOperationResolver {
         )
     }
 
-    fun convertOperation(from: CurrencyEnum, to: CurrencyEnum): String? =
-        convertOperations(from, to).firstOrNull()
-
     fun convertOperations(from: CurrencyEnum, to: CurrencyEnum): List<String> {
         return when {
             from == to && from == CurrencyEnum.SOM -> listOf(

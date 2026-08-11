@@ -1,13 +1,19 @@
 package com.esom.bank.screens.main.model
 
+import android.os.Parcelable
+import androidx.annotation.Keep
+import kotlinx.parcelize.Parcelize
+
 import com.esom.bank.screens.main.dto.PaymentFeeDto
 import java.util.Locale
 
+@Keep
+@Parcelize
 data class PaymentFeeModel(
     val operation: String,
     val percentFee: Double,
     val fixedFee: Double
-) {
+) : Parcelable {
     fun calculateFee(amount: Double): Double {
         if (amount <= 0.0) return 0.0
         val percentAmount = amount * (percentFee.coerceAtLeast(0.0) / 100.0)

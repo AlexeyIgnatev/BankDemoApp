@@ -5,16 +5,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@drawable/theme_screen_background"
     tools:ignore="MissingConstraints"
     tools:context=".screens.receive.ReceiveFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/back_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/_48dp"
+        android:layout_height="@dimen/_48dp"
         android:layout_margin="@dimen/_10dp"
-        android:padding="@dimen/_10dp"
+        android:padding="@dimen/_12dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -34,6 +34,7 @@
             android:layout_marginStart="@dimen/_4dp"
             android:fontFamily="@font/mont_bold"
             android:text="@string/back"
+            android:visibility="gone"
             android:textColor="#E62324"
             android:textSize="@dimen/_12sp"
             app:layout_constraintBottom_toBottomOf="@id/back_icon"
@@ -58,7 +59,7 @@
         android:layout_marginTop="@dimen/_10dp"
         android:fontFamily="@font/mont_bold"
         android:text="@string/receive"
-        android:textColor="#1D1D1B"
+        android:textColor="@color/title"
         android:textSize="@dimen/_27sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -85,7 +86,7 @@
             android:layout_height="wrap_content"
             android:text="@string/receiving_opinion"
             android:fontFamily="@font/mont_semibold"
-            android:textColor="#B2B2B2"
+            android:textColor="@color/subtitle"
             android:textSize="@dimen/_14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -98,7 +99,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="+996000000"
-            android:textColor="#1D1D1B"
+            android:textColor="@color/title"
             android:fontFamily="@font/mont_semibold"
             android:letterSpacing="-0.01"
             android:textSize="@dimen/_17sp"
@@ -200,7 +201,7 @@
             android:text="@string/scan_qr"
             android:textSize="@dimen/_22sp"
             android:fontFamily="@font/mont_medium"
-            android:textColor="@color/black"
+            android:textColor="@color/title"
             app:layout_constraintTop_toBottomOf="@id/qr_icon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -209,3 +210,4 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

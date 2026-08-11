@@ -5,12 +5,14 @@ import android.view.animation.AnimationUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -21,24 +23,16 @@ import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.databinding.FragmentPinCreateBinding
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.pinCreate.data.LockType
-import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class PinCreateFragment : Fragment() {
     private lateinit var binding: FragmentPinCreateBinding
     private val args: PinCreateFragmentArgs by navArgs()
     private val model: MainViewModel by activityViewModels()
-    @Inject
-    lateinit var localDataSource: PinLocalDataSource
-
-    private var currentMode: LockType = LockType.PIN
-    private var currentPin = ""
-    private var firstPin: String? = null
-    private var firstPattern: List<Int>? = null
+    private val uiModel: PinCreateUiStateViewModel by viewModels()
     private val maxPinLength = 4
 
     override fun onCreateView(
@@ -59,16 +53,18 @@ class PinCreateFragment : Fragment() {
             insets
         }
 
-        binding.backBtn.setOnClickListener {
-            findNavController().popBackStack()
-        }
-
-        binding.switchModeText.setOnClickListener {
-            val nextMode = if (currentMode == LockType.PIN) LockType.PATTERN else LockType.PIN
-            initMode(nextMode)
-        }
+        binding.pinModeBtn.setOnClickListener { initMode(LockType.PIN) }
+        binding.patternModeBtn.setOnClickListener { initMode(LockType.PATTERN) }
         binding.resetText.setOnClickListener {
             resetCurrentModeState()
+        }
+
+        binding.backBtn.isVisible = args.fromSettings
+        if (args.fromSettings) {
+            binding.backBtn.setOnClickListener { navigateBack() }
+            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+                navigateBack()
+            }
         }
 
         binding.pincDig0Btn.setOnClickListener { onDigitClicked("0") }
@@ -86,7 +82,7 @@ class PinCreateFragment : Fragment() {
 
         setupPatternListener()
         val initialMode = if (args.fromSettings) {
-            localDataSource.getLockType() ?: LockType.PIN
+            model.getLockType() ?: LockType.PIN
         } else {
             LockType.PIN
         }
@@ -94,45 +90,41 @@ class PinCreateFragment : Fragment() {
     }
 
     private fun onBackspaceClicked() {
-        if (currentMode != LockType.PIN) return
-        if (currentPin.isEmpty()) return
-        currentPin = currentPin.dropLast(1)
+        if (uiModel.uiState.value.mode != LockType.PIN) return
+        uiModel.removeLastDigit()
         updatePinDots()
     }
 
     private fun onDigitClicked(digit: String) {
-        if (currentMode != LockType.PIN) return
-        if (currentPin.length >= maxPinLength) return
-
-        currentPin += digit
+        uiModel.appendDigit(digit, maxPinLength)
         updatePinDots()
 
-        if (currentPin.length == maxPinLength) {
+        if (uiModel.uiState.value.currentPin.length == maxPinLength) {
             handlePinComplete()
         }
     }
 
     private fun updatePinDots() {
         val views = listOf(binding.one, binding.two, binding.three, binding.four)
-        val pinChooseBg = ContextCompat.getDrawable(requireContext(), R.drawable.pin_choose_background)
-        val pinNotChooseBg = ContextCompat.getDrawable(requireContext(), R.drawable.pin_not_choose_background)
+        val pinChooseBg = ContextCompat.getDrawable(requireContext(), R.drawable.lock_pin_slot_filled)
+        val pinNotChooseBg = ContextCompat.getDrawable(requireContext(), R.drawable.lock_pin_slot_empty)
 
         views.forEachIndexed { index, view ->
-            view.background = if (index < currentPin.length) pinChooseBg else pinNotChooseBg
+            view.background = if (index < uiModel.uiState.value.currentPin.length) pinChooseBg else pinNotChooseBg
         }
     }
 
     private fun handlePinComplete() {
-        if (firstPin == null) {
-            firstPin = currentPin
-            currentPin = ""
+        val state = uiModel.uiState.value
+        if (state.firstPin == null) {
+            uiModel.startPinConfirmation()
             updatePinDots()
             updateTexts()
             return
         }
 
-        if (firstPin == currentPin) {
-            localDataSource.savePin(currentPin)
+        if (state.firstPin == state.currentPin) {
+            model.savePin(state.currentPin)
             onLockSaved()
         } else {
             showPinError(getString(R.string.lock_pin_not_match))
@@ -148,14 +140,15 @@ class PinCreateFragment : Fragment() {
                     return false
                 }
 
+                val firstPattern = uiModel.uiState.value.firstPattern
                 if (firstPattern == null) {
-                    firstPattern = pattern
+                    uiModel.startPatternConfirmation(pattern)
                     updateTexts()
                     return true
                 }
 
                 return if (firstPattern == pattern) {
-                    localDataSource.savePattern(pattern)
+                    model.savePattern(pattern)
                     onLockSaved()
                     true
                 } else {
@@ -167,13 +160,12 @@ class PinCreateFragment : Fragment() {
     }
 
     private fun initMode(mode: LockType) {
-        currentMode = mode
-        firstPin = null
-        currentPin = ""
-        firstPattern = null
+        uiModel.selectMode(mode)
 
         binding.pinSection.isVisible = mode == LockType.PIN
         binding.patternSection.isVisible = mode == LockType.PATTERN
+        binding.pinModeBtn.isSelected = mode == LockType.PIN
+        binding.patternModeBtn.isSelected = mode == LockType.PATTERN
         binding.errorCard.isVisible = false
         binding.patternErrorCard.isVisible = false
         binding.patternLockView.unFreeze()
@@ -182,13 +174,12 @@ class PinCreateFragment : Fragment() {
     }
 
     private fun resetCurrentModeState() {
-        if (currentMode == LockType.PIN) {
-            firstPin = null
-            currentPin = ""
+        val mode = uiModel.uiState.value.mode
+        uiModel.resetCurrentMode()
+        if (mode == LockType.PIN) {
             binding.errorCard.isVisible = false
             updatePinDots()
         } else {
-            firstPattern = null
             binding.patternErrorCard.isVisible = false
             binding.patternLockView.unFreeze()
         }
@@ -196,8 +187,9 @@ class PinCreateFragment : Fragment() {
     }
 
     private fun updateTexts() {
-        val isPin = currentMode == LockType.PIN
-        val isConfirm = if (isPin) firstPin != null else firstPattern != null
+        val state = uiModel.uiState.value
+        val isPin = state.mode == LockType.PIN
+        val isConfirm = if (isPin) state.firstPin != null else state.firstPattern != null
 
         binding.lockTitle.text = when {
             isPin && args.fromSettings -> getString(R.string.lock_change_pin_title)
@@ -213,12 +205,6 @@ class PinCreateFragment : Fragment() {
             else -> getString(R.string.lock_confirm_pattern)
         }
 
-        binding.switchModeText.text = if (isPin) {
-            getString(R.string.lock_switch_to_pattern)
-        } else {
-            getString(R.string.lock_switch_to_pin)
-        }
-
         binding.resetText.isVisible = isConfirm
     }
 
@@ -231,7 +217,7 @@ class PinCreateFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             delay(900L)
             binding.errorCard.isVisible = false
-            currentPin = ""
+            uiModel.clearCurrentPin()
             updatePinDots()
         }
     }
@@ -247,7 +233,7 @@ class PinCreateFragment : Fragment() {
 
     private fun onLockSaved() {
         if (args.fromSettings) {
-            findNavController().popBackStack()
+            navigateBack()
             return
         }
 
@@ -256,5 +242,9 @@ class PinCreateFragment : Fragment() {
         } else {
             findNavController().navigate(NavGraphDirections.startAuthFragment())
         }
+    }
+
+    private fun navigateBack() {
+        findNavController().popBackStack()
     }
 }

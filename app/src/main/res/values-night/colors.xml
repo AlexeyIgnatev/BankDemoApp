@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="window_bg">#111013</color>
+    <color name="card_bg">#211F22</color>
+    <color name="title">#FFF9FA</color>
+    <color name="subtitle">#AAA4A7</color>
+    <color name="edittext_title">#F0EAEC</color>
+    <color name="text_color_secondary">#C2BCBF</color>
+    <color name="lock_pattern_regular">#413C40</color>
+    <color name="period_inactive_text">#B9B2B5</color>
+    <color name="home_rate_som">#3A2429</color>
+    <color name="home_rate_salam">#3B2922</color>
+    <color name="home_rate_usdt">#18342E</color>
+    <color name="finance_orange">#FFB648</color>
+    <color name="finance_cyan">#2CCBAC</color>
+    <color name="finance_purple">#8F7AF0</color>
+</resources>

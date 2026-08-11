@@ -1,227 +1,324 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".screens.actions.ActionsFragment">
+    android:background="@color/window_bg">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/light_atmosphere_background" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_16dp"
-        android:fontFamily="@font/semi_bold"
-        android:text="Действия"
-        android:textColor="@color/title"
-        android:textSize="@dimen/_20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/_16dp"
+        android:paddingTop="@dimen/payments_content_top_padding"
+        android:paddingBottom="@dimen/payments_content_bottom_padding">
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/receive_card"
-        android:layout_width="@dimen/_0dp"
-        android:layout_height="@dimen/_0dp"
-        android:layout_marginStart="@dimen/_20dp"
-        android:layout_marginTop="@dimen/_20dp"
-        app:cardBackgroundColor="@color/card_bg"
-        app:cardCornerRadius="@dimen/_12dp"
-        app:cardElevation="@dimen/_2dp"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toStartOf="@id/send_card"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        app:strokeWidth="@dimen/_0dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/mont_bold"
+            android:text="@string/payments"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_28sp" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_4dp"
+            android:fontFamily="@font/mont_regular"
+            android:text="@string/payments_subtitle"
+            android:textColor="@color/subtitle"
+            android:textSize="@dimen/_13sp" />
+
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/payments_card_top_margin"
+            app:cardBackgroundColor="@color/card_bg"
+            app:cardCornerRadius="@dimen/_26dp"
+            app:cardElevation="0dp">
 
-            <ImageView
-                android:id="@+id/receive_arrow"
-                android:layout_width="@dimen/_50dp"
-                android:layout_height="@dimen/_50dp"
-                android:src="@drawable/ic_arrow_down"
-                app:layout_constraintBottom_toTopOf="@id/receive_text"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed"
-                app:tint="@color/green" />
-
-            <TextView
-                android:id="@+id/receive_text"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_20dp"
-                android:fontFamily="@font/semi_bold"
-                android:text="Получить\nЕСом"
-                android:textAlignment="center"
-                android:textColor="@color/title"
-                android:textSize="@dimen/_18sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/receive_arrow" />
+                android:orientation="vertical"
+                android:padding="@dimen/payments_card_padding">
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/mont_bold"
+                    android:text="@string/payment_transfers_title"
+                    android:textColor="@color/title"
+                    android:textSize="@dimen/_24sp" />
 
-    </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/payments_wallet_label_top_margin"
+                    android:fontFamily="@font/mont_semibold"
+                    android:text="@string/payment_from_wallet"
+                    android:textColor="@color/subtitle"
+                    android:textSize="@dimen/_12sp" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/send_card"
-        android:layout_width="@dimen/_0dp"
-        android:layout_height="@dimen/_0dp"
-        android:layout_marginStart="@dimen/_20dp"
-        android:layout_marginTop="@dimen/_20dp"
-        android:layout_marginEnd="@dimen/_20dp"
-        app:cardBackgroundColor="@color/card_bg"
-        app:cardCornerRadius="@dimen/_12dp"
-        app:cardElevation="@dimen/_2dp"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/receive_card"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        app:strokeWidth="@dimen/_0dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/payments_currency_row_height"
+                    android:layout_marginTop="@dimen/_8dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:weightSum="3">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+                    <LinearLayout
+                        android:id="@+id/currency_som_chip"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="@dimen/_5dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/payment_currency_chip"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="@dimen/_8dp">
 
-            <ImageView
-                android:id="@+id/send_arrow"
-                android:layout_width="@dimen/_50dp"
-                android:layout_height="@dimen/_50dp"
-                android:rotation="270"
-                android:src="@drawable/ic_arrow_down"
-                app:layout_constraintBottom_toTopOf="@id/send_text"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed"
-                app:tint="@color/blue" />
+                        <ImageView
+                            android:layout_width="@dimen/_27dp"
+                            android:layout_height="@dimen/_27dp"
+                            android:contentDescription="@string/som"
+                            android:src="@drawable/som_icon" />
 
-            <TextView
-                android:id="@+id/send_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_20dp"
-                android:fontFamily="@font/semi_bold"
-                android:text="Отправить\nЕСом"
-                android:textAlignment="center"
-                android:textColor="@color/title"
-                android:textSize="@dimen/_18sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/send_arrow" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/_6dp"
+                            android:fontFamily="@font/mont_semibold"
+                            android:text="@string/som"
+                            android:textColor="@color/title"
+                            android:textSize="@dimen/_11sp" />
+                    </LinearLayout>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                    <LinearLayout
+                        android:id="@+id/currency_salam_chip"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginHorizontal="@dimen/_3dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/payment_currency_chip"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="@dimen/_7dp">
 
-    </com.google.android.material.card.MaterialCardView>
+                        <ImageView
+                            android:layout_width="@dimen/_27dp"
+                            android:layout_height="@dimen/_27dp"
+                            android:contentDescription="@string/digital"
+                            android:src="@drawable/salam_icon" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/som_to_esom_card"
-        android:layout_width="@dimen/_0dp"
-        android:layout_height="@dimen/_0dp"
-        android:layout_marginStart="@dimen/_20dp"
-        android:layout_marginTop="@dimen/_20dp"
-        app:cardBackgroundColor="@color/card_bg"
-        app:cardCornerRadius="@dimen/_12dp"
-        app:cardElevation="@dimen/_2dp"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toStartOf="@id/esom_to_som_card"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/send_card"
-        app:strokeWidth="@dimen/_0dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/_5dp"
+                            android:fontFamily="@font/mont_semibold"
+                            android:text="@string/digital"
+                            android:textColor="@color/title"
+                            android:textSize="@dimen/_10sp" />
+                    </LinearLayout>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+                    <LinearLayout
+                        android:id="@+id/currency_usdt_chip"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="@dimen/_5dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/payment_currency_chip"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="@dimen/_8dp">
 
-            <ImageView
-                android:id="@+id/som_to_esom_arrow"
-                android:layout_width="@dimen/_50dp"
-                android:layout_height="@dimen/_50dp"
-                android:src="@drawable/ic_swap"
-                app:layout_constraintBottom_toTopOf="@id/som_to_esom_text"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed"
-                app:tint="@color/green" />
+                        <ImageView
+                            android:layout_width="@dimen/_27dp"
+                            android:layout_height="@dimen/_27dp"
+                            android:contentDescription="USDT"
+                            android:src="@drawable/usdt_icon" />
 
-            <TextView
-                android:id="@+id/som_to_esom_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_20dp"
-                android:fontFamily="@font/semi_bold"
-                android:text="Перевести\nСом в ЕСом"
-                android:textAlignment="center"
-                android:textColor="@color/title"
-                android:textSize="@dimen/_18sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/som_to_esom_arrow" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/_6dp"
+                            android:fontFamily="@font/mont_semibold"
+                            android:text="USDT"
+                            android:textColor="@color/title"
+                            android:textSize="@dimen/_10sp" />
+                    </LinearLayout>
+                </LinearLayout>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <LinearLayout
+                    android:id="@+id/send_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/payments_primary_action_height"
+                    android:layout_marginTop="@dimen/payments_primary_action_top_margin"
+                    android:background="@drawable/payment_primary_action_background"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/_14dp">
 
-    </com.google.android.material.card.MaterialCardView>
+                    <ImageView
+                        android:layout_width="@dimen/_42dp"
+                        android:layout_height="@dimen/_42dp"
+                        android:contentDescription="@string/transfer_btn_title"
+                        android:src="@drawable/payment_transfer_icon" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/esom_to_som_card"
-        android:layout_width="@dimen/_0dp"
-        android:layout_height="@dimen/_0dp"
-        android:layout_marginStart="@dimen/_20dp"
-        android:layout_marginTop="@dimen/_20dp"
-        android:layout_marginEnd="@dimen/_20dp"
-        app:cardBackgroundColor="@color/card_bg"
-        app:cardCornerRadius="@dimen/_12dp"
-        app:cardElevation="@dimen/_2dp"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/som_to_esom_card"
-        app:layout_constraintTop_toBottomOf="@id/send_card"
-        app:strokeWidth="@dimen/_0dp">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/mont_semibold"
+                            android:text="@string/transfer_btn_title"
+                            android:textColor="@color/title"
+                            android:textSize="@dimen/_16sp" />
 
-            <ImageView
-                android:id="@+id/esom_to_som_arrow"
-                android:layout_width="@dimen/_50dp"
-                android:layout_height="@dimen/_50dp"
-                android:rotation="270"
-                android:src="@drawable/ic_swap"
-                app:layout_constraintBottom_toTopOf="@id/esom_to_som_text"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed"
-                app:tint="@color/blue" />
+                        <TextView
+                            android:id="@+id/selected_wallet_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/_3dp"
+                            android:fontFamily="@font/mont_regular"
+                            android:textColor="@color/subtitle"
+                            android:textSize="@dimen/_11sp"
+                            tools:text="По номеру или адресу · Сом" />
+                    </LinearLayout>
 
-            <TextView
-                android:id="@+id/esom_to_som_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_20dp"
-                android:fontFamily="@font/semi_bold"
-                android:text="Перевести\nЕСом в Сом"
-                android:textAlignment="center"
-                android:textColor="@color/title"
-                android:textSize="@dimen/_18sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/esom_to_som_arrow" />
+                    <ImageView
+                        android:layout_width="@dimen/_38dp"
+                        android:layout_height="@dimen/_38dp"
+                        android:background="@drawable/payment_arrow_background"
+                        android:contentDescription="@string/transfer_btn_title"
+                        android:padding="@dimen/_13dp"
+                        android:src="@drawable/right_red_arrow" />
+                </LinearLayout>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <LinearLayout
+                    android:id="@+id/convert_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/payments_primary_action_height"
+                    android:layout_marginTop="@dimen/payments_secondary_action_top_margin"
+                    android:background="@drawable/payment_primary_action_background"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/_14dp">
 
-    </com.google.android.material.card.MaterialCardView>
+                    <ImageView
+                        android:layout_width="@dimen/_42dp"
+                        android:layout_height="@dimen/_42dp"
+                        android:contentDescription="@string/convert"
+                        android:src="@drawable/payment_conversion_icon" />
 
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/_12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/mont_semibold"
+                            android:text="@string/convert"
+                            android:textColor="@color/title"
+                            android:textSize="@dimen/_16sp" />
+
+                        <TextView
+                            android:id="@+id/conversion_wallet_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/_3dp"
+                            android:fontFamily="@font/mont_regular"
+                            android:textColor="@color/subtitle"
+                            android:textSize="@dimen/_11sp"
+                            tools:text="Обмен валют · Сом" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="@dimen/_38dp"
+                        android:layout_height="@dimen/_38dp"
+                        android:background="@drawable/payment_arrow_background"
+                        android:contentDescription="@string/convert"
+                        android:padding="@dimen/_13dp"
+                        android:src="@drawable/right_red_arrow" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/contacts_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/payments_contacts_top_margin"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/mont_semibold"
+                        android:text="@string/payment_contacts"
+                        android:textColor="@color/title"
+                        android:textSize="@dimen/_14sp" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/contacts_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/payments_contacts_list_height"
+                        android:layout_marginTop="@dimen/payments_contacts_list_top_margin"
+                        android:clipToPadding="false"
+                        android:orientation="horizontal"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:listitem="@layout/item_payment_contact" />
+
+                    <TextView
+                        android:id="@+id/contacts_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_10dp"
+                        android:background="@drawable/payment_primary_action_background"
+                        android:fontFamily="@font/mont_regular"
+                        android:padding="@dimen/_14dp"
+                        android:text="@string/payment_contacts_empty"
+                        android:textColor="@color/subtitle"
+                        android:textSize="@dimen/_11sp"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</FrameLayout>

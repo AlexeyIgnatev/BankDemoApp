@@ -1,10 +1,14 @@
 package com.esom.bank.screens.history.model
 
+import android.os.Parcelable
 import androidx.annotation.Keep
+import kotlinx.parcelize.Parcelize
+
 import com.esom.bank.screens.history.dto.ReceiptResponseDto
 import com.esom.bank.screens.history.enums.ConversionSide
 
 @Keep
+@Parcelize
 data class ReceiptModel(
     val successful: Boolean,
     val amount: Double,
@@ -23,7 +27,7 @@ data class ReceiptModel(
     val receiptNumber: String,
     val targetCurrency: String = "",
     val totalDebitedAmount: Double? = null
-)
+) : Parcelable
 
 fun ReceiptResponseDto.toModel(requestedConversionSide: ConversionSide? = null): ReceiptModel =
     ReceiptModel(

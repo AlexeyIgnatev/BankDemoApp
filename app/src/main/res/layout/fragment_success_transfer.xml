@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".screens.transfer.dialog.SuccessTransferFragment">
+    tools:context=".screens.transfer.dialog.success.SuccessTransferFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/back_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/_48dp"
+        android:layout_height="@dimen/_48dp"
         android:layout_margin="@dimen/_10dp"
-        android:padding="@dimen/_10dp"
+        android:padding="@dimen/_12dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -31,6 +31,7 @@
             android:layout_marginStart="@dimen/_4dp"
             android:fontFamily="@font/mont_bold"
             android:text="@string/back"
+            android:visibility="gone"
             android:textColor="#E62324"
             android:textSize="@dimen/_12sp"
             app:layout_constraintBottom_toBottomOf="@id/back_icon"

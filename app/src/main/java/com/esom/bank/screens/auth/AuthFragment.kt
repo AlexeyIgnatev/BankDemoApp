@@ -1,7 +1,6 @@
 package com.esom.bank.screens.auth
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,6 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.lifecycle.lifecycleScope
 import com.esom.bank.BuildConfig
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
@@ -22,20 +20,13 @@ import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentAuthBinding
 import com.esom.bank.screens.main.MainViewModel
-import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class AuthFragment : Fragment() {
     private lateinit var binding: FragmentAuthBinding
 
     private val model: MainViewModel by activityViewModels()
-    @Inject
-    lateinit var pinLocalDataSource: PinLocalDataSource
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,10 +50,6 @@ class AuthFragment : Fragment() {
             requireActivity().moveTaskToBack(true)
         }
         binding.version.text = getString(R.string.version_title, BuildConfig.VERSION_NAME)
-
-        binding.regBtn.setOnClickListener {
-            findNavController().navigate(NavGraphDirections.startRegistrationFragment())
-        }
 
         binding.logInBtn.setOnClickListener {
             if (model.myData.value !is UiState.Loading) {
@@ -104,31 +91,21 @@ class AuthFragment : Fragment() {
     }
 
     private fun checkInitialAuthState() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val shouldNavigate = withContext(Dispatchers.IO) {
-                model.isAuthenticated()
-            }
-            if (shouldNavigate) {
-                navigateToLockFlow()
-            }
+        if (model.isAuthenticated()) {
+            navigateToLockFlow()
         }
     }
 
     private fun navigateToLockFlow() {
         if (findNavController().currentDestination?.id != R.id.authFragment) return
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            val hasLock = withContext(Dispatchers.IO) {
-                pinLocalDataSource.hasLock()
-            }
-            if (hasLock) {
-                findNavController().navigate(NavGraphDirections.startLogInFragment())
-            } else {
-                findNavController().navigate(
-                    R.id.startPinCreateFragment,
-                    bundleOf("fromSettings" to false)
-                )
-            }
+        if (model.hasLock()) {
+            findNavController().navigate(NavGraphDirections.startLogInFragment())
+        } else {
+            findNavController().navigate(
+                R.id.startPinCreateFragment,
+                bundleOf("fromSettings" to false)
+            )
         }
     }
 }

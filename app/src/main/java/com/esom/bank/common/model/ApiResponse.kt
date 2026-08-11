@@ -1,11 +1,20 @@
 package com.esom.bank.common.model
 
 import android.content.Context
+import android.os.Parcelable
+import androidx.annotation.Keep
 import androidx.annotation.StringRes
+import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 
-sealed class ApiResponse<out T> {
-    data class Success<T>(val data: T, val code: Int) : ApiResponse<T>()
+@Keep
+sealed class ApiResponse<out T> : Parcelable {
+    @Keep
+    @Parcelize
+    data class Success<T>(val data: @RawValue T, val code: Int) : ApiResponse<T>()
 
+    @Keep
+    @Parcelize
     data class Error<T>(
         @StringRes val message: Int,
         val data: ErrorResponse? = null,

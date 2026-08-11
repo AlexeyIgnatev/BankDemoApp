@@ -1,8 +1,14 @@
 package com.esom.bank.screens.transfer.model
 
+import android.os.Parcelable
+import androidx.annotation.Keep
+import kotlinx.parcelize.Parcelize
+
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.history.enums.ConversionSide
 
+@Keep
+@Parcelize
 data class SuccessOperationModel(
     val amount: Double,
     val currency: CurrencyEnum,
@@ -21,4 +27,4 @@ data class SuccessOperationModel(
     val recipientName: String = "",
     val openedFromHistory: Boolean = false,
     val totalDebitedAmount: Double? = null
-)
+) : Parcelable

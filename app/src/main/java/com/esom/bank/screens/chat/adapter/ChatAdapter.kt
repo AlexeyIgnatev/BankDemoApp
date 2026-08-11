@@ -10,29 +10,31 @@ import com.esom.bank.databinding.ItemMessageReceiverBinding
 import com.esom.bank.databinding.ItemMessageSenderBinding
 import com.esom.bank.screens.chat.enums.SupportRole
 import com.esom.bank.screens.chat.model.SupportModel
+import com.esom.bank.screens.chat.model.Message
+import com.esom.bank.screens.chat.model.MessageItem
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class ChatAdapter() :
-    ListAdapter<ChatAdapter.MessageItem, RecyclerView.ViewHolder>(ChatDiffCallback()) {
+    ListAdapter<MessageItem, RecyclerView.ViewHolder>(ChatDiffCallback()) {
     companion object {
         private const val TYPE_DATE = 0
         private const val TYPE_SENDER = 1
         private const val TYPE_RECEIVER = 2
     }
-
-    private val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("ru", "RU"))
-    private val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-
-    fun submitSupportMessages(supportMessages: List<SupportModel>) {
+    fun submitSupportMessages(
+        supportMessages: List<SupportModel>,
+        onCommitted: () -> Unit = {}
+    ) {
         val items = mutableListOf<MessageItem>()
         var lastDate = ""
 
         val sortedMessages = supportMessages.sortedBy { it.createdAt }
 
         sortedMessages.forEach { supportMessage ->
-            val currentDate = dateFormat.format(Date(supportMessage.createdAt))
+            val currentDate = SimpleDateFormat("dd MMMM yyyy", Locale("ru", "RU"))
+                .format(Date(supportMessage.createdAt))
 
             if (currentDate != lastDate) {
                 items.add(MessageItem.Date(currentDate))
@@ -41,7 +43,8 @@ class ChatAdapter() :
 
             val message = Message(
                 message = supportMessage.text,
-                time = timeFormat.format(Date(supportMessage.createdAt)),
+                time = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    .format(Date(supportMessage.createdAt)),
                 name = if (supportMessage.role != SupportRole.USER) "Поддержка" else ""
             )
 
@@ -55,7 +58,7 @@ class ChatAdapter() :
             }
         }
 
-        submitList(items)
+        submitList(items, onCommitted)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -88,12 +91,6 @@ class ChatAdapter() :
         fun bind(date: String) {
             binding.date.text = date
         }
-    }
-
-    sealed class MessageItem {
-        data class SenderMessage(val message: Message) : MessageItem()
-        data class ReceiverMessage(val message: Message) : MessageItem()
-        data class Date(val date: String) : MessageItem()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -146,19 +143,19 @@ class ChatAdapter() :
     }
 }
 
-class ChatDiffCallback : DiffUtil.ItemCallback<ChatAdapter.MessageItem>() {
+class ChatDiffCallback : DiffUtil.ItemCallback<MessageItem>() {
     override fun areItemsTheSame(
-        oldItem: ChatAdapter.MessageItem,
-        newItem: ChatAdapter.MessageItem
+        oldItem: MessageItem,
+        newItem: MessageItem
     ): Boolean {
         return when {
-            oldItem is ChatAdapter.MessageItem.Date && newItem is ChatAdapter.MessageItem.Date ->
+            oldItem is MessageItem.Date && newItem is MessageItem.Date ->
                 oldItem.date == newItem.date
 
-            oldItem is ChatAdapter.MessageItem.ReceiverMessage && newItem is ChatAdapter.MessageItem.ReceiverMessage ->
+            oldItem is MessageItem.ReceiverMessage && newItem is MessageItem.ReceiverMessage ->
                 oldItem.message.message == newItem.message.message && oldItem.message.time == newItem.message.time
 
-            oldItem is ChatAdapter.MessageItem.SenderMessage && newItem is ChatAdapter.MessageItem.SenderMessage ->
+            oldItem is MessageItem.SenderMessage && newItem is MessageItem.SenderMessage ->
                 oldItem.message.message == newItem.message.message && oldItem.message.time == newItem.message.time
 
             else -> false
@@ -166,15 +163,9 @@ class ChatDiffCallback : DiffUtil.ItemCallback<ChatAdapter.MessageItem>() {
     }
 
     override fun areContentsTheSame(
-        oldItem: ChatAdapter.MessageItem,
-        newItem: ChatAdapter.MessageItem
+        oldItem: MessageItem,
+        newItem: MessageItem
     ): Boolean {
         return oldItem == newItem
     }
 }
-
-data class Message(
-    val message: String,
-    val time: String,
-    val name: String = ""
-)

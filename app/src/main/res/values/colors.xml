@@ -1,22 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
     <color name="window_bg">#F3F5F6</color>
     <color name="card_bg">#FFFFFF</color>
-
     <color name="title">#1D1D1B</color>
     <color name="subtitle">#888888</color>
     <color name="green">#38C72E</color>
 
     <color name="edittext_title">#414141</color>
 
-    <color name="blue">#3175D9</color>
 
     <color name="text_color_secondary">#62656A</color>
-
-    <color name="disabled_btn_bg_color">#FAFBFD</color>
 
     <color name="red">#ff193c</color>
 
@@ -28,8 +23,12 @@
     <color name="lock_pattern_selected">#EF6161</color>
     <color name="lock_pattern_error">#EF6161</color>
     <color name="lock_pattern_dot">#C2C2C2</color>
-    <color name="lock_pattern_bg">#E4E4E4</color>
     <color name="transaction_income">#38C72E</color>
-    <color name="transaction_expense">#1D1D1B</color>
     <color name="period_inactive_text">#535353</color>
+    <color name="home_rate_som">#FFF0F1</color>
+    <color name="home_rate_salam">#FFF4EC</color>
+    <color name="home_rate_usdt">#EAF8F4</color>
+    <color name="finance_orange">#FFB648</color>
+    <color name="finance_cyan">#2CCBAC</color>
+    <color name="finance_purple">#8F7AF0</color>
 </resources>

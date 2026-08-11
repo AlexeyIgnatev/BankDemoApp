@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0EEEE"
+    android:background="@drawable/theme_screen_background"
     tools:ignore="MissingConstraints"
     tools:context=".screens.bio.BioFragment">
 
@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/bio_log_in"
-        android:textColor="#1D1D1B"
+        android:textColor="@color/title"
         android:textSize="@dimen/_22sp"
         android:fontFamily="@font/mont_semibold"
         android:letterSpacing="-0.01"
@@ -35,7 +35,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/use_bio_for_log_in"
-        android:textColor="#1D1D1B"
+        android:textColor="@color/title"
         android:textSize="@dimen/_22sp"
         android:fontFamily="@font/mont_semibold"
         android:letterSpacing="-0.01"
@@ -49,7 +49,7 @@
         android:textSize="@dimen/_11sp"
         android:gravity="center"
         android:fontFamily="@font/mont_semibold"
-        android:textColor="#B2B2B2"
+        android:textColor="@color/subtitle"
         app:layout_constraintTop_toBottomOf="@id/use_bio_title"
         android:layout_marginTop="@dimen/_6dp"/>
 

@@ -1,12 +1,7 @@
 package com.esom.bank.common.utils
 
 import com.esom.bank.screens.main.enums.CurrencyEnum
-
-data class AppQrPayload(
-    val contact: String,
-    val currency: CurrencyEnum?,
-    val version: Int
-)
+import com.esom.bank.common.model.AppQrPayload
 
 object AppQrCode {
     private const val PREFIX = "ESOM_BANK_QR"

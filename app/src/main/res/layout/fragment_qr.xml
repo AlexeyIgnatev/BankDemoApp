@@ -4,15 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/window_bg"
+    android:background="#121012"
     tools:context=".screens.qr.QrFragment">
+
+    <com.journeyapps.barcodescanner.DecoratedBarcodeView
+        android:id="@+id/full_screen_scanner"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:zxing_possible_result_points="@color/white"
+        app:zxing_result_view="@android:color/transparent"
+        app:zxing_viewfinder_laser="@android:color/transparent"
+        app:zxing_viewfinder_mask="@android:color/transparent" />
+
+    <com.esom.bank.common.utils.views.QrScanFrameView
+        android:id="@+id/scan_frame"
+        android:layout_width="0dp"
+        android:layout_height="280dp"
+        android:layout_marginHorizontal="52dp"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/back_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/_48dp"
+        android:layout_height="@dimen/_48dp"
         android:layout_margin="@dimen/_10dp"
-        android:padding="@dimen/_10dp"
+        android:elevation="12dp"
+        android:padding="@dimen/_12dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -23,7 +48,8 @@
             android:src="@drawable/arrow_left"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#B51E28" />
 
         <TextView
             android:id="@+id/back_title"
@@ -34,6 +60,7 @@
             android:text="@string/back"
             android:textColor="#E62324"
             android:textSize="@dimen/_12sp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/back_icon"
             app:layout_constraintStart_toEndOf="@id/back_icon"
             app:layout_constraintTop_toTopOf="@id/back_icon" />
@@ -44,6 +71,7 @@
         android:layout_width="@dimen/_0dp"
         android:layout_height="@dimen/_0dp"
         android:background="?attr/selectableItemBackgroundBorderless"
+        android:elevation="13dp"
         app:layout_constraintBottom_toBottomOf="@id/back_layout"
         app:layout_constraintEnd_toEndOf="@id/back_layout"
         app:layout_constraintStart_toStartOf="@id/back_layout"
@@ -56,8 +84,9 @@
         android:layout_marginTop="@dimen/_10dp"
         android:fontFamily="@font/mont_bold"
         android:text="@string/qr_screen_title"
-        android:textColor="#1D1D1B"
+        android:textColor="@color/title"
         android:textSize="@dimen/_27sp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -73,24 +102,22 @@
         android:gravity="center"
         android:lineSpacingExtra="@dimen/_2dp"
         android:text="@string/qr_screen_subtitle"
-        android:textColor="#777777"
+        android:textColor="@color/subtitle"
         android:textSize="@dimen/_13sp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/title" />
 
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/mode_toggle_group"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/_20dp"
-        android:layout_marginTop="@dimen/_16dp"
-        app:checkedButton="@id/scan_tab_btn"
+        android:layout_marginTop="@dimen/_10dp"
+        android:layout_marginEnd="@dimen/_16dp"
+        android:elevation="12dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/subtitle"
-        app:selectionRequired="true"
-        app:singleSelection="true">
+        app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/scan_tab_btn"
@@ -99,16 +126,25 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/qr_mode_scan"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            android:visibility="gone" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/show_tab_btn"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/qr_mode_show"
-            android:textAllCaps="false" />
+            android:layout_width="200dp"
+            android:layout_height="@dimen/_48dp"
+            android:backgroundTint="#EFFFFFFF"
+            android:fontFamily="@font/mont_semibold"
+            android:text="Показать QR"
+            android:textAllCaps="false"
+            android:textColor="#A71924"
+            app:cornerRadius="@dimen/_24dp"
+            app:icon="@drawable/ic_qr_scan"
+            app:iconPadding="@dimen/_8dp"
+            app:iconSize="@dimen/_22dp"
+            app:iconTint="#A71924"
+            app:strokeWidth="0dp" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <androidx.core.widget.NestedScrollView
@@ -119,87 +155,75 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/mode_toggle_group">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="@dimen/_20dp"
-            android:paddingTop="@dimen/_12dp"
+            android:paddingHorizontal="0dp"
+            android:paddingTop="0dp"
             android:paddingBottom="@dimen/_24dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/scan_container"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="@dimen/_24dp"
+                android:layout_height="match_parent"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="0dp"
                 app:cardElevation="@dimen/_0dp"
-                app:strokeColor="#E9E9E9"
-                app:strokeWidth="@dimen/_1dp">
+                app:strokeWidth="0dp">
 
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/_18dp">
+                    android:layout_height="match_parent">
 
-                    <ImageView
-                        android:id="@+id/scan_icon"
-                        android:layout_width="@dimen/_66dp"
-                        android:layout_height="@dimen/_66dp"
-                        android:layout_gravity="center_horizontal"
-                        android:src="@drawable/ic_qr_scan"
-                        android:tint="#E62324" />
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        app:layout_constraintBottom_toTopOf="@id/scanner_actions"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView
-                        android:id="@+id/scan_heading"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_14dp"
-                        android:fontFamily="@font/mont_bold"
+                    <LinearLayout
+                        android:id="@+id/scanner_actions"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/_96dp"
+                        android:layout_marginBottom="@dimen/_52dp"
+                        android:background="@drawable/qr_scanner_actions_background"
                         android:gravity="center"
-                        android:text="@string/qr_scan_heading"
-                        android:textColor="#1D1D1B"
-                        android:textSize="@dimen/_20sp" />
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="@dimen/_14dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent">
 
-                    <TextView
-                        android:id="@+id/scan_description"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_8dp"
-                        android:fontFamily="@font/mont_regular"
-                        android:gravity="center"
-                        android:lineSpacingExtra="@dimen/_2dp"
-                        android:text="@string/qr_scan_description"
-                        android:textColor="#777777"
-                        android:textSize="@dimen/_13sp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/scan_camera_btn"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_16dp"
-                        android:backgroundTint="#E62324"
-                        android:fontFamily="@font/mont_semibold"
-                        android:text="@string/qr_scan_camera_button"
-                        android:textAllCaps="false"
-                        android:textColor="@color/white" />
-
-                    <com.google.android.material.button.MaterialButton
+                    <LinearLayout
                         android:id="@+id/scan_gallery_btn"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_10dp"
-                        android:backgroundTint="@color/white"
-                        android:fontFamily="@font/mont_semibold"
-                        android:text="@string/qr_scan_gallery_button"
-                        android:textAllCaps="false"
-                        android:textColor="#1D1D1B"
-                        app:strokeColor="#D9D9D9"
-                        app:strokeWidth="@dimen/_1dp" />
-                </LinearLayout>
+                        android:layout_width="@dimen/_100dp"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <ImageView android:layout_width="@dimen/_34dp" android:layout_height="@dimen/_34dp" android:src="@drawable/ic_qr_file" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/_4dp" android:fontFamily="@font/mont_semibold" android:text="Галерея" android:textColor="@color/white" android:textSize="@dimen/_12sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/flashlight_btn"
+                        android:layout_width="@dimen/_100dp"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <ImageView android:layout_width="@dimen/_34dp" android:layout_height="@dimen/_34dp" android:src="@drawable/ic_qr_flashlight" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/_4dp" android:fontFamily="@font/mont_semibold" android:text="Фонарик" android:textColor="@color/white" android:textSize="@dimen/_12sp" />
+                    </LinearLayout>
+                    </LinearLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
@@ -207,7 +231,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                android:orientation="vertical">
+                android:background="@drawable/light_atmosphere_background"
+                android:minHeight="760dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/_20dp"
+                android:paddingTop="@dimen/_76dp">
 
                 <TextView
                     android:id="@+id/show_heading"
@@ -217,7 +245,7 @@
                     android:layout_marginBottom="@dimen/_12dp"
                     android:fontFamily="@font/mont_bold"
                     android:text="@string/qr_show_heading"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_20sp" />
 
                 <com.google.android.material.card.MaterialCardView
@@ -225,10 +253,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/_12dp"
-                    app:cardBackgroundColor="@color/white"
+                    app:cardBackgroundColor="@color/card_bg"
                     app:cardCornerRadius="@dimen/_24dp"
                     app:cardElevation="@dimen/_0dp"
-                    app:strokeColor="#E9E9E9"
+                    app:strokeColor="@color/lock_pattern_regular"
                     app:strokeWidth="@dimen/_1dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -242,7 +270,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/mont_bold"
                             android:text="@string/qr_phone_title"
-                            android:textColor="#1D1D1B"
+                            android:textColor="@color/title"
                             android:textSize="@dimen/_16sp"
                             app:layout_constraintEnd_toStartOf="@id/phone_qr_copy_btn"
                             app:layout_constraintStart_toStartOf="parent"
@@ -256,7 +284,7 @@
                             android:fontFamily="@font/mont_regular"
                             android:lineSpacingExtra="@dimen/_2dp"
                             android:text="@string/empty_value"
-                            android:textColor="#777777"
+                            android:textColor="@color/subtitle"
                             android:textSize="@dimen/_12sp"
                             app:layout_constraintEnd_toStartOf="@id/phone_qr_image"
                             app:layout_constraintStart_toStartOf="@id/phone_qr_title"
@@ -321,10 +349,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="@dimen/_12dp"
-                    app:cardBackgroundColor="@color/white"
+                    app:cardBackgroundColor="@color/card_bg"
                     app:cardCornerRadius="@dimen/_24dp"
                     app:cardElevation="@dimen/_0dp"
-                    app:strokeColor="#E9E9E9"
+                    app:strokeColor="@color/lock_pattern_regular"
                     app:strokeWidth="@dimen/_1dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -338,7 +366,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/mont_bold"
                             android:text="@string/qr_salam_title"
-                            android:textColor="#1D1D1B"
+                            android:textColor="@color/title"
                             android:textSize="@dimen/_16sp"
                             app:layout_constraintEnd_toStartOf="@id/salam_qr_copy_btn"
                             app:layout_constraintStart_toStartOf="parent"
@@ -352,7 +380,7 @@
                             android:fontFamily="@font/mont_regular"
                             android:lineSpacingExtra="@dimen/_2dp"
                             android:text="@string/empty_value"
-                            android:textColor="#777777"
+                            android:textColor="@color/subtitle"
                             android:textSize="@dimen/_12sp"
                             app:layout_constraintEnd_toStartOf="@id/salam_qr_image"
                             app:layout_constraintStart_toStartOf="@id/salam_qr_title"
@@ -416,10 +444,10 @@
                     android:id="@+id/usdt_qr_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardBackgroundColor="@color/white"
+                    app:cardBackgroundColor="@color/card_bg"
                     app:cardCornerRadius="@dimen/_24dp"
                     app:cardElevation="@dimen/_0dp"
-                    app:strokeColor="#E9E9E9"
+                    app:strokeColor="@color/lock_pattern_regular"
                     app:strokeWidth="@dimen/_1dp">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -433,7 +461,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/mont_bold"
                             android:text="@string/qr_usdt_title"
-                            android:textColor="#1D1D1B"
+                            android:textColor="@color/title"
                             android:textSize="@dimen/_16sp"
                             app:layout_constraintEnd_toStartOf="@id/usdt_qr_copy_btn"
                             app:layout_constraintStart_toStartOf="parent"
@@ -447,7 +475,7 @@
                             android:fontFamily="@font/mont_regular"
                             android:lineSpacingExtra="@dimen/_2dp"
                             android:text="@string/empty_value"
-                            android:textColor="#777777"
+                            android:textColor="@color/subtitle"
                             android:textSize="@dimen/_12sp"
                             app:layout_constraintEnd_toStartOf="@id/usdt_qr_image"
                             app:layout_constraintStart_toStartOf="@id/usdt_qr_title"
@@ -511,3 +539,4 @@
     </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

@@ -24,17 +24,26 @@ data class TransactionDto(
     val createdAt: Long?,
     @SerializedName(
         value = "recipient_full_name",
-        alternate = ["recipient_name", "recipient", "to_user_name"]
+        alternate = [
+            "recipient_name", "recipient", "to_user_name", "recipientFullName",
+            "receiver_full_name", "receiverFullName", "beneficiary_name", "beneficiaryName"
+        ]
     )
     val recipientFullName: String? = null,
     @SerializedName(
         value = "sender_full_name",
-        alternate = ["sender_name", "sender", "from_user_name"]
+        alternate = [
+            "sender_name", "sender", "from_user_name", "senderFullName",
+            "payer_full_name", "payerFullName", "originator_name", "originatorName"
+        ]
     )
     val senderFullName: String? = null,
     @SerializedName(
         value = "account_details",
-        alternate = ["recipient_account", "to_account", "address", "phone_number"]
+        alternate = [
+            "recipient_account", "to_account", "address", "phone_number", "accountDetails",
+            "recipientAccount", "toAccount", "phoneNumber"
+        ]
     )
     val accountDetails: String? = null
 )

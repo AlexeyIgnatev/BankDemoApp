@@ -1,10 +1,6 @@
 package com.esom.bank.screens.wallet
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,46 +8,31 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.viewpager2.widget.ViewPager2
 import com.esom.bank.MainNavGraphDirections
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
-import com.esom.bank.common.utils.format
-import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentWalletBinding
-import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.TransactionSuccessMapper
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.WalletModel
-import com.esom.bank.screens.wallet.adapter.CardAdapter
-import com.esom.bank.screens.wallet.adapter.Currency
-import com.esom.bank.screens.wallet.adapter.CurrencyAdapter
-import com.esom.bank.screens.wallet.adapter.News
-import com.esom.bank.screens.wallet.adapter.NewsAdapter
-import com.esom.bank.screens.wallet.adapter.TransactionAdapter
-import com.esom.bank.screens.wallet.adapter.TypeOfCurrency
+import com.esom.bank.screens.wallet.adapter.HomeWalletAdapter
+import com.esom.bank.screens.wallet.adapter.HomeTransactionAdapter
+import com.esom.bank.screens.wallet.adapter.HomeExchangeRateAdapter
+import com.esom.bank.screens.wallet.model.toHomeTransactionItems
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Date
-import java.util.Locale
-import kotlin.math.abs
 
 @AndroidEntryPoint
 class WalletFragment : Fragment() {
-
     private lateinit var binding: FragmentWalletBinding
     private val model: MainViewModel by activityViewModels()
-    private var cards: List<WalletModel> = emptyList()
-    private var infiniteList: List<WalletModel> = emptyList()
-    private var currentCurrency: CurrencyEnum = CurrencyEnum.SOM
-    private var currentPosition: Int = 1
-    private var isUserSwiping: Boolean = false
-    private var latestWallets: List<WalletModel> = emptyList()
+    private val uiModel: WalletUiStateViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,364 +43,186 @@ class WalletFragment : Fragment() {
         return binding.root
     }
 
-    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.dataLayout.doOnApplyWindowInsets { view, insets, rect ->
-            view.updatePadding(
+        uiModel.restoreHistoryExpanded(model.isWalletHistoryExpanded())
+
+        binding.header.doOnApplyWindowInsets { insetView, insets, rect ->
+            insetView.updatePadding(
                 top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
             )
             insets
         }
 
-        binding.swipeRefreshLayout.setOnRefreshListener {
-            refreshDataFromSwipe()
-        }
+        val cardAdapter = setupCards()
+        val transactionAdapter = setupHistory()
+        val exchangeRateAdapter = setupExchangeRates()
+        setupClicks()
+        observeData(cardAdapter, transactionAdapter, exchangeRateAdapter)
+        renderBalanceVisibility(cardAdapter)
+        renderHistoryVisibility()
 
-        val newsAdapter = NewsAdapter()
-        val news = listOf(
-            News(R.drawable.new_1),
-            News(R.drawable.new_2),
-            News(R.drawable.new_3),
-            News(R.drawable.new_4),
-            News(R.drawable.new_5)
-        )
-        binding.news.adapter = newsAdapter
-        newsAdapter.submitList(news)
+        binding.swipeRefreshLayout.setOnRefreshListener { refresh() }
+        refresh()
+    }
 
-        val currencyAdapter = CurrencyAdapter(requireContext())
-        binding.currencies.adapter = currencyAdapter
-
-        val transactionAdapter = TransactionAdapter(requireContext()) { transaction ->
-            openSuccessTransfer(transaction)
-        }
-        binding.transactions.adapter = transactionAdapter
-
-        transactionAdapter.submitList(emptyList())
-
-        model.latestTransactions(currentCurrency)
-        model.history.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is UiState.Loading -> {
-                }
-                is UiState.Error -> {
-                    binding.root.showErrorSnackbar(state.message)
-                    transactionAdapter.submitList(emptyList())
-                }
-                is UiState.Success -> {
-                    binding.swipeRefreshLayout.isRefreshing = false
-                    if (isDataForCurrentCurrency(state.data)) {
-                        transactionAdapter.submitList(state.data)
-
-                        if (state.data.isEmpty()) {
-                            binding.transactionLayout.visibility = View.GONE
-                            binding.lastTransTitle.visibility = View.GONE
-                            binding.historyBtn.visibility = View.GONE
-                        } else {
-                            binding.transactionLayout.visibility = View.VISIBLE
-                            binding.lastTransTitle.visibility = View.VISIBLE
-                            binding.historyBtn.visibility = View.VISIBLE
-                        }
-
-                        val calendar = java.util.Calendar.getInstance()
-                        val currentYear = calendar.get(java.util.Calendar.YEAR)
-                        val currentMonth = calendar.get(java.util.Calendar.MONTH)
-
-                        val calendarStart = java.util.Calendar.getInstance().apply {
-                            set(currentYear, currentMonth, 1, 0, 0, 0)
-                            set(java.util.Calendar.MILLISECOND, 0)
-                        }
-
-                        val fromTimeMonth = calendarStart.timeInMillis
-
-                        val monthFormat = java.text.SimpleDateFormat("LLLL", Locale("ru"))
-                        val monthText = monthFormat.format(Date(fromTimeMonth))
-
-                        val monthInGenitive = when (monthText.lowercase(Locale.getDefault())) {
-                            "январь" -> "январе"
-                            "февраль" -> "феврале"
-                            "март" -> "марте"
-                            "апрель" -> "апреле"
-                            "май" -> "мае"
-                            "июнь" -> "июне"
-                            "июль" -> "июле"
-                            "август" -> "августе"
-                            "сентябрь" -> "сентябре"
-                            "октябрь" -> "октябре"
-                            "ноябрь" -> "ноябре"
-                            "декабрь" -> "декабре"
-                            else -> monthText
-                        }
-
-                        binding.monthWasteTitle.text = "Расходы в $monthInGenitive"
-                    }
-                }
-            }
-        }
-
-        val adapter = CardAdapter(
+    private fun setupCards(): HomeWalletAdapter {
+        val cardAdapter = HomeWalletAdapter(
             context = requireContext(),
-            phoneProvider = {
-                (model.myData.value as? UiState.Success)?.data?.phone
-            },
-            onSwapClick = { fromCurrency, toCurrency ->
-                findParentNavController().navigate(
-                    NavGraphDirections.startSwapFragment(
-                        fromCurrency.name, toCurrency.name
-                    )
-                )
-            },
-            onReceiveClick = { currency ->
-                val address = (model.myData.value as? UiState.Success)
-                    ?.data?.wallets?.find { it.currency == currency }?.address
-                Log.e("address", address.toString())
-                findParentNavController().navigate(
-                    NavGraphDirections.startReceiveFragment(
-                        address ?: "", currency.name
-                    )
-                )
-            },
-            onTransferClick = {
-                findParentNavController().navigate(
-                    NavGraphDirections.startTransferFragment(it.name)
+            phoneProvider = { (model.myData.value as? UiState.Success)?.data?.phone },
+            balancesVisibleProvider = { uiModel.uiState.value.balancesVisible },
+            onWalletClick = { wallet ->
+                findNavController().navigate(
+                    MainNavGraphDirections.startWalletDetailFragment(wallet.currency.name)
                 )
             }
         )
+        binding.pager.adapter = cardAdapter
+        binding.pager.clipToPadding = false
+        binding.pager.clipChildren = false
+        binding.pager.setPadding(resources.getDimensionPixelSize(R.dimen._18dp), 0,
+            resources.getDimensionPixelSize(R.dimen._18dp), 0)
+        return cardAdapter
+    }
 
-        val pageMarginPx = resources.getDimension(R.dimen._3dp).toInt()
-        val offsetPx = resources.getDimension(R.dimen._32dp).toInt()
+    private fun setupHistory(): HomeTransactionAdapter {
+        val transactionAdapter = HomeTransactionAdapter(
+            context = requireContext(),
+            balancesVisibleProvider = { uiModel.uiState.value.balancesVisible },
+            onTransactionClick = { item ->
+            val user = (model.myData.value as? UiState.Success)?.data
+            model.setLastSuccessOperation(
+                TransactionSuccessMapper.toSuccessOperation(requireContext(), item.transaction, user)
+            )
+            findParentNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
+            }
+        )
+        binding.transactions.adapter = transactionAdapter
+        return transactionAdapter
+    }
 
-        binding.title.setOnClickListener {
+    private fun setupExchangeRates(): HomeExchangeRateAdapter {
+        val exchangeRateAdapter = HomeExchangeRateAdapter(requireContext())
+        binding.exchangeRates.apply {
+            adapter = exchangeRateAdapter
+            clipChildren = false
+            clipToPadding = false
+            overScrollMode = View.OVER_SCROLL_NEVER
+        }
+        return exchangeRateAdapter
+    }
+
+    private fun setupClicks() = with(binding) {
+        profileBtn.setOnClickListener {
             findNavController().navigate(MainNavGraphDirections.startSettingsFragment())
         }
-
-        binding.historyBtn.setOnClickListener {
-            findNavController().navigate(MainNavGraphDirections.startHistoryFragment())
-        }
-
-        binding.pager.apply {
-            clipToPadding = false
-            clipChildren = false
-            offscreenPageLimit = 2
-            setPadding(offsetPx, 0, offsetPx, 0)
-
-            setPageTransformer { page, position ->
-                val offset = position * -(2 * pageMarginPx + offsetPx)
-                if (position < -1) {
-                    page.translationX = -offset
-                    page.alpha = 0.3f
-                    page.scaleX = 0.8f
-                    page.scaleY = 0.8f
-                } else if (position <= 1) {
-                    when {
-                        position < 0 -> {
-                            page.translationX = offset
-                            page.alpha = 0.3f + (1 - abs(position)) * 0.7f
-                            val scale = 0.8f + (1 - abs(position)) * 0.2f
-                            page.scaleX = scale
-                            page.scaleY = scale
-                        }
-
-                        position > 0 -> {
-                            page.translationX = offset
-                            page.alpha = 0.3f + (1 - position) * 0.7f
-                            val scale = 0.8f + (1 - position) * 0.2f
-                            page.scaleX = scale
-                            page.scaleY = scale
-                        }
-
-                        else -> {
-                            page.translationX = 0f
-                            page.alpha = 1f
-                            page.scaleX = 1f
-                            page.scaleY = 1f
-                        }
-                    }
-                } else {
-                    page.translationX = offset
-                    page.alpha = 0.3f
-                    page.scaleX = 0.8f
-                    page.scaleY = 0.8f
-                }
-            }
-        }
-
-        binding.pager.adapter = adapter
-        binding.pager.setCurrentItem(currentPosition, false)
-
-        binding.pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                if (cards.isEmpty()) return
-
-                val realPosition = when (position) {
-                    0 -> cards.size - 1
-                    infiniteList.size - 1 -> 0
-                    else -> position - 1
-                }
-
-                val targetCurrency = when (realPosition) {
-                    0 -> CurrencyEnum.SOM
-                    1 -> CurrencyEnum.ESOM
-                    2 -> CurrencyEnum.USDT_TRC20
-                    else -> return
-                }
-
-                currentCurrency = targetCurrency
-                currentPosition = position
-
-                (binding.transactions.adapter as? TransactionAdapter)?.submitList(emptyList())
-
-                model.latestTransactions(targetCurrency)
-
-                when (realPosition) {
-                    0 -> {
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            binding.pager.setCurrentItem(1, false)
-                        }, 150)
-                    }
-                    2 -> {
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            binding.pager.setCurrentItem(cards.size, false)
-                        }, 150)
-                    }
-                }
-            }
-
-            override fun onPageScrollStateChanged(state: Int) {
-                when (state) {
-                    ViewPager2.SCROLL_STATE_DRAGGING -> {
-                        isUserSwiping = true
-                    }
-                    ViewPager2.SCROLL_STATE_IDLE -> {
-                        isUserSwiping = false
-                    }
-                }
-            }
-        })
-
-        binding.notificationBtn.setOnClickListener {
+        notificationBtn.setOnClickListener {
             findNavController().navigate(MainNavGraphDirections.startNotificationFragment())
         }
+        qrBtn.setOnClickListener {
+            findParentNavController().navigate(NavGraphDirections.startQrFragment())
+        }
+        securityBtn.setOnClickListener {
+            findNavController().navigate(MainNavGraphDirections.startSecurityFragment())
+        }
+        walletsHeader.setOnClickListener {
+            findNavController().navigate(MainNavGraphDirections.startWalletsFragment())
+        }
+        eyeBtn.setOnClickListener {
+            model.toggleBalancesVisibility()
+        }
+        historyHeader.setOnClickListener {
+            uiModel.toggleHistory()
+            model.setWalletHistoryExpanded(uiModel.uiState.value.historyExpanded)
+            renderHistoryVisibility()
+        }
+        allHistoryBtn.setOnClickListener {
+            findNavController().navigate(MainNavGraphDirections.startHistoryFragment())
+        }
+    }
 
-        model.updateUserData()
-        model.getSettings()
-        model.myData.observe(viewLifecycleOwner) {
-            when (it) {
-                is UiState.Loading -> {}
+    private fun observeData(
+        cardAdapter: HomeWalletAdapter,
+        transactionAdapter: HomeTransactionAdapter,
+        exchangeRateAdapter: HomeExchangeRateAdapter
+    ) {
+        model.balancesVisible.observe(viewLifecycleOwner) { visible ->
+            uiModel.setBalancesVisible(visible)
+            renderBalanceVisibility(cardAdapter)
+            transactionAdapter.refreshBalanceVisibility()
+        }
+
+        model.hasUnreadNotifications.observe(viewLifecycleOwner) { hasUnread ->
+            binding.notificationIcon.setImageResource(
+                if (hasUnread) R.drawable.notification_icon_unread else R.drawable.notification_icon
+            )
+        }
+
+        model.notifications.observe(viewLifecycleOwner) { state ->
+            if (state is UiState.Error) binding.notificationIcon.setImageResource(R.drawable.notification_icon)
+        }
+
+        model.myData.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Loading -> Unit
                 is UiState.Error -> {
                     binding.swipeRefreshLayout.isRefreshing = false
-                    binding.root.showErrorSnackbar(it.message)
-                    if (it.message == getString(R.string.logged_out)) {
-                        findParentNavController().navigate(
-                            NavGraphDirections.startAuthFragment()
-                        )
-                    }
+                    binding.root.showErrorSnackbar(state.message)
                 }
-
                 is UiState.Success -> {
                     binding.swipeRefreshLayout.isRefreshing = false
-                    binding.title.text = "${it.data.firstName} ${it.data.lastName}"
-                    latestWallets = it.data.wallets
-                    updateCards(it.data.wallets)
-                    updateCurrencies(it.data.wallets)
-                    updateTotalBalance(it.data.wallets)
+                    val wallets = state.data.wallets
+                        .filter { it.currency in CurrencyEnum.supportedValues }
+                        .sortedBy { currencyOrder(it.currency) }
+                    uiModel.setWallets(wallets)
+                    cardAdapter.submitList(wallets)
+                    exchangeRateAdapter.submitList(wallets)
+                    cardAdapter.refreshBalanceVisibility()
+                    binding.emptyWallets.visibility = if (wallets.isEmpty()) View.VISIBLE else View.GONE
+                    binding.exchangeRatesCard.visibility = if (wallets.isEmpty()) View.GONE else View.VISIBLE
                 }
             }
         }
-        model.settings.observe(viewLifecycleOwner) { state ->
-            if (state is UiState.Success && latestWallets.isNotEmpty()) {
-                updateCurrencies(latestWallets)
-                updateTotalBalance(latestWallets)
+
+        model.history.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is UiState.Loading -> Unit
+                is UiState.Error -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    binding.root.showErrorSnackbar(state.message)
+                }
+                is UiState.Success -> {
+                    binding.swipeRefreshLayout.isRefreshing = false
+                    val items = state.data.filterNotNull().toHomeTransactionItems(4)
+                    transactionAdapter.submitList(items)
+                    binding.emptyHistory.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
+                    renderHistoryVisibility()
+                }
             }
         }
     }
 
-    private fun refreshData() {
+    private fun refresh() {
+        binding.swipeRefreshLayout.isRefreshing = true
         model.updateUserData()
         model.getSettings()
-        model.latestTransactions(currentCurrency)
+        model.latestTransactions()
+        model.loadNotifications()
     }
 
-    private fun refreshDataFromSwipe() {
-        binding.swipeRefreshLayout.isRefreshing = true
-        refreshData()
-    }
-
-    private fun openSuccessTransfer(transaction: TransactionModel) {
-        val user = (model.myData.value as? UiState.Success)?.data
-        val operation = TransactionSuccessMapper.toSuccessOperation(
-            context = requireContext(),
-            transaction = transaction,
-            user = user
+    private fun renderBalanceVisibility(cardAdapter: HomeWalletAdapter) {
+        cardAdapter.refreshBalanceVisibility()
+        binding.eyeBtn.setImageResource(
+            if (uiModel.uiState.value.balancesVisible) R.drawable.ic_eye_open else R.drawable.ic_eye_closed
         )
-        model.setLastSuccessOperation(operation)
-        findParentNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
+        binding.eyeBtn.contentDescription = getString(
+            if (uiModel.uiState.value.balancesVisible) R.string.hide_balances else R.string.show_balances
+        )
     }
 
-    private fun isDataForCurrentCurrency(transactions: List<TransactionModel?>): Boolean {
-        return transactions.any { it?.currencyEnum == currentCurrency } || transactions.isEmpty()
-    }
-
-    private fun updateCards(wallets: List<WalletModel>) {
-        val previousCurrency = currentCurrency
-
-        cards = wallets
-            .filter { it.currency in CurrencyEnum.supportedValues }
-            .sortedBy { currencyOrder(it.currency) }
-        infiniteList = mutableListOf<WalletModel>().apply {
-            if (cards.isEmpty()) return@apply
-            add(cards.last())
-            addAll(cards)
-            add(cards.first())
-        }
-
-        (binding.pager.adapter as? CardAdapter)?.submitList(infiniteList)
-
-        val targetPosition = when (previousCurrency) {
-            CurrencyEnum.SOM -> 1
-            CurrencyEnum.ESOM -> 2
-            CurrencyEnum.USDT_TRC20 -> 3
-        }
-
-        if (targetPosition in 1 until infiniteList.size - 1) {
-            currentPosition = targetPosition
-            binding.pager.setCurrentItem(currentPosition, false)
-        } else {
-            currentPosition = 1
-            binding.pager.setCurrentItem(currentPosition, false)
-        }
-
-        currentCurrency = previousCurrency
-    }
-
-    private fun updateCurrencies(wallets: List<WalletModel>) {
-        val sortedWallets = wallets
-            .filter { it.currency in CurrencyEnum.supportedValues }
-            .sortedBy { currencyOrder(it.currency) }
-
-        val currencies = sortedWallets.map { wallet ->
-            when (wallet.currency) {
-                CurrencyEnum.SOM -> Currency(
-                    TypeOfCurrency.FIAT,
-                    wallet.buyRate.formatBalanceNew(),
-                    wallet.sellRate.formatBalanceNew()
-                )
-
-                CurrencyEnum.ESOM -> Currency(
-                    TypeOfCurrency.DIGITAL,
-                    wallet.buyRate.formatBalanceNew(),
-                    wallet.sellRate.formatBalanceNew()
-                )
-
-                CurrencyEnum.USDT_TRC20 -> Currency(
-                    TypeOfCurrency.USDT,
-                    getUsdBuyRate().formatBalanceNew(),
-                    getUsdSellRate().formatBalanceNew()
-                )
-            }
-        }
-
-        (binding.currencies.adapter as? CurrencyAdapter)?.submitList(currencies)
+    private fun renderHistoryVisibility() {
+        binding.historyContent.visibility = if (uiModel.uiState.value.historyExpanded) View.VISIBLE else View.GONE
+        binding.historyArrow.rotation = if (uiModel.uiState.value.historyExpanded) 180f else 0f
     }
 
     private fun currencyOrder(currency: CurrencyEnum): Int = when (currency) {
@@ -428,51 +231,4 @@ class WalletFragment : Fragment() {
         CurrencyEnum.USDT_TRC20 -> 2
     }
 
-    private fun updateTotalBalance(wallets: List<WalletModel>) {
-        var totalBalanceInSoms = 0.0
-        wallets.forEach { wallet ->
-            val rate = if (wallet.currency == CurrencyEnum.USDT_TRC20) {
-                getUsdBuyRate()
-            } else {
-                wallet.buyRate
-            }
-            val balanceInSoms = wallet.balance * rate
-            Log.e("totalBalanceInSoms", wallet.balance.toString() + " " + rate.toString())
-            totalBalanceInSoms += balanceInSoms
-        }
-        binding.totalWaste.text = totalBalanceInSoms.format(2)
-    }
-
-    private fun getUsdBuyRate(): Double {
-        val settings = (model.settings.value as? UiState.Success)?.data
-        return settings?.usdBuyRate?.takeIf { it > 0.0 }
-            ?: settings?.esomPerUsd?.takeIf { it > 0.0 }
-            ?: 0.0
-    }
-
-    private fun getUsdSellRate(): Double {
-        val settings = (model.settings.value as? UiState.Success)?.data
-        return settings?.usdSellRate?.takeIf { it > 0.0 }
-            ?: settings?.esomPerUsd?.takeIf { it > 0.0 }
-            ?: 0.0
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt("current_position", currentPosition)
-        outState.putString("current_currency", currentCurrency.name)
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        savedInstanceState?.let {
-            val currencyName = it.getString("current_currency", CurrencyEnum.SOM.name)
-            currentCurrency = CurrencyEnum.fromNameOrNull(currencyName) ?: CurrencyEnum.SOM
-            currentPosition = when (currentCurrency) {
-                CurrencyEnum.SOM -> 1
-                CurrencyEnum.ESOM -> 2
-                CurrencyEnum.USDT_TRC20 -> 3
-            }
-        }
-    }
 }

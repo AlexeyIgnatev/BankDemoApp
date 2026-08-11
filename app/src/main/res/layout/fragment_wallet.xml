@@ -1,287 +1,372 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".screens.wallet.WalletFragment"
-    android:background="#F3F3F3"
-    tools:ignore="MissingConstraints">
+    android:background="#0B090C"
+    tools:context=".screens.wallet.WalletFragment">
+
+    <com.esom.bank.common.utils.views.AnimatedAtmosphereBackgroundView
+        android:id="@+id/gradient_background"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/home_atmosphere_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/main_bottom_light_overlay"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.58"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="@dimen/_72dp"
+        android:paddingBottom="@dimen/_10dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <FrameLayout
+            android:id="@+id/profile_btn"
+            android:layout_width="@dimen/_46dp"
+            android:layout_height="@dimen/_46dp"
+            android:layout_marginStart="@dimen/_18dp"
+            android:layout_marginTop="@dimen/_10dp"
+            android:background="@drawable/home_header_button"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <ImageView
+                android:layout_width="@dimen/_22dp"
+                android:layout_height="@dimen/_22dp"
+                android:layout_gravity="center"
+                android:src="@drawable/profile_icon"
+                app:tint="@color/white" />
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/bank_logo"
+            android:layout_width="@dimen/_128dp"
+            android:layout_height="@dimen/_50dp"
+            android:background="@drawable/home_bank_logo_background"
+            android:paddingHorizontal="@dimen/_8dp"
+            android:paddingVertical="@dimen/_6dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/fcb_main_logo_compact"
+            app:layout_constraintBottom_toBottomOf="@id/profile_btn"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/profile_btn" />
+
+        <FrameLayout
+            android:id="@+id/qr_btn"
+            android:layout_width="@dimen/_46dp"
+            android:layout_height="@dimen/_46dp"
+            android:layout_marginEnd="@dimen/_18dp"
+            android:background="@drawable/home_header_button"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/profile_btn">
+            <ImageView
+                android:layout_width="@dimen/_22dp"
+                android:layout_height="@dimen/_22dp"
+                android:layout_gravity="center"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_qr_scan"
+                app:tint="@color/white" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/notification_btn"
+            android:layout_width="@dimen/_46dp"
+            android:layout_height="@dimen/_46dp"
+            android:layout_marginEnd="@dimen/_8dp"
+            android:background="@drawable/home_header_button"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintEnd_toStartOf="@id/qr_btn"
+            app:layout_constraintTop_toTopOf="@id/profile_btn">
+            <ImageView
+                android:id="@+id/notification_icon"
+                android:layout_width="@dimen/_21dp"
+                android:layout_height="@dimen/_21dp"
+                android:layout_gravity="center"
+                android:scaleType="centerInside"
+                android:src="@drawable/notification_icon"
+                app:tint="@color/white" />
+        </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefreshLayout"
+        android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header">
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:fillViewport="true">
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingBottom="@dimen/_35dp">
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingBottom="@dimen/_28dp">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/data_layout"
+                <LinearLayout
+                    android:id="@+id/wallets_header"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/_44dp"
+                    android:layout_marginStart="@dimen/_18dp"
+                    android:layout_marginTop="@dimen/_46dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/mont_bold"
+                        android:text="@string/wallets_title"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/_24sp" />
+                    <ImageView
+                        android:layout_width="@dimen/_17dp"
+                        android:layout_height="@dimen/_17dp"
+                        android:layout_marginStart="@dimen/_8dp"
+                        android:rotation="-90"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/arrow_bottom"
+                        android:translationY="@dimen/_2dp"
+                        app:tint="@color/white" />
+                </LinearLayout>
+
+                <FrameLayout
+                    android:id="@+id/security_btn"
+                    android:layout_width="@dimen/_38dp"
+                    android:layout_height="@dimen/_38dp"
+                    android:layout_marginEnd="@dimen/_18dp"
+                    android:background="@drawable/home_header_button"
+                    app:layout_constraintBottom_toBottomOf="@id/wallets_header"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/wallets_header">
+                    <ImageView
+                        android:layout_width="@dimen/_20dp"
+                        android:layout_height="@dimen/_20dp"
+                        android:layout_gravity="center"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_security_home"
+                        app:tint="@color/white" />
+                </FrameLayout>
+
+                <ImageView
+                    android:id="@+id/eye_btn"
+                    android:layout_width="@dimen/_38dp"
+                    android:layout_height="@dimen/_38dp"
+                    android:layout_marginEnd="@dimen/_8dp"
+                    android:background="@drawable/home_header_button"
+                    android:padding="@dimen/_9dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_eye_open"
+                    app:layout_constraintBottom_toBottomOf="@id/wallets_header"
+                    app:layout_constraintEnd_toStartOf="@id/security_btn"
+                    app:layout_constraintTop_toTopOf="@id/wallets_header"
+                    app:tint="@color/white" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/pager"
                     android:layout_width="match_parent"
+                    android:layout_height="@dimen/_190dp"
+                    android:layout_marginTop="@dimen/_8dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:overScrollMode="never"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintTop_toBottomOf="@id/wallets_header"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_home_wallet" />
+
+                <TextView
+                    android:id="@+id/empty_wallets"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingBottom="@dimen/_16dp"
-                    android:elevation="@dimen/_32dp"
-                    android:outlineAmbientShadowColor="#000000"
-                    android:outlineSpotShadowColor="#000000"
-                    android:background="@drawable/data_background">
+                    android:fontFamily="@font/mont_semibold"
+                    android:text="@string/no_wallets"
+                    android:textColor="@color/white"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="@id/pager"
+                    app:layout_constraintEnd_toEndOf="@id/pager"
+                    app:layout_constraintStart_toStartOf="@id/pager"
+                    app:layout_constraintTop_toTopOf="@id/pager" />
 
-                    <TextView
-                        android:id="@+id/title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/_12dp"
-                        android:fontFamily="@font/mont_bold"
-                        tools:text="Асан"
-                        android:textColor="#1D1D1B"
-                        android:textSize="@dimen/_20sp"
-                        android:layout_marginStart="@dimen/_16dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/history_card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/_18dp"
+                    android:layout_marginTop="@dimen/_20dp"
+                    android:clipChildren="false"
+                    android:clipToOutline="false"
+                    android:clipToPadding="false"
+                    app:cardBackgroundColor="@color/card_bg"
+                    app:cardCornerRadius="@dimen/_24dp"
+                    app:cardElevation="@dimen/_0dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/pager"
+                    app:strokeWidth="@dimen/_0dp">
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/notification_layout"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:layout_marginTop="@dimen/_11dp"
-                        android:layout_marginEnd="@dimen/_17dp">
-
-                        <ImageView
-                            android:id="@+id/notification_btn"
-                            android:layout_width="@dimen/_25dp"
-                            android:layout_height="@dimen/_27dp"
-                            android:src="@drawable/notification_icon"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="3"
-                            android:textSize="@dimen/_8sp"
-                            android:fontFamily="@font/mont_medium"
-                            android:textColor="@color/white"
-                            app:layout_constraintTop_toTopOf="@id/notification_btn"
-                            app:layout_constraintEnd_toEndOf="@id/notification_btn"
-                            android:layout_marginTop="@dimen/_4dp"
-                            android:layout_marginEnd="@dimen/_5dp"/>
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/news"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/_80dp"
-                        tools:listitem="@layout/item_new"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                        android:orientation="horizontal"
-                        app:layout_constraintTop_toBottomOf="@id/title"
-                        android:layout_marginTop="@dimen/_12dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/_18dp"
+                        android:paddingVertical="@dimen/_14dp">
+
+                        <LinearLayout
+                            android:id="@+id/history_header"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/_42dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/mont_bold"
+                                android:text="@string/history"
+                                android:textColor="@color/title"
+                                android:textSize="@dimen/_23sp" />
+                            <ImageView
+                                android:id="@+id/history_arrow"
+                                android:layout_width="@dimen/_17dp"
+                                android:layout_height="@dimen/_17dp"
+                                android:layout_marginStart="@dimen/_7dp"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/arrow_bottom_gray" />
+                            <View
+                                android:layout_width="0dp"
+                                android:layout_height="1dp"
+                                android:layout_weight="1" />
+                            <TextView
+                                android:id="@+id/all_history_btn"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:paddingHorizontal="@dimen/_8dp"
+                                android:text="@string/home_all_operations"
+                                android:textColor="@color/red"
+                                android:textSize="@dimen/_14sp" />
+                        </LinearLayout>
+
+                        <FrameLayout
+                            android:id="@+id/history_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/transactions"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:nestedScrollingEnabled="false"
+                                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                                tools:itemCount="4"
+                                tools:listitem="@layout/item_transaction" />
+                            <TextView
+                                android:id="@+id/empty_history"
+                                android:layout_width="match_parent"
+                                android:layout_height="@dimen/_80dp"
+                                android:fontFamily="@font/mont_regular"
+                                android:gravity="center"
+                                android:text="@string/no_operations"
+                                android:textColor="@color/subtitle"
+                                android:visibility="gone" />
+                        </FrameLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/exchange_rates_card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/_12dp"
+                    android:layout_marginTop="@dimen/_16dp"
+                    android:clipChildren="false"
+                    android:clipToOutline="false"
+                    android:clipToPadding="false"
+                    app:cardBackgroundColor="@color/card_bg"
+                    app:cardCornerRadius="@dimen/_24dp"
+                    app:cardElevation="@dimen/_0dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/history_card"
+                    app:strokeWidth="@dimen/_0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipChildren="false"
                         android:clipToPadding="false"
-                        android:paddingStart="@dimen/_16dp"/>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/info_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/_489dp"
-                    android:background="@drawable/info_background"
-                    android:layout_marginTop="-7dp"
-                    app:layout_constraintTop_toBottomOf="@id/data_layout">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/month_waste_layout"
-                        android:layout_width="@dimen/_171dp"
-                        android:layout_height="@dimen/_77dp"
-                        android:paddingHorizontal="@dimen/_16dp"
-                        android:paddingVertical="@dimen/_8dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toStartOf="@id/total_waste_layout"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:layout_marginTop="@dimen/_21dp"
-                        android:background="@drawable/wastes_background">
+                        android:orientation="vertical"
+                        android:paddingTop="@dimen/_17dp"
+                        android:paddingBottom="@dimen/_18dp">
 
                         <TextView
-                            android:id="@+id/month_waste_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Расходы в декабре"
-                            android:fontFamily="@font/mont_semibold"
-                            android:textSize="@dimen/_11sp"
-                            android:textColor="#B2B2B2"/>
-
-                        <TextView
-                            android:id="@+id/month_waste"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
+                            android:layout_marginStart="@dimen/_18dp"
                             android:fontFamily="@font/mont_bold"
-                            android:textSize="@dimen/_18sp"
-                            android:textColor="#1D1D1B"
-                            app:layout_constraintTop_toBottomOf="@id/month_waste_title"/>
-
-                        <ImageView
-                            android:id="@+id/som_icon_month"
-                            android:layout_width="@dimen/_7dp"
-                            android:layout_height="@dimen/_10dp"
-                            app:tint="#1D1D1B"
-                            android:src="@drawable/som_title_icon"
-                            app:layout_constraintTop_toTopOf="@id/month_waste"
-                            app:layout_constraintBottom_toBottomOf="@id/month_waste"
-                            app:layout_constraintStart_toEndOf="@id/month_waste"
-                            android:layout_marginTop="@dimen/_3dp"
-                            android:layout_marginStart="1dp"/>
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:src="@drawable/month_waste_icon"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            android:layout_marginTop="@dimen/_10dp"/>
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/total_waste_layout"
-                        android:layout_width="@dimen/_171dp"
-                        android:layout_height="@dimen/_77dp"
-                        android:paddingHorizontal="@dimen/_16dp"
-                        android:paddingVertical="@dimen/_8dp"
-                        app:layout_constraintStart_toEndOf="@id/month_waste_layout"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:layout_marginTop="@dimen/_21dp"
-                        android:background="@drawable/wastes_background">
+                            android:text="@string/home_exchange_rates"
+                            android:textColor="@color/title"
+                            android:textSize="@dimen/_23sp" />
 
                         <TextView
-                            android:id="@+id/total_waste_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/total_balance"
-                            android:fontFamily="@font/mont_semibold"
-                            android:textSize="@dimen/_11sp"
-                            android:textColor="#B2B2B2"
-                            app:layout_constraintTop_toTopOf="parent"
-                            android:layout_marginTop="@dimen/_11dp"/>
-
-                        <TextView
-                            android:id="@+id/total_waste"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:fontFamily="@font/mont_bold"
-                            android:textSize="@dimen/_22sp"
-                            android:textColor="#1D1D1B"
-                            app:layout_constraintTop_toBottomOf="@id/total_waste_title"/>
-
-                        <ImageView
-                            android:id="@+id/som_icon_total"
-                            android:layout_width="@dimen/_8dp"
-                            android:layout_height="@dimen/_12dp"
-                            app:tint="#1D1D1B"
-                            android:src="@drawable/som_title_icon"
-                            app:layout_constraintTop_toTopOf="@id/total_waste"
-                            app:layout_constraintBottom_toBottomOf="@id/total_waste"
-                            app:layout_constraintStart_toEndOf="@id/total_waste"
-                            android:layout_marginTop="@dimen/_3dp"
-                            android:layout_marginStart="1dp"/>
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <androidx.viewpager2.widget.ViewPager2
-                        android:id="@+id/pager"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/_159dp"
-                        app:layout_constraintTop_toBottomOf="@id/total_waste_layout"
-                        android:layout_marginTop="@dimen/_10dp"
-                        android:clipToPadding="false"
-                        android:clipChildren="false"/>
-
-                    <TextView
-                        android:id="@+id/currency_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/rate_currency"
-                        android:textColor="#1D1D1B"
-                        android:textSize="@dimen/_22sp"
-                        android:fontFamily="@font/mont_bold"
-                        android:letterSpacing="-0.01"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/pager"
-                        android:layout_marginTop="@dimen/_45dp"
-                        android:layout_marginStart="@dimen/_20dp"/>
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/currency_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/_145dp"
-                        android:background="@drawable/currency_background"
-                        app:layout_constraintTop_toBottomOf="@id/currency_title"
-                        android:layout_marginHorizontal="@dimen/_20dp"
-                        android:layout_marginTop="@dimen/_5dp">
+                            android:layout_marginStart="@dimen/_18dp"
+                            android:layout_marginTop="@dimen/_2dp"
+                            android:fontFamily="@font/mont_regular"
+                            android:text="@string/home_exchange_rates_subtitle"
+                            android:textColor="@color/subtitle"
+                            android:textSize="@dimen/_11sp" />
 
                         <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/currencies"
+                            android:id="@+id/exchange_rates"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            tools:listitem="@layout/item_currency"
-                            android:padding="@dimen/_16dp"
-                            tools:itemCount="5"
+                            android:layout_height="@dimen/_142dp"
+                            android:layout_marginTop="@dimen/_13dp"
+                            android:clipChildren="false"
                             android:clipToPadding="false"
+                            android:orientation="horizontal"
+                            android:overScrollMode="never"
+                            android:paddingStart="@dimen/_18dp"
+                            android:paddingEnd="@dimen/_18dp"
                             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            android:orientation="horizontal"/>
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <TextView
-                    android:id="@+id/last_trans_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/last_trans"
-                    android:fontFamily="@font/mont_bold"
-                    android:textSize="@dimen/_16sp"
-                    android:letterSpacing="-0.01"
-                    android:textColor="#1D1D1B"
-                    app:layout_constraintTop_toBottomOf="@id/info_layout"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:layout_marginStart="@dimen/_30dp"
-                    android:layout_marginTop="@dimen/_5dp"/>
-
-                <TextView
-                    android:id="@+id/history_btn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/etc"
-                    android:textColor="#B2B2B2"
-                    android:textSize="@dimen/_16sp"
-                    android:fontFamily="@font/mont_medium"
-                    android:letterSpacing="-0.01"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/last_trans_title"
-                    android:layout_marginEnd="@dimen/_30dp"/>
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/transaction_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/currency_background"
-                    app:layout_constraintTop_toBottomOf="@id/last_trans_title"
-                    android:layout_marginHorizontal="@dimen/_20dp"
-                    android:layout_marginTop="@dimen/_5dp"
-                    android:padding="@dimen/_16dp">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/transactions"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/_0dp"
-                        tools:listitem="@layout/item_transaction"
-                        tools:itemCount="2"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
+                            tools:itemCount="3"
+                            tools:listitem="@layout/item_home_exchange_rate" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

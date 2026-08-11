@@ -8,7 +8,7 @@
     style="@style/Theme.MaterialComponents.BottomSheetDialog"
     android:theme="@style/Theme.MaterialComponents.BottomSheetDialog"
     tools:ignore="MissingConstraints"
-    tools:context=".screens.history.dialog.ChooseActiveFragment">
+    tools:context=".screens.history.dialog.chooseactive.ChooseActiveFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/choose_active"
-            android:textColor="#1D1D1B"
+            android:textColor="@color/title"
             android:fontFamily="@font/mont_bold"
             android:textSize="@dimen/_16sp"
             android:gravity="center"
@@ -59,7 +59,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/usdt"
-            android:textColor="#A5A5A5"
+            android:textColor="@color/subtitle"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_semibold"
             android:textSize="@dimen/_14sp"
@@ -71,7 +71,7 @@
             android:id="@+id/usdt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#A5A5A5"
+            android:textColor="@color/subtitle"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_semibold"
             android:textSize="@dimen/_14sp"
@@ -93,7 +93,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:alpha="0.4"
-            android:background="#B2B2B2"
+            android:background="@color/lock_pattern_regular"
             app:layout_constraintTop_toBottomOf="@id/usdt_icon"
             android:layout_marginTop="@dimen/_12dp"/>
 
@@ -109,7 +109,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/som"
-            android:textColor="#A5A5A5"
+            android:textColor="@color/subtitle"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_semibold"
             android:textSize="@dimen/_14sp"
@@ -121,7 +121,7 @@
             android:id="@+id/som"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#A5A5A5"
+            android:textColor="@color/subtitle"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_semibold"
             android:textSize="@dimen/_14sp"
@@ -143,7 +143,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:alpha="0.4"
-            android:background="#B2B2B2"
+            android:background="@color/lock_pattern_regular"
             app:layout_constraintTop_toBottomOf="@id/som_icon"
             android:layout_marginTop="@dimen/_12dp"/>
 
@@ -159,7 +159,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/digital"
-            android:textColor="#A5A5A5"
+            android:textColor="@color/subtitle"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_semibold"
             android:textSize="@dimen/_14sp"
@@ -171,7 +171,7 @@
             android:id="@+id/digital"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#A5A5A5"
+            android:textColor="@color/subtitle"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_semibold"
             android:textSize="@dimen/_14sp"
@@ -213,3 +213,4 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

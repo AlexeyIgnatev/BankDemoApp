@@ -27,7 +27,7 @@
             android:textSize="@dimen/_16sp"
             android:fontFamily="@font/mont_semibold"
             android:letterSpacing="-0.01"
-            android:textColor="#535353"
+            android:textColor="@color/title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
@@ -58,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="Сайт рыбатекст поможет дизайнеру, верстальщику, вебмастеру сгенерировать несколько абзацев более менее осмысленного текста рыбы на русском языке, а начинающему оратору отточить навык публичных выступлений в домашних условиях. "
-            android:textColor="#535353"
+            android:textColor="@color/subtitle"
             android:textSize="@dimen/_14sp"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_regular"/>

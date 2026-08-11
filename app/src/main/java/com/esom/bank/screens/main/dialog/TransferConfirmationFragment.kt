@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.fragment.app.viewModels
 import com.esom.bank.R
 import com.esom.bank.databinding.FragmentTransferConfirmationBinding
 import com.esom.bank.screens.main.enums.CurrencyEnum
@@ -16,7 +17,7 @@ import java.math.RoundingMode
 @AndroidEntryPoint
 class TransferConfirmationFragment : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentTransferConfirmationBinding
-    private var confirmationData: Bundle = Bundle.EMPTY
+    private val uiModel: TransferConfirmationUiStateViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,14 +33,14 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
             DATA_REQUEST_KEY,
             viewLifecycleOwner
         ) { _, bundle ->
-            confirmationData = Bundle(bundle)
+            uiModel.setData(bundle)
             bindConfirmation(bundle)
         }
 
         binding.confirmBtn.setOnClickListener {
             parentFragmentManager.setFragmentResult(
                 RESULT_REQUEST_KEY,
-                Bundle(confirmationData).apply {
+                Bundle(uiModel.uiState.value.data).apply {
                     putBoolean(CONFIRMED_KEY, true)
                 }
             )
@@ -80,9 +81,8 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
     }
 
     private fun formatAmount(amount: Double, currency: CurrencyEnum): String {
-        val scale = if (currency == CurrencyEnum.USDT_TRC20) 6 else 2
         val value = BigDecimal.valueOf(amount)
-            .setScale(scale, RoundingMode.HALF_UP)
+            .setScale(2, RoundingMode.HALF_UP)
             .stripTrailingZeros()
             .toPlainString()
         val currencyName = when (currency) {

@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="21 декабря"
-        android:textColor="#B2B2B2"
+        android:textColor="@color/subtitle"
         android:textSize="@dimen/_16sp"
         android:fontFamily="@font/mont_semibold"
         android:letterSpacing="-0.01"

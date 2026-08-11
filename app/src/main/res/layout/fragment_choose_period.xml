@@ -8,7 +8,7 @@
     style="@style/Theme.MaterialComponents.BottomSheetDialog"
     android:theme="@style/Theme.MaterialComponents.BottomSheetDialog"
     tools:ignore="MissingConstraints"
-    tools:context=".screens.history.dialog.ChoosePeriodFragment">
+    tools:context=".screens.history.dialog.chooseperiod.ChoosePeriodFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/choose_period"
-            android:textColor="#1D1D1B"
+            android:textColor="@color/title"
             android:fontFamily="@font/mont_bold"
             android:textSize="@dimen/_16sp"
             android:gravity="center"
@@ -51,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/for_3_month"
-            android:textColor="#535353"
+            android:textColor="@color/subtitle"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_semibold"
             android:textSize="@dimen/_14sp"
@@ -71,7 +71,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:alpha="0.4"
-            android:background="#B2B2B2"
+            android:background="@color/lock_pattern_regular"
             app:layout_constraintTop_toBottomOf="@id/last_3month_check"
             android:layout_marginTop="@dimen/_13dp"/>
 
@@ -80,7 +80,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/for_month"
-            android:textColor="#535353"
+            android:textColor="@color/subtitle"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_semibold"
             android:textSize="@dimen/_14sp"
@@ -100,7 +100,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:alpha="0.4"
-            android:background="#B2B2B2"
+            android:background="@color/lock_pattern_regular"
             app:layout_constraintTop_toBottomOf="@id/last_month_check"
             android:layout_marginTop="@dimen/_13dp"/>
 
@@ -109,7 +109,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/for_week"
-            android:textColor="#535353"
+            android:textColor="@color/subtitle"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_semibold"
             android:textSize="@dimen/_14sp"

@@ -22,7 +22,12 @@ import com.esom.bank.screens.messaging.data.MessagingLocalDataSource
 import com.esom.bank.screens.notification.model.NotificationModel
 import com.esom.bank.screens.notification.model.toModel
 import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
+import com.esom.bank.screens.pinCreate.data.LockType
+import com.esom.bank.screens.qr.data.PrimaryCurrencyLocalDataSource
 import com.esom.bank.screens.swap.dto.ConvertDto
+import com.esom.bank.screens.main.data.RecentTemplateLocalDataSource
+import com.esom.bank.screens.swap.model.SwapTemplate
+import com.esom.bank.screens.transfer.model.TransferTemplate
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -32,6 +37,30 @@ import javax.inject.Inject
 
 interface MainRepository {
     fun isAuthenticated(): Boolean
+    fun hasLock(): Boolean
+    fun hasPin(): Boolean
+    fun hasPattern(): Boolean
+    fun getLockType(): LockType?
+    fun savePin(pin: String)
+    fun verifyPin(pin: String): Boolean
+    fun savePattern(pattern: List<Int>)
+    fun verifyPattern(pattern: List<Int>): Boolean
+    fun isBiometricEnabled(): Boolean
+    fun setBiometricEnabled(enabled: Boolean)
+    fun getPrimaryCurrency(): CurrencyEnum
+    fun setPrimaryCurrency(currency: CurrencyEnum)
+    fun getTransferTemplates(): List<TransferTemplate>
+    fun getSwapTemplates(): List<SwapTemplate>
+    fun addTransferTemplate(template: TransferTemplate)
+    fun addSwapTemplate(template: SwapTemplate)
+    fun getSeenNotificationIds(): Set<String>
+    fun setSeenNotificationIds(ids: Set<String>)
+    fun areBalancesVisible(): Boolean
+    fun setBalancesVisible(visible: Boolean)
+    fun getThemeMode(): Int
+    fun setThemeMode(mode: Int)
+    fun isWalletHistoryExpanded(): Boolean
+    fun setWalletHistoryExpanded(expanded: Boolean)
     fun authenticate(login: String, password: String): Flow<UiState<UserModel>>
     fun getUserInfo(): Flow<UiState<UserModel>>
 
@@ -103,10 +132,68 @@ class MainRepositoryImpl @Inject constructor(
     private val authLocalDataSource: AuthLocalDataSource,
     private val historyLocalDataSource: HistoryLocalDataSource,
     private val pinLocalDataSource: PinLocalDataSource,
-    private val messagingLocalDataSource: MessagingLocalDataSource
+    private val messagingLocalDataSource: MessagingLocalDataSource,
+    private val primaryCurrencyLocalDataSource: PrimaryCurrencyLocalDataSource,
+    private val recentTemplateLocalDataSource: RecentTemplateLocalDataSource,
+    private val appPreferencesLocalDataSource: AppPreferencesLocalDataSource
 ) : MainRepository {
     override fun isAuthenticated(): Boolean =
         authLocalDataSource.getLogin() != null && authLocalDataSource.getPassword() != null
+
+    override fun hasLock(): Boolean = pinLocalDataSource.hasLock()
+
+    override fun hasPin(): Boolean = pinLocalDataSource.hasPin()
+
+    override fun hasPattern(): Boolean = pinLocalDataSource.hasPattern()
+
+    override fun getLockType(): LockType? = pinLocalDataSource.getLockType()
+
+    override fun savePin(pin: String) = pinLocalDataSource.savePin(pin)
+
+    override fun verifyPin(pin: String): Boolean = pinLocalDataSource.verifyPin(pin)
+
+    override fun savePattern(pattern: List<Int>) = pinLocalDataSource.savePattern(pattern)
+
+    override fun verifyPattern(pattern: List<Int>): Boolean = pinLocalDataSource.verifyPattern(pattern)
+
+    override fun isBiometricEnabled(): Boolean = pinLocalDataSource.isBio()
+
+    override fun setBiometricEnabled(enabled: Boolean) = pinLocalDataSource.setBio(enabled)
+
+    override fun getPrimaryCurrency(): CurrencyEnum = primaryCurrencyLocalDataSource.get()
+
+    override fun setPrimaryCurrency(currency: CurrencyEnum) = primaryCurrencyLocalDataSource.set(currency)
+
+    override fun getTransferTemplates(): List<TransferTemplate> =
+        recentTemplateLocalDataSource.getTransferTemplates()
+
+    override fun getSwapTemplates(): List<SwapTemplate> = recentTemplateLocalDataSource.getSwapTemplates()
+
+    override fun addTransferTemplate(template: TransferTemplate) =
+        recentTemplateLocalDataSource.addTransferTemplate(template)
+
+    override fun addSwapTemplate(template: SwapTemplate) = recentTemplateLocalDataSource.addSwapTemplate(template)
+
+    override fun getSeenNotificationIds(): Set<String> =
+        appPreferencesLocalDataSource.getSeenNotificationIds()
+
+    override fun setSeenNotificationIds(ids: Set<String>) =
+        appPreferencesLocalDataSource.setSeenNotificationIds(ids)
+
+    override fun areBalancesVisible(): Boolean = appPreferencesLocalDataSource.areBalancesVisible()
+
+    override fun setBalancesVisible(visible: Boolean) =
+        appPreferencesLocalDataSource.setBalancesVisible(visible)
+
+    override fun getThemeMode(): Int = appPreferencesLocalDataSource.getThemeMode()
+
+    override fun setThemeMode(mode: Int) = appPreferencesLocalDataSource.setThemeMode(mode)
+
+    override fun isWalletHistoryExpanded(): Boolean =
+        appPreferencesLocalDataSource.isWalletHistoryExpanded()
+
+    override fun setWalletHistoryExpanded(expanded: Boolean) =
+        appPreferencesLocalDataSource.setWalletHistoryExpanded(expanded)
 
     override fun authenticate(login: String, password: String): Flow<UiState<UserModel>> = flow {
         authLocalDataSource.setLogin(login)

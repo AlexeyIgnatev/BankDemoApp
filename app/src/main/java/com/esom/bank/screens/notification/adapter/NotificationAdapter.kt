@@ -10,13 +10,14 @@ import com.esom.bank.R
 import com.esom.bank.databinding.ItemDataBinding
 import com.esom.bank.databinding.ItemNotificationBinding
 import com.esom.bank.screens.notification.model.NotificationModel
+import com.esom.bank.screens.notification.model.NotificationListItem
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class NotificationAdapter :
-    ListAdapter<NotificationAdapter.NotificationListItem, RecyclerView.ViewHolder>(NotificationDiffCallback()) {
+    ListAdapter<NotificationListItem, RecyclerView.ViewHolder>(NotificationDiffCallback()) {
 
     companion object {
         private const val TYPE_DATE = 0
@@ -34,11 +35,6 @@ class NotificationAdapter :
             }
         }
     }
-    sealed class NotificationListItem {
-        data class DateItem(val date: String, val timestamp: Long) : NotificationListItem()
-        data class NotificationItem(val notification: NotificationModel) : NotificationListItem()
-    }
-
     fun submitNotifications(notifications: List<NotificationModel>) {
         val items = mutableListOf<NotificationListItem>()
         var lastDate = ""
@@ -120,18 +116,18 @@ class NotificationAdapter :
     }
 }
 
-class NotificationDiffCallback : DiffUtil.ItemCallback<NotificationAdapter.NotificationListItem>() {
-    override fun areItemsTheSame(oldItem: NotificationAdapter.NotificationListItem, newItem: NotificationAdapter.NotificationListItem): Boolean {
+class NotificationDiffCallback : DiffUtil.ItemCallback<NotificationListItem>() {
+    override fun areItemsTheSame(oldItem: NotificationListItem, newItem: NotificationListItem): Boolean {
         return when {
-            oldItem is NotificationAdapter.NotificationListItem.DateItem && newItem is NotificationAdapter.NotificationListItem.DateItem ->
+            oldItem is NotificationListItem.DateItem && newItem is NotificationListItem.DateItem ->
                 oldItem.timestamp == newItem.timestamp
-            oldItem is NotificationAdapter.NotificationListItem.NotificationItem && newItem is NotificationAdapter.NotificationListItem.NotificationItem ->
+            oldItem is NotificationListItem.NotificationItem && newItem is NotificationListItem.NotificationItem ->
                 oldItem.notification.id == newItem.notification.id
             else -> false
         }
     }
 
-    override fun areContentsTheSame(oldItem: NotificationAdapter.NotificationListItem, newItem: NotificationAdapter.NotificationListItem): Boolean {
+    override fun areContentsTheSame(oldItem: NotificationListItem, newItem: NotificationListItem): Boolean {
         return oldItem == newItem
     }
 }

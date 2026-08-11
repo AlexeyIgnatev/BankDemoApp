@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@drawable/theme_screen_background"
     tools:context=".screens.transfer.TransferFragment"
     tools:ignore="MissingConstraints">
 
@@ -17,39 +17,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/background_conversation_layout"
-                android:visibility="gone"
-                android:layout_width="@dimen/_0dp"
-                android:layout_height="@dimen/_0dp"
-                android:elevation="@dimen/_20dp"
-                android:layout_margin="@dimen/_25dp"
-                android:background="@drawable/conversation_gray_background"
-                app:layout_constraintTop_toTopOf="@id/current_currency_layout"
-                app:layout_constraintBottom_toBottomOf="@id/current_currency_layout"
-                app:layout_constraintStart_toStartOf="@id/current_currency_layout"
-                app:layout_constraintEnd_toEndOf="@id/current_currency_layout">
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/background_people_layout"
-                android:visibility="gone"
-                android:layout_width="@dimen/_0dp"
-                android:layout_height="@dimen/_0dp"
-                android:elevation="@dimen/_20dp"
-                android:layout_margin="@dimen/_25dp"
-                android:background="@drawable/conversation_gray_background"
-                app:layout_constraintTop_toTopOf="@id/people_layout"
-                app:layout_constraintBottom_toBottomOf="@id/people_layout"
-                app:layout_constraintStart_toStartOf="@id/people_layout"
-                app:layout_constraintEnd_toEndOf="@id/people_layout">
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/back_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/_48dp"
+                android:layout_height="@dimen/_48dp"
                 android:layout_margin="@dimen/_10dp"
-                android:padding="@dimen/_10dp"
+                android:padding="@dimen/_12dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -69,6 +41,7 @@
                     android:layout_marginStart="@dimen/_4dp"
                     android:fontFamily="@font/mont_bold"
                     android:text="@string/back"
+                    android:visibility="gone"
                     android:textColor="#E62324"
                     android:textSize="@dimen/_12sp"
                     app:layout_constraintBottom_toBottomOf="@id/back_icon"
@@ -93,7 +66,7 @@
                 android:layout_marginTop="@dimen/_10dp"
                 android:fontFamily="@font/mont_bold"
                 android:text="@string/convertation"
-                android:textColor="#1D1D1B"
+                android:textColor="@color/title"
                 android:textSize="@dimen/_27sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -114,7 +87,7 @@
                     android:layout_marginHorizontal="@dimen/_16dp"
                     android:fontFamily="@font/mont_semibold"
                     android:text="@string/recent_templates"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_14sp" />
 
                 <HorizontalScrollView
@@ -139,7 +112,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/send_title"
-                android:textColor="#A5A5A5"
+                android:textColor="@color/subtitle"
                 android:letterSpacing="-0.01"
                 android:fontFamily="@font/mont_semibold"
                 android:textSize="@dimen/_14sp"
@@ -152,7 +125,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/available_title"
-                android:textColor="#A5A5A5"
+                android:textColor="@color/subtitle"
                 android:letterSpacing="-0.01"
                 android:fontFamily="@font/mont_semibold"
                 android:textSize="@dimen/_14sp"
@@ -167,21 +140,16 @@
                 android:padding="@dimen/_10dp"
                 android:elevation="@dimen/_20dp"
                 android:layout_marginHorizontal="@dimen/_12dp"
-                android:background="@drawable/convertation_background"
+                android:background="@drawable/payment_primary_action_background"
                 app:layout_constraintTop_toBottomOf="@id/templates_section"
                 android:layout_marginTop="@dimen/_35dp">
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/conversation_gray_background"/>
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/sum"
                     android:layout_width="@dimen/_0dp"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:letterSpacing="-0.01"
                     android:textSize="@dimen/_23sp"
                     android:inputType="number"
@@ -211,7 +179,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/som"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -340,6 +308,14 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/from_panel_bottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierAllowsGoneWidgets="false"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="current_currency_layout,type_currency_layout" />
+
             <ImageView
                 android:id="@+id/arrow_bottom_icon"
                 android:layout_width="@dimen/_39dp"
@@ -347,7 +323,7 @@
                 android:scaleX="1.5"
                 android:scaleY="1.5"
                 android:src="@drawable/arrow_bottom_icon"
-                app:layout_constraintTop_toBottomOf="@id/current_currency_layout"
+                app:layout_constraintTop_toBottomOf="@id/from_panel_bottom"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="@dimen/_20dp"/>
@@ -356,7 +332,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/receive_title"
-                android:textColor="#A5A5A5"
+                android:textColor="@color/subtitle"
                 android:letterSpacing="-0.01"
                 android:fontFamily="@font/mont_semibold"
                 android:textSize="@dimen/_14sp"
@@ -370,21 +346,16 @@
                 android:layout_height="@dimen/_120dp"
                 android:padding="@dimen/_10dp"
                 android:layout_marginHorizontal="@dimen/_12dp"
-                android:background="@drawable/convertation_background"
+                android:background="@drawable/payment_primary_action_background"
                 app:layout_constraintTop_toBottomOf="@id/arrow_bottom_icon"
                 android:layout_marginTop="@dimen/_31dp">
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/conversation_gray_background"/>
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/people_sum"
                     android:layout_width="@dimen/_0dp"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:letterSpacing="-0.01"
                     android:textSize="@dimen/_23sp"
                     android:inputType="number"
@@ -414,7 +385,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/digital"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -545,20 +516,23 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/to_panel_bottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierAllowsGoneWidgets="false"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="people_layout,people_currency_layout" />
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/comission_layout"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_220dp"
                 android:padding="@dimen/_10dp"
                 android:layout_marginHorizontal="@dimen/_12dp"
-                android:background="@drawable/rate_icon"
-                app:layout_constraintTop_toBottomOf="@id/people_layout"
+                android:background="@drawable/payment_primary_action_background"
+                app:layout_constraintTop_toBottomOf="@id/to_panel_bottom"
                 android:layout_marginTop="@dimen/_18dp">
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/conversation_gray_background"/>
 
                 <TextView
                     android:id="@+id/comission_title"
@@ -566,7 +540,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/som"
                     android:fontFamily="@font/mont_regular"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:letterSpacing="-0.02"
                     android:textSize="@dimen/_16sp"
                     app:layout_constraintTop_toTopOf="parent"
@@ -578,7 +552,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_16sp"
                     android:fontFamily="@font/mont_medium"
                     android:letterSpacing="-0.01"
@@ -590,7 +564,7 @@
                     android:id="@+id/som_icon_swap"
                     android:layout_width="@dimen/_7dp"
                     android:layout_height="@dimen/_10dp"
-                    app:tint="#1D1D1B"
+                    app:tint="@color/title"
                     android:src="@drawable/som_title_icon"
                     app:layout_constraintTop_toTopOf="@id/comission_value"
                     app:layout_constraintBottom_toBottomOf="@id/comission_value"
@@ -612,7 +586,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/digital"
                     android:fontFamily="@font/mont_regular"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:letterSpacing="-0.02"
                     android:textSize="@dimen/_16sp"
                     app:layout_constraintTop_toBottomOf="@id/comission_title"
@@ -624,7 +598,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_16sp"
                     android:fontFamily="@font/mont_medium"
                     android:letterSpacing="-0.01"
@@ -637,7 +611,7 @@
                     android:id="@+id/salam_icon_swap"
                     android:layout_width="@dimen/_7dp"
                     android:layout_height="@dimen/_10dp"
-                    app:tint="#1D1D1B"
+                    app:tint="@color/title"
                     android:src="@drawable/som_title_icon"
                     app:layout_constraintTop_toTopOf="@id/second_value"
                     app:layout_constraintBottom_toBottomOf="@id/second_value"
@@ -651,7 +625,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/comission"
                     android:fontFamily="@font/mont_regular"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:letterSpacing="-0.02"
                     android:textSize="@dimen/_16sp"
                     app:layout_constraintTop_toBottomOf="@id/second_title"
@@ -663,7 +637,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_16sp"
                     android:fontFamily="@font/mont_medium"
                     android:letterSpacing="-0.01"
@@ -676,7 +650,7 @@
                     android:id="@+id/third_icon_swap"
                     android:layout_width="@dimen/_7dp"
                     android:layout_height="@dimen/_10dp"
-                    app:tint="#1D1D1B"
+                    app:tint="@color/title"
                     android:src="@drawable/som_title_icon"
                     app:layout_constraintTop_toTopOf="@id/third_value"
                     app:layout_constraintBottom_toBottomOf="@id/third_value"
@@ -716,18 +690,18 @@
                     app:layout_constraintEnd_toEndOf="@id/third_view"
                     android:layout_marginTop="@dimen/_3dp"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
-                        <androidx.constraintlayout.widget.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:visibility="gone"
                 android:id="@+id/type_currency_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
+                android:background="@drawable/payment_primary_action_background"
                 android:padding="@dimen/_10dp"
                 android:paddingBottom="@dimen/_10dp"
-                android:elevation="@dimen/_10dp"
+                android:elevation="@dimen/_2dp"
                 app:layout_constraintTop_toBottomOf="@id/current_currency_layout"
-                android:layout_marginTop="-17dp"
-                android:layout_marginHorizontal="@dimen/_23dp">
+                android:layout_marginTop="@dimen/_8dp"
+                android:layout_marginHorizontal="@dimen/_12dp">
                 <ImageButton
                     android:id="@+id/first_usdt_btn"
                     android:layout_width="match_parent"
@@ -760,7 +734,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/usdt"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -772,7 +746,7 @@
                     android:id="@+id/first_usdt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -785,7 +759,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_22sp"
                     android:fontFamily="@font/mont_semibold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -796,7 +770,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.4"
-                    android:background="#B2B2B2"
+                    android:background="@color/lock_pattern_regular"
                     app:layout_constraintTop_toBottomOf="@id/first_usdt_icon"
                     android:layout_marginTop="@dimen/_12dp"/>
 
@@ -812,7 +786,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/digital"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -824,7 +798,7 @@
                     android:id="@+id/first_digital"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -837,7 +811,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_22sp"
                     android:fontFamily="@font/mont_semibold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -848,7 +822,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.4"
-                    android:background="#B2B2B2"
+                    android:background="@color/lock_pattern_regular"
                     app:layout_constraintTop_toBottomOf="@id/first_digital_icon"
                     android:layout_marginTop="@dimen/_12dp"/>
 
@@ -864,7 +838,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/som"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -876,7 +850,7 @@
                     android:id="@+id/first_som"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -889,7 +863,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_22sp"
                     android:fontFamily="@font/mont_semibold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -900,22 +874,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.4"
-                    android:background="#B2B2B2"
+                    android:background="@color/lock_pattern_regular"
                     app:layout_constraintTop_toBottomOf="@id/first_som_icon"
                     android:layout_marginTop="@dimen/_12dp"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
-                        <androidx.constraintlayout.widget.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:visibility="gone"
                 android:id="@+id/people_currency_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
+                android:background="@drawable/payment_primary_action_background"
                 android:padding="@dimen/_10dp"
                 android:paddingBottom="@dimen/_10dp"
-                android:elevation="@dimen/_10dp"
+                android:elevation="@dimen/_2dp"
                 app:layout_constraintTop_toBottomOf="@id/people_layout"
-                android:layout_marginTop="-17dp"
-                android:layout_marginHorizontal="@dimen/_23dp">
+                android:layout_marginTop="@dimen/_8dp"
+                android:layout_marginHorizontal="@dimen/_12dp">
                 <ImageButton
                     android:id="@+id/people_usdt_btn"
                     android:layout_width="match_parent"
@@ -948,7 +922,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/usdt"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -960,7 +934,7 @@
                     android:id="@+id/people_usdt"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -973,7 +947,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_22sp"
                     android:fontFamily="@font/mont_semibold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -984,7 +958,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.4"
-                    android:background="#B2B2B2"
+                    android:background="@color/lock_pattern_regular"
                     app:layout_constraintTop_toBottomOf="@id/people_usdt_icon"
                     android:layout_marginTop="@dimen/_12dp"/>
 
@@ -1000,7 +974,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/digital"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -1012,7 +986,7 @@
                     android:id="@+id/people_digital"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -1025,7 +999,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_22sp"
                     android:fontFamily="@font/mont_semibold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -1036,7 +1010,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.4"
-                    android:background="#B2B2B2"
+                    android:background="@color/lock_pattern_regular"
                     app:layout_constraintTop_toBottomOf="@id/people_digital_icon"
                     android:layout_marginTop="@dimen/_12dp"/>
 
@@ -1052,7 +1026,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/som"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -1064,7 +1038,7 @@
                     android:id="@+id/people_som"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#A5A5A5"
+                    android:textColor="@color/subtitle"
                     android:letterSpacing="-0.01"
                     android:fontFamily="@font/mont_semibold"
                     android:textSize="@dimen/_14sp"
@@ -1077,7 +1051,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:textSize="@dimen/_22sp"
                     android:fontFamily="@font/mont_semibold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -1088,7 +1062,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:alpha="0.4"
-                    android:background="#B2B2B2"
+                    android:background="@color/lock_pattern_regular"
                     app:layout_constraintTop_toBottomOf="@id/people_som_icon"
                     android:layout_marginTop="@dimen/_12dp"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -1108,7 +1082,7 @@
                 android:id="@+id/send_btn"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_40dp"
-                android:layout_marginHorizontal="@dimen/_22dp"
+                android:layout_marginHorizontal="@dimen/_12dp"
                 android:layout_marginTop="@dimen/_20dp"
                 app:cardBackgroundColor="#E62324"
                 app:cardCornerRadius="@dimen/_12dp"
@@ -1155,3 +1129,4 @@
     </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

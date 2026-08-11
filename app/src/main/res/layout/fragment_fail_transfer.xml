@@ -6,7 +6,7 @@
     android:layout_height="@dimen/_250dp"
     android:background="@drawable/fail_success_background"
     android:paddingBottom="@dimen/_32dp"
-    tools:context=".screens.transfer.dialog.FailTransferFragment"
+    tools:context=".screens.transfer.dialog.fail.FailTransferFragment"
     tools:ignore="MissingConstraints">
 
     <ImageView
@@ -35,7 +35,7 @@
         android:fontFamily="@font/mont_bold"
         android:gravity="center"
         android:text="@string/reject"
-        android:textColor="#535353"
+        android:textColor="@color/subtitle"
         android:textSize="@dimen/_28sp"
         app:layout_constraintBottom_toTopOf="@id/opinion"
         app:layout_constraintEnd_toEndOf="parent"
@@ -50,7 +50,7 @@
         android:gravity="center"
         android:paddingHorizontal="@dimen/_50dp"
         android:text="@string/anti_fraud"
-        android:textColor="#808080"
+        android:textColor="@color/subtitle"
         android:textSize="@dimen/_16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

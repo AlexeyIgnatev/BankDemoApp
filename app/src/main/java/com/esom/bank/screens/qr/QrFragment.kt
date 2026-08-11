@@ -1,11 +1,15 @@
 package com.esom.bank.screens.qr
 
 import QRCodeGenerator
+import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.content.pm.PackageManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,9 +18,13 @@ import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.core.view.updatePadding
+import androidx.core.view.updateLayoutParams
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
@@ -30,30 +38,25 @@ import com.esom.bank.databinding.FragmentQrBinding
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
-import com.esom.bank.screens.main.model.UserModel
 import com.esom.bank.screens.settigns.SettingsFragment.Companion.formatPhone
 import com.google.android.material.button.MaterialButton
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class QrFragment : Fragment() {
     private lateinit var binding: FragmentQrBinding
     private val model: MainViewModel by activityViewModels()
+    private val uiModel: QrUiStateViewModel by viewModels()
 
-    private var phone: String = ""
-    private var salamAddress: String = ""
-    private var usdtAddress: String = ""
-    private var currentUser: UserModel? = null
-    private var primaryCurrency: CurrencyEnum = CurrencyEnum.SOM
-
-    @Inject
-    lateinit var primaryCurrencyStore: PrimaryCurrencyStore
-
-    private val qrCameraLauncher = registerForActivityResult(ScanContract()) { result ->
-        handleScannedContent(result.contents)
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        uiModel.setCameraRequestInFlight(false)
+        if (granted) startEmbeddedScanner()
+        else binding.root.showErrorSnackbar(getString(R.string.something_went_wrong))
     }
 
     private val qrGalleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -77,11 +80,14 @@ class QrFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.root.doOnApplyWindowInsets { target, insets, rect ->
-            target.updatePadding(
-                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top,
-                bottom = rect.bottom + insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
-            )
+        binding.backLayout.doOnApplyWindowInsets { target, insets, _ ->
+            val statusBar = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
+            target.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                topMargin = resources.getDimensionPixelSize(R.dimen._10dp) + statusBar
+            }
+            binding.modeToggleGroup.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                topMargin = resources.getDimensionPixelSize(R.dimen._10dp) + statusBar
+            }
             insets
         }
 
@@ -90,55 +96,92 @@ class QrFragment : Fragment() {
         }
 
         binding.backBtn.setOnClickListener { findNavController().popBackStack() }
-        primaryCurrency = primaryCurrencyStore.get()
+        uiModel.initializePrimaryCurrency(model.getPrimaryCurrency())
         setupPrimaryCurrencyActions()
         setupTabs()
         setupScanActions()
+        setupEmbeddedScanner()
         observeUserData()
         showScanMode()
     }
 
     private fun setupTabs() {
-        binding.modeToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (!isChecked) return@addOnButtonCheckedListener
-            when (checkedId) {
-                R.id.scan_tab_btn -> showScanMode()
-                R.id.show_tab_btn -> showShowMode()
-            }
+        binding.showTabBtn.setOnClickListener {
+            if (binding.showContainer.isVisible) showScanMode() else showShowMode()
         }
-
-        binding.modeToggleGroup.check(R.id.scan_tab_btn)
     }
 
     private fun setupScanActions() {
-        binding.scanCameraBtn.setOnClickListener { startCameraQrScan() }
         binding.scanGalleryBtn.setOnClickListener { qrGalleryLauncher.launch("image/*") }
+        binding.flashlightBtn.setOnClickListener {
+            val enabled = uiModel.toggleTorch()
+            if (enabled) binding.fullScreenScanner.setTorchOn() else binding.fullScreenScanner.setTorchOff()
+            binding.flashlightBtn.alpha = if (enabled) 1f else 0.72f
+        }
+    }
+
+    private fun setupEmbeddedScanner() {
+        binding.fullScreenScanner.statusView.visibility = View.GONE
+        binding.fullScreenScanner.viewFinder.visibility = View.GONE
+        binding.fullScreenScanner.decodeContinuous { result ->
+            if (uiModel.uiState.value.scanHandled || result.text.isNullOrBlank()) return@decodeContinuous
+            uiModel.setScanHandled(true)
+            binding.fullScreenScanner.pause()
+            handleScannedContent(result.text)
+        }
+        ensureCameraAndStart()
+    }
+
+    private fun ensureCameraAndStart() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            startEmbeddedScanner()
+        } else {
+            if (!uiModel.uiState.value.cameraRequestInFlight) {
+                uiModel.setCameraRequestInFlight(true)
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
+
+    private fun startEmbeddedScanner() {
+        if (!binding.scanContainer.isVisible) return
+        uiModel.setScanHandled(false)
+        binding.fullScreenScanner.resume()
     }
 
     private fun observeUserData() {
         model.myData.observe(viewLifecycleOwner) { state ->
             if (state is UiState.Success) {
-                currentUser = state.data
-                renderUserQrCodes(state.data.phone, state.data.wallets.find { it.currency == CurrencyEnum.ESOM }?.address.orEmpty(), state.data.wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }?.address.orEmpty())
+                val phone = state.data.phone
+                val salamAddress = state.data.wallets.find { it.currency == CurrencyEnum.ESOM }?.address.orEmpty()
+                val usdtAddress = state.data.wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }?.address.orEmpty()
+                uiModel.updateAddresses(phone, salamAddress, usdtAddress)
+                if (binding.showContainer.isVisible) renderUserQrCodes(phone, salamAddress, usdtAddress)
             }
-        }
-
-        (model.myData.value as? UiState.Success)?.data?.let { user ->
-            currentUser = user
-            renderUserQrCodes(
-                phone = user.phone,
-                salam = user.wallets.find { it.currency == CurrencyEnum.ESOM }?.address.orEmpty(),
-                usdt = user.wallets.find { it.currency == CurrencyEnum.USDT_TRC20 }?.address.orEmpty()
-            )
         }
     }
 
     private fun renderUserQrCodes(phone: String, salam: String, usdt: String) {
-        this.phone = phone
-        this.salamAddress = salam
-        this.usdtAddress = usdt
-
-        bindQrCard(
+        uiModel.updateAddresses(phone, salam, usdt)
+        val generation = uiModel.nextRenderGeneration()
+        viewLifecycleOwner.lifecycleScope.launch {
+            val bitmaps = withContext(Dispatchers.Default) {
+                Triple(
+                    if (phone.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
+                        address = phone, currency = uiModel.uiState.value.primaryCurrency, width = QR_SIZE, height = QR_SIZE
+                    ),
+                    if (salam.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
+                        address = salam, currency = CurrencyEnum.ESOM, width = QR_SIZE, height = QR_SIZE
+                    ),
+                    if (usdt.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
+                        address = usdt, currency = CurrencyEnum.USDT_TRC20, width = QR_SIZE, height = QR_SIZE
+                    )
+                )
+            }
+            if (generation != uiModel.uiState.value.renderGeneration) return@launch
+            bindQrCard(
             image = binding.phoneQrImage,
             value = binding.phoneQrValue,
             button = binding.phoneQrCopyBtn,
@@ -146,15 +189,10 @@ class QrFragment : Fragment() {
             text = if (phone.isBlank()) getString(R.string.empty_value) else phone.formatPhone(),
             copyText = phone,
             copySuccessMessage = getString(R.string.qr_copy_phone),
-            shareCurrency = primaryCurrency,
-            bitmap = if (phone.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
-                address = phone,
-                currency = primaryCurrency,
-                width = 600,
-                height = 600
+            shareCurrency = uiModel.uiState.value.primaryCurrency,
+            bitmap = bitmaps.first
             )
-        )
-        bindQrCard(
+            bindQrCard(
             image = binding.salamQrImage,
             value = binding.salamQrValue,
             button = binding.salamQrCopyBtn,
@@ -163,14 +201,9 @@ class QrFragment : Fragment() {
             copyText = salam,
             copySuccessMessage = getString(R.string.qr_copy_address),
             shareCurrency = CurrencyEnum.ESOM,
-            bitmap = if (salam.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
-                address = salam,
-                currency = CurrencyEnum.ESOM,
-                width = 600,
-                height = 600
+            bitmap = bitmaps.second
             )
-        )
-        bindQrCard(
+            bindQrCard(
             image = binding.usdtQrImage,
             value = binding.usdtQrValue,
             button = binding.usdtQrCopyBtn,
@@ -179,14 +212,10 @@ class QrFragment : Fragment() {
             copyText = usdt,
             copySuccessMessage = getString(R.string.qr_copy_address),
             shareCurrency = CurrencyEnum.USDT_TRC20,
-            bitmap = if (usdt.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
-                address = usdt,
-                currency = CurrencyEnum.USDT_TRC20,
-                width = 600,
-                height = 600
+            bitmap = bitmaps.third
             )
-        )
-        renderPrimaryCurrency()
+            renderPrimaryCurrency()
+        }
     }
 
     private fun setupPrimaryCurrencyActions() {
@@ -196,11 +225,11 @@ class QrFragment : Fragment() {
     }
 
     private fun selectPrimaryCurrency(currency: CurrencyEnum) {
-        primaryCurrency = currency
-        primaryCurrencyStore.set(currency)
+        uiModel.selectPrimaryCurrency(currency)
+        model.setPrimaryCurrency(currency)
         renderPrimaryCurrency()
-        if (phone.isNotBlank()) {
-            renderUserQrCodes(phone, salamAddress, usdtAddress)
+        if (uiModel.uiState.value.phone.isNotBlank()) {
+            renderUserQrCodes(uiModel.uiState.value.phone, uiModel.uiState.value.salamAddress, uiModel.uiState.value.usdtAddress)
         }
     }
 
@@ -210,7 +239,7 @@ class QrFragment : Fragment() {
             binding.salamPrimaryBtn to CurrencyEnum.ESOM,
             binding.usdtPrimaryBtn to CurrencyEnum.USDT_TRC20
         ).forEach { (button, currency) ->
-            val selected = currency == primaryCurrency
+            val selected = currency == uiModel.uiState.value.primaryCurrency
             button.setImageResource(
                 if (selected) R.drawable.ic_star_selected else R.drawable.ic_star_unselected
             )
@@ -220,7 +249,7 @@ class QrFragment : Fragment() {
                 "Сделать основной валютой"
             }
         }
-        binding.phoneQrTitle.text = "QR для номера телефона (${currencyName(primaryCurrency)})"
+        binding.phoneQrTitle.text = "QR для номера телефона (${currencyName(uiModel.uiState.value.primaryCurrency)})"
     }
 
     private fun currencyName(currency: CurrencyEnum): String = when (currency) {
@@ -262,26 +291,33 @@ class QrFragment : Fragment() {
 
     private fun showScanMode() {
         binding.scanContainer.isVisible = true
+        binding.scanFrame.isVisible = true
         binding.showContainer.isVisible = false
         binding.scanTabBtn.isSelected = true
         binding.showTabBtn.isSelected = false
+        binding.showTabBtn.text = "Показать QR"
+        binding.showTabBtn.backgroundTintList = ColorStateList.valueOf(Color.argb(239, 255, 255, 255))
+        binding.showTabBtn.setTextColor(Color.rgb(167, 25, 36))
+        binding.showTabBtn.iconTint = ColorStateList.valueOf(Color.rgb(167, 25, 36))
+        binding.showTabBtn.setIconResource(R.drawable.ic_qr_scan)
+        if (::binding.isInitialized) ensureCameraAndStart()
     }
 
     private fun showShowMode() {
+        binding.fullScreenScanner.pause()
+        binding.scanFrame.isVisible = false
         binding.scanContainer.isVisible = false
         binding.showContainer.isVisible = true
         binding.scanTabBtn.isSelected = false
         binding.showTabBtn.isSelected = true
-    }
-
-    private fun startCameraQrScan() {
-        val options = ScanOptions().apply {
-            setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-            setPrompt(getString(R.string.scan_qr))
-            setBeepEnabled(false)
-            setOrientationLocked(true)
-        }
-        qrCameraLauncher.launch(options)
+        binding.showTabBtn.text = "Сканировать"
+        binding.showTabBtn.backgroundTintList = ColorStateList.valueOf(Color.rgb(230, 35, 36))
+        binding.showTabBtn.setTextColor(Color.WHITE)
+        binding.showTabBtn.iconTint = ColorStateList.valueOf(Color.WHITE)
+        binding.showTabBtn.setIconResource(R.drawable.ic_qr_scan)
+        binding.showContainer.minimumHeight = binding.root.height
+        binding.scrollView.scrollTo(0, 0)
+        renderUserQrCodes(uiModel.uiState.value.phone, uiModel.uiState.value.salamAddress, uiModel.uiState.value.usdtAddress)
     }
 
     private fun handleScannedContent(rawContent: String?) {
@@ -296,7 +332,7 @@ class QrFragment : Fragment() {
             return
         }
 
-        findParentNavController().navigate(
+        findNavController().navigate(
             NavGraphDirections.startTransferFragment(currency.name, payload.contact)
         )
     }
@@ -314,7 +350,7 @@ class QrFragment : Fragment() {
     }
 
     private fun shareQrCode(address: String, currency: CurrencyEnum) {
-        val user = currentUser ?: (model.myData.value as? UiState.Success)?.data
+        val user = (model.myData.value as? UiState.Success)?.data
         val displayName = user?.let {
             QrShareUtils.shortUserName(it.firstName, it.middleName, it.lastName)
         }.orEmpty()
@@ -332,5 +368,19 @@ class QrFragment : Fragment() {
             fileNamePrefix = "qr_${currency.name.lowercase()}",
             chooserTitle = getString(R.string.share)
         )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::binding.isInitialized && binding.scanContainer.isVisible) ensureCameraAndStart()
+    }
+
+    override fun onPause() {
+        if (::binding.isInitialized) binding.fullScreenScanner.pause()
+        super.onPause()
+    }
+
+    companion object {
+        private const val QR_SIZE = 360
     }
 }

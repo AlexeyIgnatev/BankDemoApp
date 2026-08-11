@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rate_card"
+    android:layout_width="@dimen/_142dp"
+    android:layout_height="@dimen/_142dp"
+    android:layout_marginEnd="@dimen/_9dp"
+    app:cardCornerRadius="@dimen/_18dp"
+    app:cardElevation="@dimen/_0dp"
+    app:strokeWidth="@dimen/_0dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/_14dp">
+
+        <ImageView
+            android:id="@+id/rate_icon"
+            android:layout_width="@dimen/_32dp"
+            android:layout_height="@dimen/_32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/usdt_icon" />
+
+        <TextView
+            android:id="@+id/rate_code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/mont_bold"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_13sp"
+            app:layout_constraintBottom_toBottomOf="@id/rate_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/rate_icon"
+            tools:text="USDT" />
+
+        <TextView
+            android:id="@+id/rate_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_7dp"
+            android:fontFamily="@font/mont_semibold"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_13sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rate_icon"
+            tools:text="Доллар" />
+
+        <TextView
+            android:id="@+id/buy_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10dp"
+            android:fontFamily="@font/mont_regular"
+            android:text="@string/home_rate_buy"
+            android:textColor="@color/subtitle"
+            android:textSize="@dimen/_9sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rate_name" />
+
+        <TextView
+            android:id="@+id/buy_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/mont_bold"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_13sp"
+            app:layout_constraintBottom_toBottomOf="@id/buy_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/buy_label"
+            tools:text="88,50 с" />
+
+        <TextView
+            android:id="@+id/sell_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_7dp"
+            android:fontFamily="@font/mont_regular"
+            android:text="@string/home_rate_sell"
+            android:textColor="@color/subtitle"
+            android:textSize="@dimen/_9sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/buy_label" />
+
+        <TextView
+            android:id="@+id/sell_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/mont_bold"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_13sp"
+            app:layout_constraintBottom_toBottomOf="@id/sell_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/sell_label"
+            tools:text="87,20 с" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

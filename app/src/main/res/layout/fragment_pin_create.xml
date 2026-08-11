@@ -4,89 +4,122 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F3F3"
+    android:background="@drawable/theme_screen_background"
+    android:paddingHorizontal="20dp"
     tools:context=".screens.pinCreate.PinCreateFragment">
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/back_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="8dp"
-        android:paddingHorizontal="10dp"
-        android:paddingVertical="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/back_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/arrow_left"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:fontFamily="@font/mont_bold"
-            android:text="@string/back"
-            android:textColor="#E62324"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="@id/back_icon"
-            app:layout_constraintStart_toEndOf="@id/back_icon"
-            app:layout_constraintTop_toTopOf="@id/back_icon" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageButton
         android:id="@+id/back_btn"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="@dimen/lock_header_top_margin"
         android:background="?attr/selectableItemBackgroundBorderless"
-        app:layout_constraintBottom_toBottomOf="@id/back_layout"
-        app:layout_constraintEnd_toEndOf="@id/back_layout"
-        app:layout_constraintStart_toStartOf="@id/back_layout"
-        app:layout_constraintTop_toTopOf="@id/back_layout" />
+        android:contentDescription="@string/back"
+        android:padding="12dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/arrow_left"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/bank_logo"
+        android:layout_width="@dimen/lock_header_logo_size"
+        android:layout_height="@dimen/lock_header_logo_size"
+        android:layout_marginTop="@dimen/lock_header_top_margin"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/fcb_icon"
+        app:layout_constraintStart_toEndOf="@id/back_btn"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/lock_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:fontFamily="@font/mont_semibold"
-        android:gravity="center"
+        android:layout_marginTop="@dimen/lock_title_top_margin"
+        android:fontFamily="@font/mont_bold"
         android:text="@string/lock_create_pin_title"
-        android:textColor="#1D1D1B"
-        android:textSize="24sp"
+        android:textColor="@color/title"
+        android:textSize="28sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/back_layout" />
+        app:layout_constraintTop_toBottomOf="@id/bank_logo" />
+
+    <LinearLayout
+        android:id="@+id/mode_switch"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/lock_mode_height"
+        android:layout_marginTop="@dimen/lock_mode_top_margin"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lock_title">
+
+        <TextView
+            android:id="@+id/pin_mode_btn"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/lock_mode_background"
+            android:fontFamily="@font/mont_semibold"
+            android:gravity="center"
+            android:text="@string/lock_pin_mode"
+            android:textColor="@color/lock_mode_text"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/pattern_mode_btn"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/lock_mode_background"
+            android:fontFamily="@font/mont_semibold"
+            android:gravity="center"
+            android:text="@string/lock_pattern_mode"
+            android:textColor="@color/lock_mode_text"
+            android:textSize="14sp" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/lock_subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:fontFamily="@font/mont_medium"
-        android:gravity="center"
+        android:layout_marginTop="@dimen/lock_subtitle_top_margin"
+        android:fontFamily="@font/mont_semibold"
         android:text="@string/lock_enter_pin"
-        android:textColor="#6F6F6F"
-        android:textSize="15sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="@color/title"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@id/reset_text"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lock_title" />
+        app:layout_constraintTop_toBottomOf="@id/mode_switch" />
+
+    <TextView
+        android:id="@+id/reset_text"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:fontFamily="@font/mont_semibold"
+        android:gravity="center"
+        android:paddingHorizontal="10dp"
+        android:text="@string/lock_reset"
+        android:textColor="@color/red"
+        android:textSize="13sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/lock_subtitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/lock_subtitle" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/error_card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="6dp"
         android:visibility="gone"
         app:cardBackgroundColor="#EF6161"
-        app:cardCornerRadius="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/lock_subtitle">
 
@@ -94,363 +127,83 @@
             android:id="@+id/error_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="18dp"
-            android:paddingVertical="8dp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="7dp"
             android:text="@string/lock_pin_not_match"
             android:textColor="@color/white"
-            android:textSize="13sp" />
-
+            android:textSize="12sp" />
     </com.google.android.material.card.MaterialCardView>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/pin_section"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toTopOf="@id/reset_text"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/error_card">
 
         <LinearLayout
             android:id="@+id/pin_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/lock_pin_row_height"
+            android:layout_marginTop="@dimen/lock_pin_row_top_margin"
+            android:gravity="center"
             android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <View
-                android:id="@+id/one"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginHorizontal="10dp"
-                android:background="@drawable/pin_not_choose_background" />
-
-            <View
-                android:id="@+id/two"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginHorizontal="10dp"
-                android:background="@drawable/pin_not_choose_background" />
-
-            <View
-                android:id="@+id/three"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginHorizontal="10dp"
-                android:background="@drawable/pin_not_choose_background" />
-
-            <View
-                android:id="@+id/four"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginHorizontal="10dp"
-                android:background="@drawable/pin_not_choose_background" />
+            <View android:id="@+id/one" android:layout_width="@dimen/lock_pin_slot_width" android:layout_height="@dimen/lock_pin_slot_height" android:layout_marginHorizontal="@dimen/lock_pin_slot_margin" android:background="@drawable/lock_pin_slot_empty" />
+            <View android:id="@+id/two" android:layout_width="@dimen/lock_pin_slot_width" android:layout_height="@dimen/lock_pin_slot_height" android:layout_marginHorizontal="@dimen/lock_pin_slot_margin" android:background="@drawable/lock_pin_slot_empty" />
+            <View android:id="@+id/three" android:layout_width="@dimen/lock_pin_slot_width" android:layout_height="@dimen/lock_pin_slot_height" android:layout_marginHorizontal="@dimen/lock_pin_slot_margin" android:background="@drawable/lock_pin_slot_empty" />
+            <View android:id="@+id/four" android:layout_width="@dimen/lock_pin_slot_width" android:layout_height="@dimen/lock_pin_slot_height" android:layout_marginHorizontal="@dimen/lock_pin_slot_margin" android:background="@drawable/lock_pin_slot_empty" />
         </LinearLayout>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <GridLayout
             android:id="@+id/pin_digs_lay"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="@dimen/lock_keypad_top_margin"
+            android:columnCount="3"
+            android:rowCount="4"
             app:layout_constraintTop_toBottomOf="@id/pin_layout">
 
-            <TextView
-                android:id="@+id/pinc_dig1_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:gravity="center"
-                android:text="1"
-                android:textColor="#1D1D1B"
-                android:textSize="30sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/pinc_dig2_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="60dp"
-                android:gravity="center"
-                android:text="2"
-                android:textColor="#1D1D1B"
-                android:textSize="30sp"
-                app:layout_constraintStart_toEndOf="@id/pinc_dig1_btn"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/pinc_dig3_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="60dp"
-                android:gravity="center"
-                android:text="3"
-                android:textColor="#1D1D1B"
-                android:textSize="30sp"
-                app:layout_constraintStart_toEndOf="@id/pinc_dig2_btn"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/pinc_dig4_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginTop="24dp"
-                android:gravity="center"
-                android:text="4"
-                android:textColor="#1D1D1B"
-                android:textSize="30sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/pinc_dig1_btn" />
-
-            <TextView
-                android:id="@+id/pinc_dig5_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="60dp"
-                android:layout_marginTop="24dp"
-                android:gravity="center"
-                android:text="5"
-                android:textColor="#1D1D1B"
-                android:textSize="30sp"
-                app:layout_constraintStart_toEndOf="@id/pinc_dig4_btn"
-                app:layout_constraintTop_toBottomOf="@id/pinc_dig2_btn" />
-
-            <TextView
-                android:id="@+id/pinc_dig6_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="60dp"
-                android:layout_marginTop="24dp"
-                android:gravity="center"
-                android:text="6"
-                android:textColor="#1D1D1B"
-                android:textSize="30sp"
-                app:layout_constraintStart_toEndOf="@id/pinc_dig5_btn"
-                app:layout_constraintTop_toBottomOf="@id/pinc_dig3_btn" />
-
-            <TextView
-                android:id="@+id/pinc_dig7_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginTop="24dp"
-                android:gravity="center"
-                android:text="7"
-                android:textColor="#1D1D1B"
-                android:textSize="30sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/pinc_dig4_btn" />
-
-            <TextView
-                android:id="@+id/pinc_dig8_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="60dp"
-                android:layout_marginTop="24dp"
-                android:gravity="center"
-                android:text="8"
-                android:textColor="#1D1D1B"
-                android:textSize="30sp"
-                app:layout_constraintStart_toEndOf="@id/pinc_dig7_btn"
-                app:layout_constraintTop_toBottomOf="@id/pinc_dig5_btn" />
-
-            <TextView
-                android:id="@+id/pinc_dig9_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="60dp"
-                android:layout_marginTop="24dp"
-                android:gravity="center"
-                android:text="9"
-                android:textColor="#1D1D1B"
-                android:textSize="30sp"
-                app:layout_constraintStart_toEndOf="@id/pinc_dig8_btn"
-                app:layout_constraintTop_toBottomOf="@id/pinc_dig6_btn" />
-
-            <TextView
-                android:id="@+id/pinc_dig0_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginTop="24dp"
-                android:gravity="center"
-                android:text="0"
-                android:textColor="#1D1D1B"
-                android:textSize="30sp"
-                app:layout_constraintStart_toStartOf="@id/pinc_dig8_btn"
-                app:layout_constraintTop_toBottomOf="@id/pinc_dig8_btn" />
-
+            <TextView android:id="@+id/pinc_dig1_btn" style="@style/LockKey" android:text="1" />
+            <TextView android:id="@+id/pinc_dig2_btn" style="@style/LockKey" android:text="2" />
+            <TextView android:id="@+id/pinc_dig3_btn" style="@style/LockKey" android:text="3" />
+            <TextView android:id="@+id/pinc_dig4_btn" style="@style/LockKey" android:text="4" />
+            <TextView android:id="@+id/pinc_dig5_btn" style="@style/LockKey" android:text="5" />
+            <TextView android:id="@+id/pinc_dig6_btn" style="@style/LockKey" android:text="6" />
+            <TextView android:id="@+id/pinc_dig7_btn" style="@style/LockKey" android:text="7" />
+            <TextView android:id="@+id/pinc_dig8_btn" style="@style/LockKey" android:text="8" />
+            <TextView android:id="@+id/pinc_dig9_btn" style="@style/LockKey" android:text="9" />
+            <Space style="@style/LockKeySpace" />
+            <TextView android:id="@+id/pinc_dig0_btn" style="@style/LockKey" android:text="0" />
             <ImageButton
                 android:id="@+id/pinc_digback_btn"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="60dp"
-                android:layout_marginTop="24dp"
-                android:background="@android:color/transparent"
-                android:padding="10dp"
-                app:layout_constraintStart_toEndOf="@id/pinc_dig0_btn"
-                app:layout_constraintTop_toBottomOf="@id/pinc_dig9_btn"
-                app:srcCompat="@drawable/ic_backspace" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
+                style="@style/LockKeySpace"
+                android:background="@drawable/lock_key_background"
+                android:contentDescription="@string/back"
+                android:padding="22dp"
+                app:srcCompat="@drawable/ic_backspace"
+                app:tint="@color/title" />
+        </GridLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/pattern_section"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="20dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/reset_text"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/error_card">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/pattern_dots_preview"
-            android:layout_width="240dp"
-            android:layout_height="240dp"
-            app:layout_constraintBottom_toBottomOf="@id/pattern_lock_view"
-            app:layout_constraintEnd_toEndOf="@id/pattern_lock_view"
-            app:layout_constraintStart_toStartOf="@id/pattern_lock_view"
-            app:layout_constraintTop_toTopOf="@id/pattern_lock_view">
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/vertical_line_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintGuide_percent=".164" />
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/vertical_line_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintGuide_percent=".499" />
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/vertical_line_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintGuide_percent=".836" />
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/horizontal_line_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintGuide_percent=".164" />
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/horizontal_line_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintGuide_percent=".499" />
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/horizontal_line_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintGuide_percent=".836" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/graphic_dot_bg"
-                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_1"
-                app:layout_constraintEnd_toEndOf="@id/vertical_line_1"
-                app:layout_constraintStart_toStartOf="@id/vertical_line_1"
-                app:layout_constraintTop_toTopOf="@id/horizontal_line_1" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/graphic_dot_bg"
-                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_1"
-                app:layout_constraintEnd_toEndOf="@id/vertical_line_2"
-                app:layout_constraintStart_toStartOf="@id/vertical_line_2"
-                app:layout_constraintTop_toTopOf="@id/horizontal_line_1" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/graphic_dot_bg"
-                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_1"
-                app:layout_constraintEnd_toEndOf="@id/vertical_line_3"
-                app:layout_constraintStart_toStartOf="@id/vertical_line_3"
-                app:layout_constraintTop_toTopOf="@id/horizontal_line_1" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/graphic_dot_bg"
-                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_2"
-                app:layout_constraintEnd_toEndOf="@id/vertical_line_1"
-                app:layout_constraintStart_toStartOf="@id/vertical_line_1"
-                app:layout_constraintTop_toTopOf="@id/horizontal_line_2" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/graphic_dot_bg"
-                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_2"
-                app:layout_constraintEnd_toEndOf="@id/vertical_line_2"
-                app:layout_constraintStart_toStartOf="@id/vertical_line_2"
-                app:layout_constraintTop_toTopOf="@id/horizontal_line_2" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/graphic_dot_bg"
-                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_2"
-                app:layout_constraintEnd_toEndOf="@id/vertical_line_3"
-                app:layout_constraintStart_toStartOf="@id/vertical_line_3"
-                app:layout_constraintTop_toTopOf="@id/horizontal_line_2" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/graphic_dot_bg"
-                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_3"
-                app:layout_constraintEnd_toEndOf="@id/vertical_line_1"
-                app:layout_constraintStart_toStartOf="@id/vertical_line_1"
-                app:layout_constraintTop_toTopOf="@id/horizontal_line_3" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/graphic_dot_bg"
-                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_3"
-                app:layout_constraintEnd_toEndOf="@id/vertical_line_2"
-                app:layout_constraintStart_toStartOf="@id/vertical_line_2"
-                app:layout_constraintTop_toTopOf="@id/horizontal_line_3" />
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/graphic_dot_bg"
-                app:layout_constraintBottom_toBottomOf="@id/horizontal_line_3"
-                app:layout_constraintEnd_toEndOf="@id/vertical_line_3"
-                app:layout_constraintStart_toStartOf="@id/vertical_line_3"
-                app:layout_constraintTop_toTopOf="@id/horizontal_line_3" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
         <com.esom.bank.common.views.patternlock.PatternLockView
             android:id="@+id/pattern_lock_view"
-            android:layout_width="240dp"
-            android:layout_height="240dp"
+            android:layout_width="@dimen/lock_pattern_size"
+            android:layout_height="@dimen/lock_pattern_size"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -469,10 +222,11 @@
             android:id="@+id/pattern_error_card"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:visibility="gone"
             app:cardBackgroundColor="#EF6161"
-            app:cardCornerRadius="16dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/pattern_lock_view">
@@ -481,41 +235,12 @@
                 android:id="@+id/pattern_error_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="18dp"
-                android:paddingVertical="8dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="7dp"
                 android:text="@string/lock_pattern_not_match"
                 android:textColor="@color/white"
-                android:textSize="13sp" />
-
+                android:textSize="12sp" />
         </com.google.android.material.card.MaterialCardView>
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <TextView
-        android:id="@+id/reset_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:fontFamily="@font/mont_semibold"
-        android:text="@string/lock_reset"
-        android:textColor="#EF6161"
-        android:textSize="16sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/switch_mode_text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/switch_mode_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="26dp"
-        android:fontFamily="@font/mont_semibold"
-        android:text="@string/lock_switch_to_pattern"
-        android:textColor="#25A2E0"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

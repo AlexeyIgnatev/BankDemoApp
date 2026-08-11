@@ -4,11 +4,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
-import android.os.Looper
 import android.view.View
 import android.widget.Toast
 import com.esom.bank.activities.MainActivity
 import com.esom.bank.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 fun Context.reloadApp() {
@@ -18,9 +20,9 @@ fun Context.reloadApp() {
 }
 
 fun Context.showToast(message: String?) {
-    android.os.Handler(Looper.getMainLooper()).post {
+    CoroutineScope(Dispatchers.Main.immediate).launch {
         Toast.makeText(
-            this,
+            this@showToast,
             message ?: getString(R.string.something_went_wrong),
             Toast.LENGTH_SHORT
         ).show()

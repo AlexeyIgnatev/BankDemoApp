@@ -9,7 +9,11 @@ import android.util.TypedValue
 import android.view.MotionEvent
 import android.widget.GridLayout
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.esom.bank.R
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class PatternLockView : GridLayout {
 
@@ -371,7 +375,10 @@ class PatternLockView : GridLayout {
         linePaint.color = errorLineColor
         invalidate()
 
-        postDelayed({ reset() }, errorDuration.toLong())
+        findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
+            delay(errorDuration.toLong())
+            if (isAttachedToWindow) reset()
+        } ?: reset()
     }
 
     fun freeze() {

@@ -7,20 +7,19 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.databinding.FragmentBioBinding
-import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
+import com.esom.bank.screens.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class BioFragment : Fragment() {
     private lateinit var binding: FragmentBioBinding
-
-    @Inject lateinit var localDataSource: PinLocalDataSource
+    private val model: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,11 +39,11 @@ class BioFragment : Fragment() {
             insets
         }
         binding.logInBtn.setOnClickListener {
-            localDataSource.setBio(true)
+            model.setBiometricEnabled(true)
             findNavController().navigate(NavGraphDirections.startLogInFragment())
         }
         binding.onlyPasswordTitle.setOnClickListener {
-            findNavController().navigate(NavGraphDirections.startSplashLogInFragment())
+            findNavController().navigate(NavGraphDirections.startMainFragment())
         }
     }
 }

@@ -21,7 +21,7 @@
             android:fontFamily="@font/mont_regular"
             android:letterSpacing="-0.01"
             android:textSize="@dimen/_9sp"
-            android:textColor="#535353"
+            android:textColor="@color/title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
         <TextView
@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="20:21"
-            android:textColor="#B2B2B2"
+            android:textColor="@color/subtitle"
             android:textSize="@dimen/_9sp"
             android:letterSpacing="-0.01"
             android:fontFamily="@font/mont_bold"

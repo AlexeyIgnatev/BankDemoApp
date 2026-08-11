@@ -6,13 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
@@ -28,6 +30,7 @@ import kotlinx.coroutines.launch
 class ChatFragment : Fragment() {
     private lateinit var binding: FragmentChatBinding
     private val model: MainViewModel by activityViewModels()
+    private val uiModel: ChatUiStateViewModel by viewModels()
     private val adapter = ChatAdapter()
 
     override fun onCreateView(
@@ -40,25 +43,29 @@ class ChatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.root.doOnApplyWindowInsets { view, insets, rect ->
-            view.updatePadding(
-                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top,
-                bottom = rect.bottom + if (insets.getInsets(WindowInsetsCompat.Type.ime()).bottom > 0) insets.getInsets(
-                    WindowInsetsCompat.Type.ime()
-                ).bottom
-                else insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
-            )
+        binding.swipeRefreshLayout.doOnApplyWindowInsets { _, insets, rect ->
+            uiModel.setInitialTopPadding(rect.top)
+            applyKeyboardInsets(insets)
             insets
         }
+        ViewCompat.setWindowInsetsAnimationCallback(
+            binding.swipeRefreshLayout,
+            object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
+                override fun onProgress(
+                    insets: WindowInsetsCompat,
+                    runningAnimations: MutableList<WindowInsetsAnimationCompat>
+                ): WindowInsetsCompat {
+                    applyKeyboardInsets(insets)
+                    return insets
+                }
+            }
+        )
 
         binding.messages.adapter = adapter
+        binding.messages.itemAnimator = null
 
         binding.swipeRefreshLayout.setOnRefreshListener {
             refreshMessages()
-        }
-
-        binding.backBtn.setOnClickListener {
-            findNavController().popBackStack()
         }
 
         observeMessages()
@@ -97,8 +104,11 @@ class ChatFragment : Fragment() {
 
                 is UiState.Success -> {
                     binding.swipeRefreshLayout.isRefreshing = false
-                    adapter.submitSupportMessages(it.data)
-                    scrollToLastMessage()
+                    val shouldScrollToBottom = uiModel.uiState.value.lastMessageCount == 0 || it.data.size > uiModel.uiState.value.lastMessageCount
+                    uiModel.setMessageCount(it.data.size)
+                    adapter.submitSupportMessages(it.data) {
+                        if (shouldScrollToBottom) scrollToLastMessage()
+                    }
                 }
             }
         }
@@ -116,21 +126,21 @@ class ChatFragment : Fragment() {
 
                 is UiState.Success -> {
                     setSendingEnabled(true)
-                    model.getMessages()
                 }
             }
         }
     }
 
     private fun refreshMessages() {
-        model.getMessages()
+        binding.swipeRefreshLayout.isRefreshing = true
+        model.getMessages(showLoading = false)
     }
 
     private fun startMessagesPolling() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 while (true) {
-                    delay(MESSAGES_POLLING_INTERVAL_MS)
+                    delay(5000)
                     model.getMessages(showLoading = false)
                 }
             }
@@ -163,7 +173,11 @@ class ChatFragment : Fragment() {
         }
     }
 
-    companion object {
-        private const val MESSAGES_POLLING_INTERVAL_MS = 5_000L
+    private fun applyKeyboardInsets(insets: WindowInsetsCompat) {
+        val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+        binding.swipeRefreshLayout.updatePadding(
+            top = uiModel.uiState.value.initialTopPadding + insets.getInsets(WindowInsetsCompat.Type.statusBars()).top,
+            bottom = if (imeVisible) insets.getInsets(WindowInsetsCompat.Type.ime()).bottom else 0
+        )
     }
 }

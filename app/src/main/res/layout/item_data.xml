@@ -9,6 +9,6 @@
     android:fontFamily="@font/mont_bold"
     android:letterSpacing="-0.01"
     android:paddingHorizontal="@dimen/_12dp"
-    android:textColor="#1D1D1B"
+    android:textColor="@color/title"
     android:textSize="@dimen/_16sp"
     tools:text="Сегодня" />

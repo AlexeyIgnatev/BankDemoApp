@@ -8,7 +8,7 @@
     style="@style/Theme.MaterialComponents.BottomSheetDialog"
     android:theme="@style/Theme.MaterialComponents.BottomSheetDialog"
     tools:ignore="MissingConstraints"
-    tools:context=".screens.history.dialog.ChooseDateFragment">
+    tools:context=".screens.history.dialog.choosedate.ChooseDateFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/choose_period"
-            android:textColor="#1D1D1B"
+            android:textColor="@color/title"
             android:fontFamily="@font/mont_bold"
             android:textSize="@dimen/_16sp"
             android:gravity="center"
@@ -95,7 +95,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/end"
-                android:textColor="#535353"
+                android:textColor="@color/subtitle"
                 android:textSize="@dimen/_11sp"
                 android:fontFamily="@font/mont_medium"
                 app:layout_constraintTop_toTopOf="@id/end_period_icon"
@@ -108,7 +108,7 @@
                 android:layout_height="wrap_content"
                 android:text="13.07.2025"
                 android:textSize="@dimen/_15sp"
-                android:textColor="#535353"
+                android:textColor="@color/subtitle"
                 android:fontFamily="@font/mont_semibold"
                 app:layout_constraintTop_toBottomOf="@id/end_title"
                 app:layout_constraintStart_toStartOf="@id/end_title"
@@ -136,7 +136,7 @@
                     android:text="Январь 2025"
                     android:textSize="@dimen/_16sp"
                     android:fontFamily="@font/mont_semibold"
-                    android:textColor="#1D1D1B"
+                    android:textColor="@color/title"
                     android:layout_gravity="start"/>
                 <ImageView
                     android:layout_width="wrap_content"
@@ -164,7 +164,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
-                android:background="#F0EEEE"/>
+                android:background="@color/lock_pattern_regular"/>
 
             <LinearLayout
                 android:layout_width="match_parent"

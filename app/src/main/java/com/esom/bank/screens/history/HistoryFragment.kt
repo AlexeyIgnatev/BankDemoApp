@@ -8,23 +8,32 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.setPadding
 import androidx.core.view.updatePadding
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.navigation.fragment.findNavController
 import androidx.paging.PagingData
+import com.esom.bank.MainNavGraphDirections
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
+import com.esom.bank.common.utils.views.getFontCompat
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentHistoryBinding
 import com.esom.bank.screens.history.adapter.HistoryAdapter
+import com.esom.bank.screens.history.model.HistoryTypeFilter
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.TransactionSuccessMapper
@@ -32,9 +41,11 @@ import com.esom.bank.screens.history.model.isUserTransfer
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.main.model.WalletModel
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -47,20 +58,13 @@ import java.util.concurrent.TimeUnit
 class HistoryFragment : Fragment() {
     private lateinit var binding: FragmentHistoryBinding
     private val model: MainViewModel by activityViewModels()
-    private lateinit var adapter: HistoryAdapter
-    private var historyJob: Job? = null
+    private val uiModel: HistoryUiStateViewModel by viewModels()
 
     private val historyReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            refreshData()
-        }
+        override fun onReceive(context: Context?, intent: Intent?) = refreshData()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
         binding = FragmentHistoryBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -68,39 +72,51 @@ class HistoryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.root.doOnApplyWindowInsets { root, insets, rect ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             root.updatePadding(
-                top = rect.top + insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
+                top = rect.top + systemBars.top,
+                bottom = rect.bottom + systemBars.bottom
             )
             insets
         }
-
         LocalBroadcastManager.getInstance(requireContext())
             .registerReceiver(historyReceiver, IntentFilter(ACTION_HISTORY))
 
-        adapter = HistoryAdapter(
-            withoutTransfers = model.getWithoutTransactions(),
+        uiModel.setWithoutTransfers(model.getWithoutTransactions())
+        val adapter = HistoryAdapter(
+            stateProvider = { uiModel.uiState.value.adapterState },
+            balancesVisibleProvider = { model.balancesVisible.value ?: true },
             onTransactionClick = ::openSuccessTransfer
         )
         binding.history.adapter = adapter
-
-        binding.searchInput.doAfterTextChanged { adapter.updateSearch(it?.toString().orEmpty()) }
         binding.swipeRefreshLayout.setOnRefreshListener(::refreshData)
-        binding.nonTransactionBtn.setOnClickListener {
-            val withoutTransfers = !model.getWithoutTransactions()
-            model.setWithoutTransactions(withoutTransfers)
-            adapter.updateFilter(withoutTransfers)
-            updateFilterLabels()
-        }
-        binding.dataPeriodBtn.setOnClickListener {
-            findParentNavController().navigate(NavGraphDirections.startChooseDateFragment())
-        }
-        binding.periodBtn.setOnClickListener {
-            findParentNavController().navigate(NavGraphDirections.startChoosePeriodFragment())
-        }
-        binding.activeBtn.setOnClickListener {
-            findParentNavController().navigate(NavGraphDirections.startChooseActiveFragment())
+        binding.backBtn.setOnClickListener { findNavController().popBackStack() }
+        binding.balanceVisibilityBtn.setOnClickListener { model.toggleBalancesVisibility() }
+        binding.typeFilter.setOnClickListener { showTypeFilter() }
+        binding.periodFilter.setOnClickListener { showPeriodFilter() }
+        binding.walletFilter.setOnClickListener { showWalletFilter() }
+        binding.amountFilter.setOnClickListener { showAmountFilter() }
+        binding.expensesCard.setOnClickListener { openAnalysis(MODE_EXPENSES) }
+        binding.incomeCard.setOnClickListener { openAnalysis(MODE_INCOME) }
+        binding.transfersCard.setOnClickListener {
+            uiModel.setTypeFilter(HistoryTypeFilter.TRANSFERS)
+            adapter.regroup()
+            binding.typeFilter.text = "Переводы"
         }
 
+        model.balancesVisible.observe(viewLifecycleOwner) { visible ->
+            adapter.refreshBalanceVisibility()
+            binding.balanceVisibilityBtn.setImageResource(
+                if (visible) R.drawable.ic_eye_open else R.drawable.ic_eye_closed
+            )
+            renderStats(visible)
+        }
+        model.myData.observe(viewLifecycleOwner) { state ->
+            if (state is UiState.Success) {
+                uiModel.setWallets(state.data.wallets)
+                renderStats(model.balancesVisible.value ?: true)
+            }
+        }
         model.month.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is UiState.Loading -> Unit
@@ -110,11 +126,12 @@ class HistoryFragment : Fragment() {
                 }
                 is UiState.Success -> {
                     binding.swipeRefreshLayout.isRefreshing = false
-                    updatePeriodStats(state.data.filterNotNull())
+                    uiModel.setPeriodTransactions(state.data.filterNotNull())
+                    renderStats(model.balancesVisible.value ?: true)
                 }
             }
         }
-
+        updateFilterLabels()
         refreshData()
     }
 
@@ -125,92 +142,223 @@ class HistoryFragment : Fragment() {
     }
 
     private fun loadTransactions() {
-        historyJob?.cancel()
-        historyJob = viewLifecycleOwner.lifecycleScope.launch {
+        val adapter = binding.history.adapter as HistoryAdapter
+        uiModel.replaceHistoryJob(viewLifecycleOwner.lifecycleScope.launch {
             try {
-                model.historyPaging(
-                    currencyEnum = model.getCurrency(),
-                    fromTime = model.getFromTime(),
-                    toTime = model.getToTime()
-                ).collectLatest { pagingData ->
-                    adapter.submitData(PagingData.empty())
-                    adapter.submitData(pagingData)
-                }
+                model.historyPaging(model.getCurrency(), model.getFromTime(), model.getToTime())
+                    .collectLatest { data ->
+                        adapter.submitData(PagingData.empty())
+                        adapter.submitData(data)
+                    }
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Exception) {
                 if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                     binding.swipeRefreshLayout.isRefreshing = false
-                    binding.root.showErrorSnackbar(
-                        error.message ?: getString(R.string.something_went_wrong)
-                    )
+                    binding.root.showErrorSnackbar(error.message ?: getString(R.string.something_went_wrong))
                 }
+            }
+        })
+    }
+
+    private fun renderStats(visible: Boolean) {
+        val transactions = visiblePeriodTransactions()
+        val income = transactions.filter { it.isIncome() }.sumOf(::amountInSom)
+        val transfers = transactions.filter { it.isUserTransfer() && !it.isIncome() }.sumOf(::amountInSom)
+        val expenses = transactions.filter { it.isExpense() }.sumOf(::amountInSom)
+        binding.expensesTitle.text = "Расходы за ${statsPeriodLabel()}"
+        binding.expenses.setBalance("${expenses.formatBalanceNew()} сом", visible)
+        binding.transfers.setBalance("${transfers.formatBalanceNew()} сом", visible)
+        binding.income.setBalance("+${income.formatBalanceNew()} сом", visible)
+    }
+
+    private fun visiblePeriodTransactions(): List<TransactionModel> =
+        if (model.getWithoutTransactions()) {
+            uiModel.uiState.value.periodTransactions.filter { it.type == TransactionEnum.CONVERSION && !it.isUserTransfer() }
+        } else {
+            uiModel.uiState.value.periodTransactions
+        }
+
+    private fun amountInSom(transaction: TransactionModel): Double {
+        val rate = when (transaction.currencyEnum) {
+            CurrencyEnum.SOM, null -> 1.0
+            else -> uiModel.uiState.value.wallets.firstOrNull { it.currency == transaction.currencyEnum }
+                ?.let { if (it.sellRate > 0.0) it.sellRate else it.buyRate }
+                ?.takeIf { it > 0.0 } ?: 1.0
+        }
+        return (transaction.amount ?: 0.0) * rate
+    }
+
+    private fun showTypeFilter() {
+        showOptions(
+            "Что показывать",
+            listOf(
+                "Все операции" to HistoryTypeFilter.ALL,
+                "Переводы" to HistoryTypeFilter.TRANSFERS,
+                "Конвертации" to HistoryTypeFilter.CONVERSIONS,
+                "Зачисления" to HistoryTypeFilter.INCOME,
+                "Расходы" to HistoryTypeFilter.EXPENSES
+            )
+        ) { label, filter ->
+            uiModel.setTypeFilter(filter)
+            (binding.history.adapter as HistoryAdapter).regroup()
+            binding.typeFilter.text = label
+        }
+    }
+
+    private fun showPeriodFilter() {
+        showOptions(
+            "Период",
+            listOf("Неделя" to 7, "Месяц" to 30, "Год" to 365, "За период" to -1)
+        ) { label, days ->
+            if (days < 0) {
+                findParentNavController().navigate(NavGraphDirections.startChooseDateFragment())
+            } else {
+                val end = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59); set(Calendar.SECOND, 59)
+                }
+                val start = (end.clone() as Calendar).apply {
+                    add(Calendar.DAY_OF_YEAR, -days)
+                    set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0)
+                }
+                model.setFromTime(start.timeInMillis)
+                model.setToTime(end.timeInMillis)
+                binding.periodFilter.text = label
+                refreshData()
             }
         }
     }
 
-    private fun updatePeriodStats(transactions: List<TransactionModel>) {
-        val visibleTransactions = if (model.getWithoutTransactions()) {
-            transactions.filter {
-                it.type == TransactionEnum.CONVERSION && !it.isUserTransfer()
-            }
-        } else {
-            transactions
+    private fun showWalletFilter() {
+        showOptions(
+            "Кошелёк",
+            listOf(
+                "Все кошельки" to CurrencyEnum.supportedValues,
+                "Сом" to listOf(CurrencyEnum.SOM),
+                "Салам" to listOf(CurrencyEnum.ESOM),
+                "USDT" to listOf(CurrencyEnum.USDT_TRC20)
+            )
+        ) { label, currencies ->
+            model.setCurrency(currencies)
+            binding.walletFilter.text = label
+            refreshData()
         }
-        val income = visibleTransactions
-            .filter { it.type == TransactionEnum.INCOME || it.type == TransactionEnum.INFLOW }
-            .sumOf { it.amount ?: 0.0 }
-        val expenses = visibleTransactions
-            .filter {
-                it.type == TransactionEnum.EXPENSE ||
-                    it.type == TransactionEnum.TRANSFER ||
-                    !it.recipientFullName.isNullOrBlank()
-            }
-            .sumOf { it.amount ?: 0.0 }
-        val label = statsPeriodLabel()
+    }
 
-        binding.incomeTitle.text = "Доходы за $label"
-        binding.expencesTitle.text = "Расходы за $label"
-        binding.income.text = income.formatBalanceNew()
-        binding.expences.text = expenses.formatBalanceNew()
+    private fun showAmountFilter() {
+        val dialog = BottomSheetDialog(requireContext())
+        val content = dialogContainer("Сумма")
+        val fields = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+        }
+        val from = amountInput("От").apply { layoutParams = weightedParams(8) }
+        val to = amountInput("До").apply { layoutParams = weightedParams(0) }
+        fields.addView(from)
+        fields.addView(to)
+        content.addView(fields)
+        content.addView(actionButton("Применить").apply {
+            setOnClickListener {
+                uiModel.setAmountFilter(from.number(), to.number())
+                (binding.history.adapter as HistoryAdapter).regroup()
+                binding.amountFilter.text = when {
+                    from.text.isNotBlank() && to.text.isNotBlank() -> "${from.text}–${to.text}"
+                    from.text.isNotBlank() -> "От ${from.text}"
+                    to.text.isNotBlank() -> "До ${to.text}"
+                    else -> "Сумма"
+                }
+                dialog.dismiss()
+            }
+        })
+        dialog.setContentView(content)
+        dialog.setOnShowListener { from.requestFocus(); showKeyboard(from) }
+        dialog.show()
+    }
+
+    private fun <T> showOptions(title: String, values: List<Pair<String, T>>, selected: (String, T) -> Unit) {
+        val dialog = BottomSheetDialog(requireContext())
+        val content = dialogContainer(title)
+        values.forEach { (label, value) ->
+            content.addView(TextView(requireContext()).apply {
+                text = label
+                textSize = 18f
+                setTextColor(requireContext().getColor(R.color.title))
+                setPadding(4.dp, 18.dp, 4.dp, 18.dp)
+                setOnClickListener { selected(label, value); dialog.dismiss() }
+            })
+        }
+        dialog.setContentView(content)
+        dialog.show()
+    }
+
+    private fun dialogContainer(title: String) = LinearLayout(requireContext()).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(20.dp)
+        setBackgroundColor(requireContext().getColor(R.color.card_bg))
+        addView(TextView(context).apply {
+            text = title
+            textSize = 25f
+            setTextColor(context.getColor(R.color.title))
+            typeface = requireContext().getFontCompat(R.font.mont_bold)
+            setPadding(0, 4.dp, 0, 18.dp)
+        })
+    }
+
+    private fun amountInput(hintText: String) = EditText(requireContext()).apply {
+        hint = hintText
+        inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        setTextColor(context.getColor(R.color.title))
+        setHintTextColor(context.getColor(R.color.subtitle))
+        setBackgroundResource(R.drawable.phone_password_input_background)
+        setPadding(16.dp)
+    }
+
+    private fun actionButton(label: String) = TextView(requireContext()).apply {
+        text = label
+        gravity = android.view.Gravity.CENTER
+        textSize = 18f
+        setTextColor(context.getColor(R.color.white))
+        setBackgroundResource(R.drawable.accept_btn_background)
+        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 58.dp).apply {
+            topMargin = 22.dp
+            bottomMargin = 16.dp
+        }
+    }
+
+    private fun weightedParams(endMargin: Int) = LinearLayout.LayoutParams(0, 64.dp, 1f).apply {
+        marginEnd = endMargin.dp
+    }
+
+    private fun EditText.number(): Double? = text.toString().replace(',', '.').toDoubleOrNull()
+    private val Int.dp: Int get() = (this * resources.displayMetrics.density).toInt()
+
+    private fun showKeyboard(view: View) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(150)
+            (requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+        }
     }
 
     private fun updateFilterLabels() {
-        val withoutTransfers = model.getWithoutTransactions()
-        binding.nonTransactionLayout.setBackgroundResource(
-            if (withoutTransfers) R.drawable.data_period_background
-            else R.drawable.gray_period_background
-        )
-        binding.nonTransactionTitle.setTextColor(
-            requireContext().getColor(if (withoutTransfers) R.color.white else R.color.title)
-        )
-
-        val from = model.getFromTime()
-        val to = model.getToTime()
-        binding.titleMonth.text =
-            SimpleDateFormat("LLLL", RUSSIAN_LOCALE).format(Date(to))
-
-        val currencies = model.getCurrency()
-        binding.active.text = if (currencies.size == CurrencyEnum.supportedValues.size) {
-            getString(R.string.actives)
-        } else {
-            "Активы: ${currencies.size}"
-        }
-
-        val days = TimeUnit.MILLISECONDS.toDays((to - from).coerceAtLeast(0L))
-        binding.periodTitle.text = when {
+        val days = TimeUnit.MILLISECONDS.toDays((model.getToTime() - model.getFromTime()).coerceAtLeast(0L))
+        binding.periodFilter.text = when {
             days <= 8 -> "Неделя"
-            days <= 32 -> "1 месяц"
-            days <= 95 -> "3 месяца"
+            days <= 32 -> "Месяц"
+            days <= 370 -> "Год"
             else -> "Период"
+        }
+        binding.walletFilter.text = if (model.getCurrency().size == CurrencyEnum.supportedValues.size) {
+            "Все кошельки"
+        } else {
+            "Кошелёк: ${model.getCurrency().size}"
         }
     }
 
     private fun statsPeriodLabel(): String =
         if (isSameMonth(model.getFromTime(), model.getToTime())) {
-            SimpleDateFormat("LLLL", RUSSIAN_LOCALE).format(Date(model.getFromTime()))
+            SimpleDateFormat("LLLL", Locale("ru", "RU")).format(Date(model.getFromTime()))
         } else {
-            "выбранный период"
+            "период"
         }
 
     private fun isSameMonth(from: Long, to: Long): Boolean {
@@ -220,26 +368,32 @@ class HistoryFragment : Fragment() {
             start.get(Calendar.MONTH) == end.get(Calendar.MONTH)
     }
 
+    private fun TransactionModel.isIncome() =
+        type == TransactionEnum.INCOME || type == TransactionEnum.INFLOW ||
+            (!senderFullName.isNullOrBlank() && recipientFullName.isNullOrBlank())
+
+    private fun TransactionModel.isExpense() =
+        type != TransactionEnum.CONVERSION &&
+            !isIncome() && (type == TransactionEnum.EXPENSE || isUserTransfer())
+
+    private fun openAnalysis(mode: String) {
+        findNavController().navigate(MainNavGraphDirections.startFinancialAnalysisFragment(mode))
+    }
+
     private fun openSuccessTransfer(transaction: TransactionModel) {
         val user = (model.myData.value as? UiState.Success)?.data
-        model.setLastSuccessOperation(
-            TransactionSuccessMapper.toSuccessOperation(
-                context = requireContext(),
-                transaction = transaction,
-                user = user
-            )
-        )
+        model.setLastSuccessOperation(TransactionSuccessMapper.toSuccessOperation(requireContext(), transaction, user))
         findParentNavController().navigate(NavGraphDirections.startSuccessTransferFragment())
     }
 
     override fun onDestroyView() {
-        historyJob?.cancel()
         LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(historyReceiver)
         super.onDestroyView()
     }
 
-    private companion object {
-        const val ACTION_HISTORY = "ACTION_HISTORY"
-        val RUSSIAN_LOCALE = Locale("ru", "RU")
+    companion object {
+        const val MODE_EXPENSES = "expenses"
+        const val MODE_INCOME = "income"
+        private const val ACTION_HISTORY = "ACTION_HISTORY"
     }
 }

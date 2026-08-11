@@ -1,102 +1,98 @@
 package com.esom.bank.activities
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.SystemClock
+import android.content.res.Configuration
+import android.graphics.Color
 import android.view.MotionEvent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.NavOptions
+import androidx.navigation.fragment.NavHostFragment
 import com.esom.bank.R
 import com.esom.bank.databinding.ActivityMainBinding
-import com.esom.bank.screens.pinCreate.data.PinLocalDataSource
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val inactivityHandler = Handler(Looper.getMainLooper())
-    private var lastInteractionAt = SystemClock.elapsedRealtime()
-    private var isActivityResumed = false
-    private var lockRequested = false
-
-    @Inject
-    lateinit var pinLocalDataSource: PinLocalDataSource
-
-    private val inactivityRunnable = Runnable {
-        if (isActivityResumed) {
-            lockIfRequired()
-        }
-    }
+    private val viewModel: MainActivityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppCompatDelegate.setDefaultNightMode(viewModel.getThemeMode())
         enableEdgeToEdge()
 
-        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
-        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars =
-            true
+        val isNight = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+            Configuration.UI_MODE_NIGHT_YES
+        window.navigationBarColor = Color.TRANSPARENT
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = !isNight
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = !isNight
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setupStartDestination()
+        observeUiState()
     }
 
     override fun onResume() {
         super.onResume()
-        isActivityResumed = true
-        lockIfRequired()
-        scheduleInactivityCheck()
+        viewModel.onActivityResumed(isLockDestination())
     }
 
     override fun onPause() {
-        isActivityResumed = false
-        inactivityHandler.removeCallbacks(inactivityRunnable)
+        viewModel.onActivityPaused()
         super.onPause()
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-            lastInteractionAt = SystemClock.elapsedRealtime()
-            lockRequested = false
-            scheduleInactivityCheck()
+            viewModel.onUserInteraction(isLockDestination())
         }
         return super.dispatchTouchEvent(event)
     }
 
     fun markUserAuthenticated() {
-        lastInteractionAt = SystemClock.elapsedRealtime()
-        lockRequested = false
-        scheduleInactivityCheck()
+        viewModel.markUserAuthenticated()
     }
 
-    private fun scheduleInactivityCheck() {
-        inactivityHandler.removeCallbacks(inactivityRunnable)
-        if (!isActivityResumed || isLockDestination()) return
-
-        val elapsed = SystemClock.elapsedRealtime() - lastInteractionAt
-        inactivityHandler.postDelayed(
-            inactivityRunnable,
-            (INACTIVITY_TIMEOUT_MS - elapsed).coerceAtLeast(0L)
+    private fun setupStartDestination() {
+        val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val controller = navHost.navController
+        val graph = controller.navInflater.inflate(R.navigation.nav_graph)
+        graph.setStartDestination(
+            when {
+                !viewModel.isAuthenticated() -> R.id.authFragment
+                viewModel.hasLock() -> R.id.logInFragment
+                else -> R.id.pinCreateFragment
+            }
         )
+        controller.graph = graph
     }
 
-    private fun lockIfRequired() {
-        if (lockRequested || isLockDestination()) return
-        if (SystemClock.elapsedRealtime() - lastInteractionAt < INACTIVITY_TIMEOUT_MS) return
-        if (!pinLocalDataSource.hasLock()) return
-
-        lockRequested = true
-        findNavController(R.id.nav_host_fragment).navigate(
-            R.id.logInFragment,
-            null,
-            NavOptions.Builder()
-                .setPopUpTo(R.id.nav_graph, true)
-                .build()
-        )
+    private fun observeUiState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    if (!state.shouldLock || isLockDestination()) return@collect
+                    findNavController(R.id.nav_host_fragment).navigate(
+                        R.id.logInFragment,
+                        null,
+                        NavOptions.Builder()
+                            .setPopUpTo(R.id.nav_graph, true)
+                            .build()
+                    )
+                    viewModel.onLockHandled()
+                }
+            }
+        }
     }
 
     private fun isLockDestination(): Boolean {
@@ -104,14 +100,7 @@ class MainActivity : AppCompatActivity() {
             R.id.authFragment,
             R.id.logInFragment,
             R.id.pinCreateFragment,
-            R.id.registrationFragment,
-            R.id.smsFragment,
-            R.id.bioFragment,
-            R.id.splashLogInFragment
+            R.id.bioFragment
         )
-    }
-
-    private companion object {
-        const val INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L
     }
 }

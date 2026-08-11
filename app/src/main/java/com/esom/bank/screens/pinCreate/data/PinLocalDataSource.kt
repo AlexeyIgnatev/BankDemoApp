@@ -20,6 +20,8 @@ interface PinLocalDataSource {
     fun isBio(): Boolean
     fun setBio(bio: Boolean)
     fun hasLock(): Boolean
+    fun hasPin(): Boolean
+    fun hasPattern(): Boolean
     fun getLockType(): LockType?
     fun savePin(pin: String)
     fun verifyPin(pin: String): Boolean
@@ -44,12 +46,12 @@ class PinLocalDataSourceImpl @Inject constructor() : PinLocalDataSource {
     }
 
     override fun hasLock(): Boolean {
-        return when (getLockType()) {
-            LockType.PIN -> !storage.decodeString("pinCode").isNullOrBlank()
-            LockType.PATTERN -> getSavedPattern().isNotEmpty()
-            null -> false
-        }
+        return hasPin() || hasPattern()
     }
+
+    override fun hasPin(): Boolean = !storage.decodeString("pinCode").isNullOrBlank()
+
+    override fun hasPattern(): Boolean = getSavedPattern().isNotEmpty()
 
     override fun getLockType(): LockType? = LockType.from(storage.decodeString("lockType"))
 
@@ -59,7 +61,6 @@ class PinLocalDataSourceImpl @Inject constructor() : PinLocalDataSource {
     }
 
     override fun verifyPin(pin: String): Boolean {
-        if (getLockType() != LockType.PIN) return false
         return storage.decodeString("pinCode") == pin
     }
 
@@ -69,7 +70,6 @@ class PinLocalDataSourceImpl @Inject constructor() : PinLocalDataSource {
     }
 
     override fun verifyPattern(pattern: List<Int>): Boolean {
-        if (getLockType() != LockType.PATTERN) return false
         return getSavedPattern() == pattern
     }
 

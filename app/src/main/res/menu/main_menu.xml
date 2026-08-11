@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/ic_wallet"
+        android:id="@+id/nav_home"
         android:icon="@drawable/choose_home_icon"
-        android:title="@string/main"/>
+        android:title="@string/main" />
     <item
-        android:id="@+id/ic_activity"
-        android:icon="@drawable/history_icon"
-        android:title="@string/history"/>
+        android:id="@+id/nav_payments"
+        android:icon="@drawable/ic_bottom_payments"
+        android:title="@string/payments" />
     <item
-        android:id="@+id/ic_qr"
-        android:icon="@drawable/ic_qr_scan"
-        android:title="@string/qr"/>
+        android:id="@+id/nav_support"
+        android:icon="@drawable/ic_bottom_support"
+        android:title="@string/support" />
     <item
-        android:id="@+id/ic_settings"
-        android:icon="@drawable/profile_icon"
-        android:title="@string/profile_title"/>
+        android:id="@+id/nav_security"
+        android:icon="@drawable/ic_security"
+        android:title="@string/security" />
 </menu>

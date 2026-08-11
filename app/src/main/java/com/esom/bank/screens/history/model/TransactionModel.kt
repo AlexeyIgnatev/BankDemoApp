@@ -46,4 +46,6 @@ fun List<TransactionDto?>.toModel(): List<TransactionModel?> {
 fun TransactionModel.isUserTransfer(): Boolean =
     type == TransactionEnum.TRANSFER ||
         (conversionSide == null &&
-            (!recipientFullName.isNullOrBlank() || !senderFullName.isNullOrBlank()))
+            (!recipientFullName.isNullOrBlank() ||
+                !senderFullName.isNullOrBlank() ||
+                !accountDetails.isNullOrBlank()))

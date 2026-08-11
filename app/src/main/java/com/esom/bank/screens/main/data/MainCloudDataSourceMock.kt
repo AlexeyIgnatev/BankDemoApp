@@ -188,9 +188,19 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                 CurrencyEnum.ESOM,
                 CurrencyEnum.USDT_TRC20
             )
+            val counterparties = listOf(
+                "\u041A\u044B\u043B\u044B\u0447 \u0410\u0431\u0434\u0440\u0430\u0435\u0432",
+                "\u0411\u043E\u0433\u0434\u0430\u043D \u042E\u0440\u044C\u0435\u0432\u0438\u0447 \u041A.",
+                "\u0410\u0439\u0436\u0430\u043D \u041E\u0441\u043C\u043E\u043D\u043E\u0432\u0430",
+                "\u041D\u0443\u0440\u0431\u0435\u043A \u0410\u043B\u0438\u0435\u0432"
+            )
             val randomCurrency = currencies[index % currencies.size]
             val randomType = TransactionEnum.values()[index % TransactionEnum.values().size]
             val createdAt = System.currentTimeMillis() - index * 60_000L
+            val isIncoming = randomType == TransactionEnum.INCOME ||
+                randomType == TransactionEnum.INFLOW
+            val isOutgoing = randomType == TransactionEnum.TRANSFER ||
+                randomType == TransactionEnum.EXPENSE
             TransactionDto(
                 transactionId = 10_000L + index,
                 currencyEnum = randomCurrency,
@@ -200,7 +210,13 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                 } else null,
                 amount = (10..1000).random().toDouble(),
                 successful = true,
-                createdAt = createdAt
+                createdAt = createdAt,
+                recipientFullName = counterparties[index % counterparties.size]
+                    .takeIf { isOutgoing },
+                senderFullName = counterparties[index % counterparties.size]
+                    .takeIf { isIncoming },
+                accountDetails = "+996 700 12 ${34 + index}"
+                    .takeIf { isIncoming || isOutgoing }
             )
         }
 

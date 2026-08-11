@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/_148dp"
+    android:layout_height="match_parent"
+    android:layout_marginEnd="@dimen/_9dp"
+    app:cardBackgroundColor="@color/card_bg"
+    app:cardCornerRadius="@dimen/_22dp"
+    app:cardElevation="@dimen/_0dp"
+    app:strokeWidth="@dimen/_0dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/_16dp">
+
+        <TextView
+            android:id="@+id/wallet_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/mont_semibold"
+            android:maxLines="2"
+            android:textColor="@color/red"
+            android:textSize="@dimen/_14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Сом" />
+
+        <ImageView
+            android:id="@+id/wallet_icon"
+            android:layout_width="@dimen/_37dp"
+            android:layout_height="@dimen/_37dp"
+            android:layout_marginTop="@dimen/_12dp"
+            android:src="@drawable/som_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/wallet_title" />
+
+        <com.esom.bank.common.utils.views.AnimatedBalanceView
+            android:id="@+id/balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/mont_semibold"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_20sp"
+            app:layout_constraintBottom_toTopOf="@id/account"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="1 011,36" />
+
+        <ImageView
+            android:id="@+id/som_sign"
+            android:layout_width="@dimen/_8dp"
+            android:layout_height="@dimen/_12dp"
+            android:layout_marginStart="@dimen/_3dp"
+            android:src="@drawable/som_title_icon"
+            app:layout_constraintBottom_toBottomOf="@id/balance"
+            app:layout_constraintStart_toEndOf="@id/balance"
+            app:layout_constraintTop_toTopOf="@id/balance"
+            app:tint="@color/title" />
+
+        <TextView
+            android:id="@+id/currency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_4dp"
+            android:fontFamily="@font/mont_semibold"
+            android:textColor="@color/title"
+            android:textSize="@dimen/_11sp"
+            app:layout_constraintBottom_toBottomOf="@id/balance"
+            app:layout_constraintStart_toEndOf="@id/som_sign"
+            app:layout_constraintTop_toTopOf="@id/balance"
+            tools:text="USDT" />
+
+        <TextView
+            android:id="@+id/account"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_4dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/mont_regular"
+            android:maxLines="1"
+            android:textColor="@color/subtitle"
+            android:textSize="@dimen/_12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="Счёт •• 4844" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

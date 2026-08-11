@@ -22,6 +22,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.esom.bank.screens.chat.enums.SupportRole
 import com.esom.bank.screens.chat.model.SupportModel
+import com.esom.bank.screens.chat.model.SupportMessagesUiState
 import com.esom.bank.screens.history.pagingsource.TransactionsPagingSource
 import com.esom.bank.screens.main.model.FeeModel
 import com.esom.bank.screens.main.model.PaymentFeeModel
@@ -30,14 +31,21 @@ import com.esom.bank.screens.main.model.findByOperation
 import com.esom.bank.screens.main.dto.StatusDto
 import com.esom.bank.screens.notification.model.NotificationModel
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
+import com.esom.bank.screens.pinCreate.data.LockType
+import com.esom.bank.screens.swap.model.SwapTemplate
+import com.esom.bank.screens.transfer.model.TransferTemplate
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlin.math.abs
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val mainRepository: MainRepository
 ) : ViewModel() {
+    private val _balancesVisible = MutableLiveData(mainRepository.areBalancesVisible())
+    val balancesVisible: LiveData<Boolean> = _balancesVisible
     private val _myData = MutableLiveData<UiState<UserModel>>()
     val myData: LiveData<UiState<UserModel>> = _myData
 
@@ -66,6 +74,9 @@ class MainViewModel @Inject constructor(
     private val _notifications = MutableLiveData<UiState<List<NotificationModel>>>()
     val notifications: LiveData<UiState<List<NotificationModel>>> = _notifications
 
+    private val _hasUnreadNotifications = MutableLiveData(false)
+    val hasUnreadNotifications: LiveData<Boolean> = _hasUnreadNotifications
+
     private val _settings = MutableLiveData<UiState<FeeModel>>()
     val settings: LiveData<UiState<FeeModel>> = _settings
 
@@ -84,9 +95,7 @@ class MainViewModel @Inject constructor(
     private val _lastSuccessReceipt = MutableLiveData<UiState<ReceiptModel>>()
     val lastSuccessReceipt: LiveData<UiState<ReceiptModel>> = _lastSuccessReceipt
 
-    private val pendingMessages = mutableListOf<SupportModel>()
-    private var cachedMessages: List<SupportModel> = emptyList()
-    private var nextPendingMessageId = -1
+    private val supportMessagesUiState = MutableStateFlow(SupportMessagesUiState())
 
     fun clearAllDataAndNavigate() {
         _myData.value = UiState.Loading()
@@ -106,6 +115,22 @@ class MainViewModel @Inject constructor(
 
 
     fun isAuthenticated() = mainRepository.isAuthenticated()
+    fun hasLock(): Boolean = mainRepository.hasLock()
+    fun hasPin(): Boolean = mainRepository.hasPin()
+    fun hasPattern(): Boolean = mainRepository.hasPattern()
+    fun getLockType(): LockType? = mainRepository.getLockType()
+    fun savePin(pin: String) = mainRepository.savePin(pin)
+    fun verifyPin(pin: String): Boolean = mainRepository.verifyPin(pin)
+    fun savePattern(pattern: List<Int>) = mainRepository.savePattern(pattern)
+    fun verifyPattern(pattern: List<Int>): Boolean = mainRepository.verifyPattern(pattern)
+    fun isBiometricEnabled(): Boolean = mainRepository.isBiometricEnabled()
+    fun setBiometricEnabled(enabled: Boolean) = mainRepository.setBiometricEnabled(enabled)
+    fun getPrimaryCurrency(): CurrencyEnum = mainRepository.getPrimaryCurrency()
+    fun setPrimaryCurrency(currency: CurrencyEnum) = mainRepository.setPrimaryCurrency(currency)
+    fun getTransferTemplates(): List<TransferTemplate> = mainRepository.getTransferTemplates()
+    fun getSwapTemplates(): List<SwapTemplate> = mainRepository.getSwapTemplates()
+    fun addTransferTemplate(template: TransferTemplate) = mainRepository.addTransferTemplate(template)
+    fun addSwapTemplate(template: SwapTemplate) = mainRepository.addSwapTemplate(template)
 
     fun authenticate(login: String, password: String) {
         _myData.value = UiState.Loading()
@@ -270,8 +295,9 @@ class MainViewModel @Inject constructor(
         ).flow.cachedIn(viewModelScope)
     }
 
-    fun latestTransactions(currencyEnum: CurrencyEnum) {
-        mainRepository.history(listOf(currencyEnum), getFromTime(), getToTime(), 5, 0).onEach { uiState ->
+    fun latestTransactions(currencyEnum: CurrencyEnum? = null) {
+        val currencies = currencyEnum?.let(::listOf) ?: CurrencyEnum.supportedValues.toList()
+        mainRepository.history(currencies, getFromTime(), getToTime(), 8, 0).onEach { uiState ->
             _history.value = when (uiState) {
                 is UiState.Success -> UiState.Success(uiState.data.filterNotNull())
                 else -> uiState
@@ -360,46 +386,69 @@ class MainViewModel @Inject constructor(
                 is UiState.Loading -> if (showLoading) _messages.value = state
                 is UiState.Error -> if (showLoading) _messages.value = state
                 is UiState.Success -> {
-                    cachedMessages = mergeWithPendingMessages(state.data)
-                    _messages.value = UiState.Success(cachedMessages)
+                    supportMessagesUiState.update { current ->
+                        val pending = current.pendingMessages.filterNot { pendingMessage ->
+                            state.data.any { remoteMessage -> pendingMessage.isSameSentMessage(remoteMessage) }
+                        }
+                        current.copy(
+                            pendingMessages = pending,
+                            cachedMessages = mergeMessages(state.data + pending)
+                        )
+                    }
+                    _messages.value = UiState.Success(supportMessagesUiState.value.cachedMessages)
                 }
             }
         }.launchIn(viewModelScope)
     }
 
     fun sendMessage(text: String) {
+        val currentState = supportMessagesUiState.value
         val pendingMessage = SupportModel(
-            id = nextPendingMessageId--,
+            id = currentState.nextPendingMessageId,
             ticketId = null,
             text = text,
             role = SupportRole.USER,
             createdAt = System.currentTimeMillis()
         )
 
-        pendingMessages.add(pendingMessage)
-        cachedMessages = mergeWithPendingMessages(cachedMessages)
-        _messages.value = UiState.Success(cachedMessages)
+        supportMessagesUiState.update {
+            val pending = it.pendingMessages + pendingMessage
+            it.copy(
+                pendingMessages = pending,
+                cachedMessages = mergeMessages(it.cachedMessages + pendingMessage),
+                nextPendingMessageId = it.nextPendingMessageId - 1
+            )
+        }
+        _messages.value = UiState.Success(supportMessagesUiState.value.cachedMessages)
         _sendMessage.value = UiState.Loading()
 
         mainRepository.sendMessage(text).onEach { state ->
             when (state) {
                 is UiState.Loading -> _sendMessage.value = state
                 is UiState.Error -> {
-                    pendingMessages.removeAll { it.id == pendingMessage.id }
-                    cachedMessages = cachedMessages.filterNot { it.id == pendingMessage.id }
-                    cachedMessages = mergeWithPendingMessages(cachedMessages)
-                    _messages.value = UiState.Success(cachedMessages)
+                    supportMessagesUiState.update {
+                        it.copy(
+                            pendingMessages = it.pendingMessages.filterNot { message -> message.id == pendingMessage.id },
+                            cachedMessages = it.cachedMessages.filterNot { message -> message.id == pendingMessage.id }
+                        )
+                    }
+                    _messages.value = UiState.Success(supportMessagesUiState.value.cachedMessages)
                     _sendMessage.value = state
                 }
                 is UiState.Success -> {
-                    pendingMessages.removeAll {
-                        it.id == pendingMessage.id || it.isSameSentMessage(state.data)
+                    supportMessagesUiState.update {
+                        val pending = it.pendingMessages.filterNot { message ->
+                            message.id == pendingMessage.id || message.isSameSentMessage(state.data)
+                        }
+                        val cached = it.cachedMessages.filterNot { message ->
+                            message.id == pendingMessage.id || message.isSameSentMessage(state.data)
+                        }
+                        it.copy(
+                            pendingMessages = pending,
+                            cachedMessages = mergeMessages(cached + state.data)
+                        )
                     }
-                    cachedMessages = cachedMessages.filterNot {
-                        it.id == pendingMessage.id || it.isSameSentMessage(state.data)
-                    }
-                    cachedMessages = mergeMessages(cachedMessages + state.data)
-                    _messages.value = UiState.Success(cachedMessages)
+                    _messages.value = UiState.Success(supportMessagesUiState.value.cachedMessages)
                     _sendMessage.value = state
                     getMessages(showLoading = false)
                 }
@@ -409,8 +458,34 @@ class MainViewModel @Inject constructor(
     fun loadNotifications() {
         mainRepository.getNotifications().onEach {
             _notifications.value = it
+            if (it is UiState.Success) {
+                val seenIds = mainRepository.getSeenNotificationIds()
+                _hasUnreadNotifications.value = it.data.any { notification -> notification.id.toString() !in seenIds }
+            }
         }.launchIn(viewModelScope)
     }
+
+    fun markNotificationsSeen(notifications: List<NotificationModel>) {
+        if (notifications.isEmpty()) return
+        val seenIds = mainRepository.getSeenNotificationIds() + notifications.map { it.id.toString() }
+        mainRepository.setSeenNotificationIds(seenIds)
+        _hasUnreadNotifications.value = false
+    }
+
+    fun toggleBalancesVisibility() {
+        val visible = !(_balancesVisible.value ?: true)
+        mainRepository.setBalancesVisible(visible)
+        _balancesVisible.value = visible
+    }
+
+    fun getThemeMode(): Int = mainRepository.getThemeMode()
+
+    fun setThemeMode(mode: Int) = mainRepository.setThemeMode(mode)
+
+    fun isWalletHistoryExpanded(): Boolean = mainRepository.isWalletHistoryExpanded()
+
+    fun setWalletHistoryExpanded(expanded: Boolean) =
+        mainRepository.setWalletHistoryExpanded(expanded)
 
     fun sendFinancialReport(
         email: String? = null,
@@ -453,13 +528,6 @@ class MainViewModel @Inject constructor(
             .addOnSuccessListener { token ->
                 sendFcmToken(token)
             }
-    }
-
-    private fun mergeWithPendingMessages(remoteMessages: List<SupportModel>): List<SupportModel> {
-        pendingMessages.removeAll { pendingMessage ->
-            remoteMessages.any { remoteMessage -> pendingMessage.isSameSentMessage(remoteMessage) }
-        }
-        return mergeMessages(remoteMessages + pendingMessages)
     }
 
     private fun mergeMessages(messages: List<SupportModel>): List<SupportModel> {

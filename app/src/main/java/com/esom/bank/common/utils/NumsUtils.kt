@@ -3,12 +3,12 @@ package com.esom.bank.common.utils
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-fun Double.format(digits: Int = 6) =
+fun Double.format(digits: Int = 2) =
     "%.${digits}f".format(this).replace(",", ".").removeTrailingZeros()
 
 fun Double.formatBalanceNew(): String {
     val formatted = BigDecimal.valueOf(this)
-        .setScale(6, RoundingMode.DOWN)
+        .setScale(2, RoundingMode.HALF_UP)
         .stripTrailingZeros()
         .toPlainString()
 
@@ -20,7 +20,7 @@ fun Double.formatBalanceNew(): String {
         .trimEnd('.').ifEmpty { "0" }
 }
 
-fun Double.round(digits: Int = 6) =
+fun Double.round(digits: Int = 2) =
     format(digits).toDoubleOrNull() ?: this
 
 fun String.removeTrailingZeros(): String {

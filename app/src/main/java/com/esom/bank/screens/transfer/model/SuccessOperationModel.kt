@@ -26,5 +26,6 @@ data class SuccessOperationModel(
     val amountIsNet: Boolean = false,
     val recipientName: String = "",
     val openedFromHistory: Boolean = false,
-    val totalDebitedAmount: Double? = null
+    val totalDebitedAmount: Double? = null,
+    val amountIsIncoming: Boolean = false
 ) : Parcelable

@@ -37,7 +37,8 @@ object TransactionSuccessMapper {
             createdAt = transaction.createdAt ?: System.currentTimeMillis(),
             loadReceiptAutomatically = true,
             recipientName = recipientName,
-            openedFromHistory = true
+            openedFromHistory = true,
+            amountIsIncoming = transaction.isDisplayedAsIncome()
         )
     }
 

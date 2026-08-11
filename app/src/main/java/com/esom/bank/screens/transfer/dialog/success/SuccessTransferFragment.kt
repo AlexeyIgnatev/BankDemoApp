@@ -134,7 +134,7 @@ class SuccessTransferFragment : Fragment() {
         val totalText = formatAmount(totalAmount, resolveCreditedCurrency(data))
         val dateTimeText = formatDateTime(data.createdAt)
 
-        binding.amount.text = "- $amountText"
+        binding.amount.text = "${if (data.amountIsIncoming) "+" else "-"} $amountText"
         binding.operation.text = data.operationTitle
         binding.dateValue.text = dateTimeText
         binding.receiptValue.text = data.receiptNumber.ifBlank { getString(R.string.empty_value) }

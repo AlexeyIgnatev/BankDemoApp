@@ -42,15 +42,7 @@ object PaymentFeeOperationResolver {
         transferOperations(currency).firstOrNull()
 
     fun transferOperations(currency: CurrencyEnum): List<String> = when (currency) {
-        CurrencyEnum.SOM -> listOf(
-            WALLET_TRANSFER_SOM,
-            WALLET_TRANSFER_SALAM,
-            "TRANSFER_SOM",
-            "TRANSFER_SALAM",
-            LEGACY_SOM_TO_SOM,
-            LEGACY_SOM_TO_SALAM,
-            LEGACY_SOM_TO_ESOM
-        )
+        CurrencyEnum.SOM -> listOf(WALLET_TRANSFER_SOM)
 
         CurrencyEnum.ESOM -> listOf(
             WALLET_TRANSFER_ESOM,

@@ -81,7 +81,7 @@
                 android:layout_marginTop="@dimen/_12dp"
                 android:orientation="vertical"
                 android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@id/change_layout">
+                app:layout_constraintTop_toBottomOf="@id/title">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -211,7 +211,7 @@
                 android:padding="@dimen/_10dp"
                 android:layout_marginHorizontal="@dimen/_20dp"
                 android:background="@drawable/people_background"
-                app:layout_constraintTop_toBottomOf="@id/title"
+                app:layout_constraintTop_toBottomOf="@id/templates_section"
                 android:layout_marginTop="@dimen/_20dp">
 
                 <ImageView
@@ -282,7 +282,7 @@
                 android:paddingVertical="@dimen/_8dp"
                 android:layout_marginHorizontal="@dimen/_40dp"
                 android:background="@drawable/sum_red_background"
-                app:layout_constraintTop_toBottomOf="@id/templates_section"
+                app:layout_constraintTop_toBottomOf="@id/people_layout"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="@dimen/_8dp">
@@ -308,7 +308,7 @@
                 android:textSize="@dimen/_16sp"
                 android:textColor="@color/subtitle"
                 android:fontFamily="@font/mont_semibold"
-                app:layout_constraintTop_toBottomOf="@id/people_layout"
+                app:layout_constraintTop_toBottomOf="@id/change_layout"
                 app:layout_constraintStart_toStartOf="@id/people_layout"
                 android:layout_marginTop="@dimen/_20dp"/>
             <com.google.android.material.textfield.TextInputEditText

@@ -13,8 +13,12 @@ class TransferUiStateViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(TransferUiState())
     val uiState: StateFlow<TransferUiState> = _uiState.asStateFlow()
 
-    fun initialize(currency: CurrencyEnum) {
-        updateCurrency(currency, currency != CurrencyEnum.USDT_TRC20)
+    fun initialize(currency: CurrencyEnum, contact: String = "") {
+        val toPhoneNumber = contact
+            .takeIf { it.isNotBlank() }
+            ?.let(::isPhoneContact)
+            ?: (currency != CurrencyEnum.USDT_TRC20)
+        updateCurrency(currency, toPhoneNumber)
     }
 
     fun updateCurrency(currency: CurrencyEnum, toPhoneNumber: Boolean) {
@@ -43,5 +47,12 @@ class TransferUiStateViewModel : ViewModel() {
         val template = _uiState.value.pendingTemplate
         _uiState.update { it.copy(pendingTemplate = null) }
         return template
+    }
+
+    private fun isPhoneContact(contact: String): Boolean {
+        val phoneCharactersOnly = contact.all {
+            it.isDigit() || it == '+' || it == ' ' || it == '(' || it == ')' || it == '-'
+        }
+        return phoneCharactersOnly && contact.count(Char::isDigit) >= 7
     }
 }

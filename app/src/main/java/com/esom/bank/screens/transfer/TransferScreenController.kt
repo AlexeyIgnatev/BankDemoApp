@@ -64,7 +64,10 @@ internal class TransferScreenController(
             findNavController().popBackStack()
         }
 
-        uiModel.initialize(CurrencyEnum.fromNameOrNull(args.currency) ?: CurrencyEnum.SOM)
+        uiModel.initialize(
+            currency = CurrencyEnum.fromNameOrNull(args.currency) ?: CurrencyEnum.SOM,
+            contact = args.contact
+        )
         updateCurrencyIcon(uiModel.uiState.value.fromCurrency)
         updateCurrencyOptionsPanel()
         setContactHint()

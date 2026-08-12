@@ -146,7 +146,7 @@ class SuccessTransferFragment : Fragment() {
         binding.operation.text = data.operationTitle
         binding.dateValue.text = dateTimeText
         binding.receiptValue.text = data.receiptNumber.ifBlank { getString(R.string.empty_value) }
-        val senderAccount = formatReceiptAccountTail(data.paidFromAccount)
+        val senderAccount = formatReceiptAccountTail(resolveSenderAccountForDisplay(data))
         val senderName = formatReceiptPersonName(data.senderName)
         binding.paidFromValue.text = when {
             senderName.isNotBlank() && senderAccount.isNotBlank() -> "$senderName\n$senderAccount"
@@ -259,6 +259,23 @@ class SuccessTransferFragment : Fragment() {
             account.isNotBlank() -> account
             else -> getString(R.string.empty_value)
         }
+    }
+
+    private fun resolveSenderAccountForDisplay(operation: SuccessOperationModel): String {
+        val operationAccount = operation.paidFromAccount
+        if (operationAccount.count(Char::isLetterOrDigit) >= RECEIPT_VISIBLE_ACCOUNT_LENGTH) {
+            return operationAccount
+        }
+
+        val user = (model.myData.value as? UiState.Success)?.data ?: return operationAccount
+        if (operation.currency == CurrencyEnum.SOM && user.phone.isNotBlank()) {
+            return user.phone
+        }
+        return user.wallets
+            .firstOrNull { it.currency == operation.currency }
+            ?.address
+            ?.takeIf(String::isNotBlank)
+            ?: user.phone.ifBlank { operationAccount }
     }
 
     private fun requestReceiptForShare() {
@@ -454,5 +471,9 @@ class SuccessTransferFragment : Fragment() {
     private fun formatDateTime(timestamp: Long): String {
         val formatter = SimpleDateFormat("dd.MM.yyyy, HH:mm:ss", Locale("ru", "RU"))
         return formatter.format(Date(timestamp))
+    }
+
+    private companion object {
+        const val RECEIPT_VISIBLE_ACCOUNT_LENGTH = 8
     }
 }

@@ -38,7 +38,12 @@ object TransactionSuccessMapper {
             loadReceiptAutomatically = true,
             recipientName = recipientName,
             openedFromHistory = true,
-            amountIsIncoming = transaction.isDisplayedAsIncome()
+            amountIsIncoming = transaction.isDisplayedAsIncome(),
+            senderName = if (transaction.isDisplayedAsIncome()) {
+                transaction.senderFullName.orEmpty()
+            } else {
+                user.fullName()
+            }
         )
     }
 
@@ -134,4 +139,10 @@ object TransactionSuccessMapper {
             ?.takeIf { it.isNotBlank() }
             ?: phone
     }
+
+    private fun UserModel?.fullName(): String = this?.let {
+        listOf(it.firstName, it.middleName.orEmpty(), it.lastName)
+            .filter(String::isNotBlank)
+            .joinToString(" ")
+    }.orEmpty()
 }

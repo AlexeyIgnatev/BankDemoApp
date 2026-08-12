@@ -37,6 +37,7 @@ import javax.inject.Inject
 
 interface MainRepository {
     fun isAuthenticated(): Boolean
+    fun getLogin(): String
     fun hasLock(): Boolean
     fun hasPin(): Boolean
     fun hasPattern(): Boolean
@@ -53,6 +54,8 @@ interface MainRepository {
     fun getSwapTemplates(): List<SwapTemplate>
     fun addTransferTemplate(template: TransferTemplate)
     fun addSwapTemplate(template: SwapTemplate)
+    fun renameTransferTemplate(template: TransferTemplate, name: String)
+    fun renameSwapTemplate(template: SwapTemplate, name: String)
     fun getSeenNotificationIds(): Set<String>
     fun setSeenNotificationIds(ids: Set<String>)
     fun areBalancesVisible(): Boolean
@@ -137,6 +140,8 @@ class MainRepositoryImpl @Inject constructor(
     private val recentTemplateLocalDataSource: RecentTemplateLocalDataSource,
     private val appPreferencesLocalDataSource: AppPreferencesLocalDataSource
 ) : MainRepository {
+    override fun getLogin(): String = authLocalDataSource.getLogin().orEmpty()
+
     override fun isAuthenticated(): Boolean =
         authLocalDataSource.getLogin() != null && authLocalDataSource.getPassword() != null
 
@@ -173,6 +178,12 @@ class MainRepositoryImpl @Inject constructor(
         recentTemplateLocalDataSource.addTransferTemplate(template)
 
     override fun addSwapTemplate(template: SwapTemplate) = recentTemplateLocalDataSource.addSwapTemplate(template)
+
+    override fun renameTransferTemplate(template: TransferTemplate, name: String) =
+        recentTemplateLocalDataSource.renameTransferTemplate(template, name)
+
+    override fun renameSwapTemplate(template: SwapTemplate, name: String) =
+        recentTemplateLocalDataSource.renameSwapTemplate(template, name)
 
     override fun getSeenNotificationIds(): Set<String> =
         appPreferencesLocalDataSource.getSeenNotificationIds()

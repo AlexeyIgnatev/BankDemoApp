@@ -85,7 +85,7 @@
                 android:layout_height="@dimen/_22dp"
                 android:layout_gravity="center"
                 android:scaleType="centerInside"
-                android:src="@drawable/ic_qr_scan"
+                android:src="@drawable/ic_bottom_support"
                 app:tint="@color/white" />
         </FrameLayout>
 

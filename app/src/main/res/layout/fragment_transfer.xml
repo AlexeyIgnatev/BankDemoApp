@@ -118,7 +118,7 @@
                 android:elevation="0dp"
                 android:layout_marginHorizontal="@dimen/_20dp"
                 android:background="@drawable/payment_primary_action_background"
-                app:layout_constraintTop_toBottomOf="@id/sum_1000_layout"
+                app:layout_constraintTop_toBottomOf="@id/templates_section"
                 android:layout_marginTop="@dimen/_18dp">
 
                 <ImageView
@@ -211,7 +211,7 @@
                 android:padding="@dimen/_10dp"
                 android:layout_marginHorizontal="@dimen/_20dp"
                 android:background="@drawable/people_background"
-                app:layout_constraintTop_toBottomOf="@id/templates_section"
+                app:layout_constraintTop_toBottomOf="@id/current_currency_layout"
                 android:layout_marginTop="@dimen/_20dp">
 
                 <ImageView
@@ -652,7 +652,7 @@
                 android:padding="@dimen/_10dp"
                 android:layout_marginHorizontal="@dimen/_20dp"
                 android:background="@drawable/payment_primary_action_background"
-                app:layout_constraintTop_toBottomOf="@id/current_currency_layout"
+                app:layout_constraintTop_toBottomOf="@id/sum_1000_layout"
                 android:layout_marginTop="@dimen/_18dp">
 
                 <TextView

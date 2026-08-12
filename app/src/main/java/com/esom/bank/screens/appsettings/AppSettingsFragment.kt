@@ -88,7 +88,7 @@ class AppSettingsFragment : Fragment() {
             },
             RowSpec("Безопасность", "PIN-код, биометрия и защита", R.drawable.ic_security,
                 "безопасность пин биометрия защита") {
-                findNavController().navigate(R.id.startSecurityFragment)
+                findParentNavController().navigate(NavGraphDirections.startSecurityFragment())
             },
             RowSpec("Техподдержка", "Чат со службой поддержки", R.drawable.ic_bottom_support,
                 "техподдержка поддержка чат") {

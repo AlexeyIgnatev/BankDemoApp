@@ -53,8 +53,8 @@ class MainFragment : Fragment() {
             val destination = when (item.itemId) {
                 R.id.nav_home -> R.id.walletFragment
                 R.id.nav_payments -> R.id.actionsFragment
-                R.id.nav_support -> R.id.chatFragment
-                R.id.nav_security -> R.id.securityFragment
+                R.id.nav_qr -> R.id.mainQrFragment
+                R.id.nav_services -> R.id.servicesFragment
                 else -> return@setOnItemSelectedListener false
             }
             if (controller.currentDestination?.id != destination) {
@@ -74,8 +74,8 @@ class MainFragment : Fragment() {
             val menuItem = when (destination.id) {
                 R.id.walletFragment -> R.id.nav_home
                 R.id.actionsFragment -> R.id.nav_payments
-                R.id.chatFragment -> R.id.nav_support
-                R.id.securityFragment -> R.id.nav_security
+                R.id.mainQrFragment -> R.id.nav_qr
+                R.id.servicesFragment -> R.id.nav_services
                 else -> null
             }
             menuItem?.let { binding.bottomNavigationView.menu.findItem(it).isChecked = true }

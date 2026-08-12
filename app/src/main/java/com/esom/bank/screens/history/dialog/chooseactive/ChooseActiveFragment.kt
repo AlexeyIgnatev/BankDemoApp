@@ -59,6 +59,7 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
                         )
 
                 }
+                null -> Unit
             }
         }
 

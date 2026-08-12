@@ -36,6 +36,12 @@ class SwapUiStateViewModel : ViewModel() {
         return template
     }
 
+    fun startAutomaticRepeat(): Boolean {
+        if (_uiState.value.automaticRepeatStarted) return false
+        _uiState.update { it.copy(automaticRepeatStarted = true) }
+        return true
+    }
+
     fun selectFrom(currency: CurrencyEnum) {
         _uiState.update { state ->
             val previous = state.fromCurrency

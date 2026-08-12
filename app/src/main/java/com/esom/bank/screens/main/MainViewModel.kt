@@ -46,8 +46,8 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
     private val _balancesVisible = MutableLiveData(mainRepository.areBalancesVisible())
     val balancesVisible: LiveData<Boolean> = _balancesVisible
-    private val _myData = MutableLiveData<UiState<UserModel>>()
-    val myData: LiveData<UiState<UserModel>> = _myData
+    private val _myData = MutableLiveData<UiState<UserModel>?>()
+    val myData: LiveData<UiState<UserModel>?> = _myData
 
     private val _swapRes = SingleLiveEvent<UiState<StatusDto>>()
     val swapRes: LiveData<UiState<StatusDto>> = _swapRes
@@ -65,23 +65,23 @@ class MainViewModel @Inject constructor(
     val receipt: LiveData<UiState<ReceiptModel>> = _receipt
 
 
-    private val _messages = MutableLiveData<UiState<List<SupportModel>>>()
-    val messages: LiveData<UiState<List<SupportModel>>> = _messages
+    private val _messages = MutableLiveData<UiState<List<SupportModel>>?>()
+    val messages: LiveData<UiState<List<SupportModel>>?> = _messages
 
     private val _sendMessage = SingleLiveEvent<UiState<SupportModel>>()
     val sendMessage: LiveData<UiState<SupportModel>> =_sendMessage
 
-    private val _notifications = MutableLiveData<UiState<List<NotificationModel>>>()
-    val notifications: LiveData<UiState<List<NotificationModel>>> = _notifications
+    private val _notifications = MutableLiveData<UiState<List<NotificationModel>>?>()
+    val notifications: LiveData<UiState<List<NotificationModel>>?> = _notifications
 
     private val _hasUnreadNotifications = MutableLiveData(false)
     val hasUnreadNotifications: LiveData<Boolean> = _hasUnreadNotifications
 
-    private val _settings = MutableLiveData<UiState<FeeModel>>()
-    val settings: LiveData<UiState<FeeModel>> = _settings
+    private val _settings = MutableLiveData<UiState<FeeModel>?>()
+    val settings: LiveData<UiState<FeeModel>?> = _settings
 
-    private val _fees = MutableLiveData<UiState<List<PaymentFeeModel>>>()
-    val fees: LiveData<UiState<List<PaymentFeeModel>>> = _fees
+    private val _fees = MutableLiveData<UiState<List<PaymentFeeModel>>?>()
+    val fees: LiveData<UiState<List<PaymentFeeModel>>?> = _fees
 
     private val _financialReport = SingleLiveEvent<UiState<Unit>>()
     val financialReport: LiveData<UiState<Unit>> = _financialReport
@@ -92,8 +92,8 @@ class MainViewModel @Inject constructor(
     private val _lastSuccessOperation = MutableLiveData<SuccessOperationModel?>()
     val lastSuccessOperation: LiveData<SuccessOperationModel?> = _lastSuccessOperation
 
-    private val _lastSuccessReceipt = MutableLiveData<UiState<ReceiptModel>>()
-    val lastSuccessReceipt: LiveData<UiState<ReceiptModel>> = _lastSuccessReceipt
+    private val _lastSuccessReceipt = MutableLiveData<UiState<ReceiptModel>?>()
+    val lastSuccessReceipt: LiveData<UiState<ReceiptModel>?> = _lastSuccessReceipt
 
     private val supportMessagesUiState = MutableStateFlow(SupportMessagesUiState())
 
@@ -118,6 +118,7 @@ class MainViewModel @Inject constructor(
 
 
     fun isAuthenticated() = mainRepository.isAuthenticated()
+    fun getLogin(): String = mainRepository.getLogin()
     fun hasLock(): Boolean = mainRepository.hasLock()
     fun hasPin(): Boolean = mainRepository.hasPin()
     fun hasPattern(): Boolean = mainRepository.hasPattern()
@@ -134,6 +135,10 @@ class MainViewModel @Inject constructor(
     fun getSwapTemplates(): List<SwapTemplate> = mainRepository.getSwapTemplates()
     fun addTransferTemplate(template: TransferTemplate) = mainRepository.addTransferTemplate(template)
     fun addSwapTemplate(template: SwapTemplate) = mainRepository.addSwapTemplate(template)
+    fun renameTransferTemplate(template: TransferTemplate, name: String) =
+        mainRepository.renameTransferTemplate(template, name)
+    fun renameSwapTemplate(template: SwapTemplate, name: String) =
+        mainRepository.renameSwapTemplate(template, name)
 
     fun authenticate(login: String, password: String) {
         _myData.value = UiState.Loading()

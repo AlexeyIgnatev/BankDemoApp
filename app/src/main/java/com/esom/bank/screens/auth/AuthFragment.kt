@@ -84,6 +84,7 @@ class AuthFragment : Fragment() {
                     binding.indicator.isVisible = false
                     navigateToLockFlow()
                 }
+                null -> Unit
             }
         }
 

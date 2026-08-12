@@ -9,11 +9,11 @@
         android:icon="@drawable/ic_bottom_payments"
         android:title="@string/payments" />
     <item
-        android:id="@+id/nav_support"
-        android:icon="@drawable/ic_bottom_support"
-        android:title="@string/support" />
+        android:id="@+id/nav_qr"
+        android:icon="@drawable/ic_qr_scan"
+        android:title="QR" />
     <item
-        android:id="@+id/nav_security"
+        android:id="@+id/nav_services"
         android:icon="@drawable/ic_security"
-        android:title="@string/security" />
+        android:title="@string/services" />
 </menu>

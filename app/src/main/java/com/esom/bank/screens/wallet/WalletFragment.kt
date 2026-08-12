@@ -120,10 +120,10 @@ class WalletFragment : Fragment() {
             findNavController().navigate(MainNavGraphDirections.startNotificationFragment())
         }
         qrBtn.setOnClickListener {
-            findParentNavController().navigate(NavGraphDirections.startQrFragment())
+            findParentNavController().navigate(NavGraphDirections.startChatFragment())
         }
         securityBtn.setOnClickListener {
-            findNavController().navigate(MainNavGraphDirections.startSecurityFragment())
+            findParentNavController().navigate(NavGraphDirections.startSecurityFragment())
         }
         walletsHeader.setOnClickListener {
             findNavController().navigate(MainNavGraphDirections.startWalletsFragment())
@@ -176,11 +176,16 @@ class WalletFragment : Fragment() {
                         .sortedBy { currencyOrder(it.currency) }
                     uiModel.setWallets(wallets)
                     cardAdapter.submitList(wallets)
-                    exchangeRateAdapter.submitList(wallets)
+                    val exchangeRateWallets = wallets.filter {
+                        it.currency == CurrencyEnum.ESOM || it.currency == CurrencyEnum.USDT_TRC20
+                    }
+                    exchangeRateAdapter.submitList(exchangeRateWallets)
                     cardAdapter.refreshBalanceVisibility()
                     binding.emptyWallets.visibility = if (wallets.isEmpty()) View.VISIBLE else View.GONE
-                    binding.exchangeRatesCard.visibility = if (wallets.isEmpty()) View.GONE else View.VISIBLE
+                    binding.exchangeRatesCard.visibility =
+                        if (exchangeRateWallets.isEmpty()) View.GONE else View.VISIBLE
                 }
+                null -> Unit
             }
         }
 

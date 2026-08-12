@@ -7,6 +7,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -25,6 +28,9 @@ import com.esom.bank.screens.actions.adapter.PaymentContactsAdapter
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
+import com.esom.bank.screens.transfer.model.TransferTemplate
+import com.esom.bank.screens.swap.model.SwapTemplate
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -55,13 +61,149 @@ class ActionsFragment : Fragment() {
         binding.contactsList.adapter = contactsAdapter
         binding.sendCard.setOnClickListener { openRecipientPicker() }
         binding.convertCard.setOnClickListener { openConversion() }
+        binding.templatesHeader.setOnClickListener {
+            uiModel.toggleTemplates()
+            renderSections()
+        }
+        binding.contactsHeader.setOnClickListener {
+            uiModel.toggleContacts()
+            renderSections()
+        }
+        renderSections()
         if (model.myData.value !is UiState.Success) model.updateUserData()
     }
 
     override fun onResume() {
         super.onResume()
+        renderTemplates()
         loadContacts()
     }
+
+    private fun renderSections() {
+        val state = uiModel.uiState.value
+        binding.templatesContainer.isVisible = state.templatesExpanded
+        binding.templatesEmpty.isVisible = state.templatesExpanded &&
+            model.getTransferTemplates().isEmpty() && model.getSwapTemplates().isEmpty()
+        binding.templatesArrow.rotation = if (state.templatesExpanded) 180f else 0f
+        binding.contactsList.isVisible = state.contactsExpanded && contactsAdapter.currentList.isNotEmpty()
+        binding.contactsEmpty.isVisible = state.contactsExpanded && contactsAdapter.currentList.isEmpty()
+        binding.contactsArrow.rotation = if (state.contactsExpanded) 180f else 0f
+    }
+
+    private fun renderTemplates() {
+        binding.templatesContainer.removeAllViews()
+        model.getTransferTemplates().forEach { template ->
+            binding.templatesContainer.addView(templateRow(templateTitle(template)) {
+                showTransferTemplate(template)
+            })
+        }
+        model.getSwapTemplates().forEach { template ->
+            binding.templatesContainer.addView(templateRow(templateTitle(template)) {
+                showSwapTemplate(template)
+            })
+        }
+        renderSections()
+    }
+
+    private fun templateRow(title: String, clicked: () -> Unit) = TextView(requireContext()).apply {
+        text = title
+        textSize = 15f
+        setTextColor(context.getColor(R.color.title))
+        setBackgroundResource(R.drawable.payment_primary_action_background)
+        setPadding(dp(16), dp(16), dp(16), dp(16))
+        layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { bottomMargin = dp(8) }
+        setOnClickListener { clicked() }
+    }
+
+    private fun showTransferTemplate(template: TransferTemplate) {
+        val currency = CurrencyEnum.fromNameOrNull(template.currency) ?: return
+        val details = "Перевод ${currencyTitle(currency)} получателю ${template.recipient} на сумму ${template.amount} ${currencyTitle(currency)}"
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(templateTitle(template))
+            .setMessage(details)
+            .setNegativeButton("Изменить название") { _, _ -> renameTransferTemplate(template) }
+            .setPositiveButton("Применить шаблон") { _, _ ->
+                findParentNavController().navigate(
+                    NavGraphDirections.startTransferFragment(
+                        template.currency,
+                        template.recipient,
+                        "",
+                        template.amount.toFloat()
+                    )
+                )
+            }
+            .show()
+    }
+
+    private fun showSwapTemplate(template: SwapTemplate) {
+        val from = CurrencyEnum.fromNameOrNull(template.fromCurrency) ?: return
+        val to = CurrencyEnum.fromNameOrNull(template.toCurrency) ?: return
+        val details = "Конвертация ${template.amount} ${currencyTitle(from)} из ${currencyTitle(from)} в ${currencyTitle(to)}"
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(templateTitle(template))
+            .setMessage(details)
+            .setNegativeButton("Изменить название") { _, _ -> renameSwapTemplate(template) }
+            .setPositiveButton("Применить шаблон") { _, _ ->
+                findParentNavController().navigate(
+                    NavGraphDirections.startSwapFragment(from.name, to.name, template.amount.toFloat())
+                )
+            }
+            .show()
+    }
+
+    private fun renameTransferTemplate(template: TransferTemplate) = showRenameDialog(templateTitle(template)) { name ->
+        model.renameTransferTemplate(template, name)
+        renderTemplates()
+    }
+
+    private fun renameSwapTemplate(template: SwapTemplate) = showRenameDialog(templateTitle(template)) { name ->
+        model.renameSwapTemplate(template, name)
+        renderTemplates()
+    }
+
+    private fun showRenameDialog(current: String, renamed: (String) -> Unit) {
+        val input = EditText(requireContext()).apply {
+            setText(current)
+            setSelection(text.length)
+            hint = "Название шаблона"
+        }
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Название шаблона")
+            .setView(input)
+            .setNegativeButton("Отмена", null)
+            .setPositiveButton("Сохранить", null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val name = input.text.toString().trim()
+                if (name.isNotBlank()) {
+                    renamed(name)
+                    dialog.dismiss()
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun templateTitle(template: TransferTemplate): String =
+        template.name?.takeIf(String::isNotBlank) ?: "Перевод ${currencyTitle(CurrencyEnum.fromNameOrNull(template.currency) ?: CurrencyEnum.SOM)}"
+
+    private fun templateTitle(template: SwapTemplate): String {
+        val from = CurrencyEnum.fromNameOrNull(template.fromCurrency) ?: CurrencyEnum.SOM
+        val to = CurrencyEnum.fromNameOrNull(template.toCurrency) ?: CurrencyEnum.ESOM
+        return template.name?.takeIf(String::isNotBlank) ?: "${currencyTitle(from)} → ${currencyTitle(to)}"
+    }
+
+    private fun currencyTitle(currency: CurrencyEnum): String = when (currency) {
+        CurrencyEnum.SOM -> "Сом"
+        CurrencyEnum.ESOM -> "Салам"
+        CurrencyEnum.USDT_TRC20 -> "USDT"
+    }
+
+    private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
 
     private fun setupCurrencyChips() {
         binding.currencySomChip.setOnClickListener { selectCurrency(CurrencyEnum.SOM) }
@@ -157,8 +299,7 @@ class ActionsFragment : Fragment() {
     private fun showContacts(contacts: List<PaymentContact>, permissionMissing: Boolean) {
         if (!isAdded) return
         contactsAdapter.submitList(contacts)
-        binding.contactsList.isVisible = contacts.isNotEmpty()
-        binding.contactsEmpty.isVisible = contacts.isEmpty()
+        renderSections()
         if (!permissionMissing && contacts.isEmpty()) {
             binding.contactsEmpty.text = getString(R.string.payment_contacts_not_found)
         } else {

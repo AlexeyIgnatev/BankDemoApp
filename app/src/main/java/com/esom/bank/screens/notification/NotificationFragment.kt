@@ -61,6 +61,7 @@ class NotificationFragment : Fragment() {
                     adapter.submitNotifications(sortedList)
                     model.markNotificationsSeen(it.data)
                 }
+                null -> Unit
             }
         }
     }

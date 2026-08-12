@@ -332,9 +332,12 @@ class QrFragment : Fragment() {
             return
         }
 
-        findNavController().navigate(
-            NavGraphDirections.startTransferFragment(currency.name, payload.contact)
-        )
+        val direction = NavGraphDirections.startTransferFragment(currency.name, payload.contact)
+        if (findNavController().currentDestination?.id == R.id.mainQrFragment) {
+            findParentNavController().navigate(direction)
+        } else {
+            findNavController().navigate(direction)
+        }
     }
 
     private fun decodeQrFromImageUri(uri: android.net.Uri): String? {

@@ -92,6 +92,40 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/_15dp"
                         android:fontFamily="@font/mont_regular"
+                        android:text="Полное ФИО"
+                        android:textColor="@color/subtitle"
+                        android:textSize="@dimen/_11sp" />
+                    <TextView
+                        android:id="@+id/full_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_3dp"
+                        android:fontFamily="@font/mont_semibold"
+                        android:textColor="@color/title"
+                        android:textSize="@dimen/_16sp"
+                        tools:text="Иванов Иван Иванович" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginVertical="@dimen/_13dp" android:background="@color/lock_pattern_regular" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/mont_regular"
+                        android:text="Логин"
+                        android:textColor="@color/subtitle"
+                        android:textSize="@dimen/_11sp" />
+                    <TextView
+                        android:id="@+id/login"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/_3dp"
+                        android:fontFamily="@font/mont_semibold"
+                        android:textColor="@color/title"
+                        android:textSize="@dimen/_16sp"
+                        tools:text="ivanov.i" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:layout_marginVertical="@dimen/_13dp" android:background="@color/lock_pattern_regular" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/mont_regular"
                         android:text="Номер телефона"
                         android:textColor="@color/subtitle"
                         android:textSize="@dimen/_11sp" />

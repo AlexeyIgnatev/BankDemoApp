@@ -52,6 +52,14 @@
         <argument
             android:name="to"
             app:argType="string" />
+        <argument
+            android:name="amount"
+            android:defaultValue="0.0"
+            app:argType="float" />
+        <argument
+            android:name="autoExecute"
+            android:defaultValue="false"
+            app:argType="boolean" />
     </fragment>
 
     <action
@@ -96,6 +104,14 @@
             android:name="recipientName"
             android:defaultValue=""
             app:argType="string" />
+        <argument
+            android:name="amount"
+            android:defaultValue="0.0"
+            app:argType="float" />
+        <argument
+            android:name="autoExecute"
+            android:defaultValue="false"
+            app:argType="boolean" />
     </fragment>
 
     <action
@@ -251,6 +267,17 @@
         app:exitAnim="@anim/fade_out"
         app:popEnterAnim="@anim/fade_in"
         app:popExitAnim="@anim/fade_out"/>
+    <fragment
+        android:id="@+id/securityFragment"
+        android:name="com.esom.bank.screens.security.SecurityFragment"
+        tools:layout="@layout/fragment_security" />
+    <action
+        android:id="@+id/startSecurityFragment"
+        app:destination="@id/securityFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
     <dialog
         android:id="@+id/transferConfirmationFragment"
         android:name="com.esom.bank.screens.main.dialog.TransferConfirmationFragment"

@@ -8,4 +8,8 @@ import com.esom.bank.screens.main.enums.CurrencyEnum
 
 @Keep
 @Parcelize
-data class ActionsUiState(val selectedCurrency: CurrencyEnum = CurrencyEnum.SOM) : Parcelable
+data class ActionsUiState(
+    val selectedCurrency: CurrencyEnum = CurrencyEnum.SOM,
+    val templatesExpanded: Boolean = true,
+    val contactsExpanded: Boolean = true
+) : Parcelable

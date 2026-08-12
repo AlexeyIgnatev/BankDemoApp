@@ -9,5 +9,6 @@ import kotlinx.parcelize.Parcelize
 data class SwapTemplate(
     val amount: Double,
     val fromCurrency: String,
-    val toCurrency: String
+    val toCurrency: String,
+    val name: String? = null
 ) : Parcelable

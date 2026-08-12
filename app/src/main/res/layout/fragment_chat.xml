@@ -92,7 +92,7 @@
                     android:inputType="text"
                     android:imeOptions="actionDone"
                     android:textColorHint="@color/subtitle"
-                    android:textSize="@dimen/_12sp"
+                    android:textSize="@dimen/_15sp"
                     android:fontFamily="@font/mont_regular"
                     android:textColor="@color/title"
                     android:hint="@string/send_message"

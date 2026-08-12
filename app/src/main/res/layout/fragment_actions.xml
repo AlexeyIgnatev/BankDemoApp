@@ -279,19 +279,84 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/templates_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_22dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/templates_header"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/_44dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/mont_semibold"
+                            android:text="Шаблоны"
+                            android:textColor="@color/title"
+                            android:textSize="@dimen/_16sp" />
+                        <ImageView
+                            android:id="@+id/templates_arrow"
+                            android:layout_width="@dimen/_20dp"
+                            android:layout_height="@dimen/_20dp"
+                            android:src="@drawable/arrow_bottom"
+                            app:tint="@color/title" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/templates_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+
+                    <TextView
+                        android:id="@+id/templates_empty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/payment_primary_action_background"
+                        android:fontFamily="@font/mont_regular"
+                        android:padding="@dimen/_14dp"
+                        android:text="Сохранённых шаблонов пока нет"
+                        android:textColor="@color/subtitle"
+                        android:textSize="@dimen/_12sp" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/contacts_section"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/payments_contacts_top_margin"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/mont_semibold"
-                        android:text="@string/payment_contacts"
-                        android:textColor="@color/title"
-                        android:textSize="@dimen/_14sp" />
+                    <LinearLayout
+                        android:id="@+id/contacts_header"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/_44dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/mont_semibold"
+                            android:text="@string/payment_contacts"
+                            android:textColor="@color/title"
+                            android:textSize="@dimen/_16sp" />
+                        <ImageView
+                            android:id="@+id/contacts_arrow"
+                            android:layout_width="@dimen/_20dp"
+                            android:layout_height="@dimen/_20dp"
+                            android:src="@drawable/arrow_bottom"
+                            app:tint="@color/title" />
+                    </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/contacts_list"

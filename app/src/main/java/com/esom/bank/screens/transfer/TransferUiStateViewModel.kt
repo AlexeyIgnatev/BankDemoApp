@@ -49,6 +49,12 @@ class TransferUiStateViewModel : ViewModel() {
         return template
     }
 
+    fun startAutomaticRepeat(): Boolean {
+        if (_uiState.value.automaticRepeatStarted) return false
+        _uiState.update { it.copy(automaticRepeatStarted = true) }
+        return true
+    }
+
     private fun isPhoneContact(contact: String): Boolean {
         val phoneCharactersOnly = contact.all {
             it.isDigit() || it == '+' || it == ' ' || it == '(' || it == ')' || it == '-'

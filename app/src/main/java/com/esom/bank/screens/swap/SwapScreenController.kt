@@ -65,7 +65,10 @@ internal class SwapScreenController(
         setupQuickAmounts()
         setupClickListeners()
         setupTransferConfirmationResultListener()
-        renderTemplates()
+        if (args.amount > 0f) {
+            binding.sum.setTextProgrammatically(formatTemplateAmount(args.amount.toDouble()))
+            updateAmountsFromSend(args.amount.toDouble())
+        }
 
         if (binding.sum.text.isNullOrBlank()) {
             binding.sum.setText("0")
@@ -78,6 +81,7 @@ internal class SwapScreenController(
         updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
         model.getFees()
         model.getSettings()
+        executeAutomaticRepeatIfReady()
     }
 
     private fun requireContext() = fragment.requireContext()
@@ -177,7 +181,8 @@ internal class SwapScreenController(
                     creditedAmount = creditedAmount,
                     conversionSide = getConversionSide(fromCurrency, toCurrency),
                     targetCurrency = toCurrency,
-                    totalDebitedAmount = totalDebited
+                    totalDebitedAmount = totalDebited,
+                    senderName = currentUserFullName()
                 )
             )
             model.convert(fromCurrency, toCurrency, amount)
@@ -315,7 +320,7 @@ internal class SwapScreenController(
                 }
 
                 is UiState.Success -> {
-                    uiModel.consumePendingTemplate()?.let(model::addSwapTemplate)
+                    uiModel.setPendingTemplate(null)
                     model.updateUserData()
                     model.updateLastSuccessOperationReceipt(
                         transactionId = it.data.transactionId,
@@ -338,6 +343,7 @@ internal class SwapScreenController(
                         "Settings loaded: esom_per_usd=${state.data.esomPerUsd}"
                     )
                     updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+                    executeAutomaticRepeatIfReady()
                 }
                 is UiState.Error -> {
                     Log.e(TAG, "Settings load error: ${state.message}")
@@ -345,14 +351,43 @@ internal class SwapScreenController(
                 is UiState.Loading -> {
                     Log.d(TAG, "Settings loading...")
                 }
+                null -> Unit
             }
         }
 
         model.fees.observe(viewLifecycleOwner) { state ->
             if (state is UiState.Success) {
                 updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
+                executeAutomaticRepeatIfReady()
             }
         }
+    }
+
+    private fun executeAutomaticRepeatIfReady() {
+        if (!args.autoExecute || args.amount <= 0f) return
+        if (model.fees.value !is UiState.Success || model.settings.value !is UiState.Success) return
+        if (!uiModel.startAutomaticRepeat()) return
+
+        val amount = args.amount.toDouble()
+        val from = uiModel.uiState.value.fromCurrency
+        val to = uiModel.uiState.value.toCurrency
+        model.setLastSuccessOperation(
+            SuccessOperationModel(
+                amount = amount,
+                currency = from,
+                operationTitle = getString(R.string.convertation),
+                paidFromAccount = getAccountForSuccess(from),
+                recipient = getAccountForSuccess(to),
+                receiptNumber = "",
+                fee = calculateFeePreview(amount),
+                creditedAmount = calculateReceivedFromSend(amount),
+                conversionSide = getConversionSide(from, to),
+                targetCurrency = to,
+                totalDebitedAmount = amount,
+                senderName = currentUserFullName()
+            )
+        )
+        model.convert(from, to, amount)
     }
 
     private fun renderTemplates() {
@@ -856,6 +891,13 @@ internal class SwapScreenController(
             walletAddress.isNotBlank() -> walletAddress
             else -> user?.phone.orEmpty()
         }
+    }
+
+    private fun currentUserFullName(): String {
+        val user = (model.myData.value as? UiState.Success)?.data ?: return ""
+        return listOf(user.firstName, user.middleName.orEmpty(), user.lastName)
+            .filter(String::isNotBlank)
+            .joinToString(" ")
     }
 
     private fun getConversionSide(from: CurrencyEnum, to: CurrencyEnum): ConversionSide? =

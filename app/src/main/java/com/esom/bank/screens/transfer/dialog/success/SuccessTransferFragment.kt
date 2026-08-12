@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
@@ -23,6 +24,9 @@ import com.esom.bank.screens.history.model.ReceiptModel
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
+import com.esom.bank.screens.transfer.model.TransferTemplate
+import com.esom.bank.screens.swap.model.SwapTemplate
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -58,7 +62,8 @@ class SuccessTransferFragment : Fragment() {
         bindOperation(uiModel.uiState.value.operation)
 
         binding.backBtn.setOnClickListener { closeSuccessScreen() }
-        binding.cancelBtn.setOnClickListener { closeSuccessScreen() }
+        binding.createTemplateBtn.setOnClickListener { showCreateTemplateDialog() }
+        binding.repeatOperationBtn.setOnClickListener { repeatOperation() }
         binding.shareBtn.setOnClickListener { requestReceiptForShare() }
 
         model.lastSuccessOperation.observe(viewLifecycleOwner) { state ->
@@ -111,6 +116,7 @@ class SuccessTransferFragment : Fragment() {
                         shareReceiptPdf(enrichedReceipt)
                     }
                 }
+                null -> Unit
             }
         }
 
@@ -138,8 +144,12 @@ class SuccessTransferFragment : Fragment() {
         binding.operation.text = data.operationTitle
         binding.dateValue.text = dateTimeText
         binding.receiptValue.text = data.receiptNumber.ifBlank { getString(R.string.empty_value) }
-        binding.paidFromValue.text =
-            formatAccountForDisplay(data.paidFromAccount).ifBlank { getString(R.string.empty_value) }
+        val senderAccount = formatAccountForDisplay(data.paidFromAccount)
+        binding.paidFromValue.text = when {
+            data.senderName.isNotBlank() && senderAccount.isNotBlank() -> "${data.senderName}\n$senderAccount"
+            data.senderName.isNotBlank() -> data.senderName
+            else -> senderAccount.ifBlank { getString(R.string.empty_value) }
+        }
         binding.recipientValue.text = formatRecipientForDisplay(data)
         binding.feeValue.text = formatAmount(data.fee, data.currency)
         binding.totalValue.text = totalText
@@ -147,6 +157,7 @@ class SuccessTransferFragment : Fragment() {
             data.totalDebitedAmount ?: data.amount,
             data.currency
         )
+        binding.createTemplateBtn.visibility = if (data.openedFromHistory) View.GONE else View.VISIBLE
     }
 
     private fun closeSuccessScreen() {
@@ -156,6 +167,84 @@ class SuccessTransferFragment : Fragment() {
             findNavController().navigate(NavGraphDirections.startMainFragment())
         }
     }
+
+    private fun showCreateTemplateDialog() {
+        val operation = uiModel.uiState.value.operation ?: return
+        if (operation.openedFromHistory) return
+        val input = EditText(requireContext()).apply { hint = "Например, Детский сад" }
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Создать шаблон")
+            .setMessage(templateDescription(operation))
+            .setView(input)
+            .setNegativeButton("Отмена", null)
+            .setPositiveButton("Создать шаблон", null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val name = input.text.toString().trim()
+                if (name.isBlank()) {
+                    input.error = "Введите название"
+                    return@setOnClickListener
+                }
+                saveTemplate(operation, name)
+                dialog.dismiss()
+            }
+        }
+        dialog.show()
+    }
+
+    private fun saveTemplate(operation: SuccessOperationModel, name: String) {
+        val target = operation.targetCurrency
+        if (target != null) {
+            model.addSwapTemplate(SwapTemplate(
+                amount = operation.amount,
+                fromCurrency = operation.currency.name,
+                toCurrency = target.name,
+                name = name
+            ))
+        } else {
+            model.addTransferTemplate(TransferTemplate(
+                amount = operation.amount,
+                currency = operation.currency.name,
+                recipient = operation.recipient,
+                isPhone = operation.recipient.count(Char::isDigit) >= 7 &&
+                    operation.recipient.all { it.isDigit() || it in "+ ()-" },
+                name = name
+            ))
+        }
+    }
+
+    private fun repeatOperation() {
+        val operation = uiModel.uiState.value.operation ?: return
+        val target = operation.targetCurrency
+        if (target != null) {
+            findNavController().navigate(
+                NavGraphDirections.startSwapFragment(
+                    operation.currency.name,
+                    target.name,
+                    operation.amount.toFloat(),
+                    true
+                )
+            )
+        } else {
+            findNavController().navigate(
+                NavGraphDirections.startTransferFragment(
+                    operation.currency.name,
+                    operation.recipient,
+                    operation.recipientName,
+                    operation.amount.toFloat(),
+                    true
+                )
+            )
+        }
+    }
+
+    private fun templateDescription(operation: SuccessOperationModel): String =
+        if (operation.targetCurrency != null) {
+            "Конвертация ${formatAmount(operation.amount, operation.currency)} в ${formatCurrency(operation.targetCurrency)}"
+        } else {
+            "Перевод ${formatAmount(operation.amount, operation.currency)} получателю ${operation.recipientName.ifBlank { operation.recipient }}"
+        }
 
     private fun formatRecipientForDisplay(operation: SuccessOperationModel): String {
         val account = formatAccountForDisplay(operation.recipient)
@@ -353,7 +442,7 @@ class SuccessTransferFragment : Fragment() {
         }
 
     private fun formatDateTime(timestamp: Long): String {
-        val formatter = SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale("ru", "RU"))
+        val formatter = SimpleDateFormat("dd.MM.yyyy, HH:mm:ss", Locale("ru", "RU"))
         return formatter.format(Date(timestamp))
     }
 }

@@ -76,18 +76,6 @@
         app:popExitAnim="@anim/fade_out" />
 
     <fragment
-        android:id="@+id/securityFragment"
-        android:name="com.esom.bank.screens.security.SecurityFragment"
-        tools:layout="@layout/fragment_security" />
-    <action
-        android:id="@+id/startSecurityFragment"
-        app:destination="@id/securityFragment"
-        app:enterAnim="@anim/fade_in"
-        app:exitAnim="@anim/fade_out"
-        app:popEnterAnim="@anim/fade_in"
-        app:popExitAnim="@anim/fade_out" />
-
-    <fragment
         android:id="@+id/chatFragment"
         android:name="com.esom.bank.screens.chat.ChatFragment"
         tools:layout="@layout/fragment_chat" />
@@ -124,6 +112,16 @@
         android:name="com.esom.bank.screens.actions.ActionsFragment"
         android:label="fragment_actions"
         tools:layout="@layout/fragment_actions" />
+
+    <fragment
+        android:id="@+id/mainQrFragment"
+        android:name="com.esom.bank.screens.qr.QrFragment"
+        tools:layout="@layout/fragment_qr" />
+
+    <fragment
+        android:id="@+id/servicesFragment"
+        android:name="com.esom.bank.screens.services.ServicesFragment"
+        tools:layout="@layout/fragment_services" />
 
     <action
         android:id="@+id/startSettingsFragment"

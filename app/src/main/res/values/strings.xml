@@ -146,9 +146,9 @@
     <string name="transaction_details">Детали транзакции</string>
     <string name="date_and_time">Дата и время</string>
     <string name="receipt_number">Номер квитанции</string>
-    <string name="paid_from_account">Оплачено со счета</string>
+    <string name="paid_from_account">Отправитель</string>
     <string name="recipient">Получатель</string>
-    <string name="total">Итого</string>
+    <string name="total">Итого отправлено</string>
     <string name="total_withdrawn_from_account">Итого снято со счета</string>
     <string name="share_success_operation">Поделиться платежом</string>
     <string name="empty_value">-</string>
@@ -175,7 +175,7 @@
     <string name="recipient_not_found">Ничего не найдено. Можно продолжить с введённым номером или адресом.</string>
     <string name="enter_phone_or_address">Введите номер телефона или адрес кошелька</string>
     <string name="payment_conversion_details">Обмен валют · %1$s</string>
-    <string name="services">Услуги</string>
+    <string name="services">Сервисы</string>
     <string name="lock_welcome">Добро пожаловать</string>
     <string name="lock_pin_mode">PIN-код</string>
     <string name="lock_pattern_mode">Граф. ключ</string>

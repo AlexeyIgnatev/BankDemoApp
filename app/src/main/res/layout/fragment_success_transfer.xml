@@ -293,6 +293,7 @@
             android:layout_width="@dimen/_0dp"
             android:layout_marginTop="@dimen/_18dp"
             android:text="@string/total_withdrawn_from_account"
+            android:fontFamily="@font/mont_bold"
             app:layout_constraintEnd_toStartOf="@id/details_value_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/total_value" />
@@ -300,34 +301,47 @@
         <TextView
             android:id="@+id/total_withdrawn_value"
             style="@style/SuccessDetailsValue"
+            android:fontFamily="@font/mont_bold"
             android:layout_marginStart="@dimen/_8dp"
             app:layout_constraintBaseline_toBaselineOf="@id/total_withdrawn_label"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/details_value_guideline"
             tools:text="800,00 KGS" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
+            android:id="@+id/receipt_actions"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/_37dp"
-            android:background="@drawable/start_period_background"
+            android:layout_height="@dimen/_48dp"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="@dimen/_35dp">
-            <ImageButton
-                android:id="@+id/cancel_btn"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="?attr/selectableItemBackgroundBorderless"/>
             <TextView
-                android:layout_width="match_parent"
+                android:id="@+id/create_template_btn"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="@string/back"
+                android:layout_marginEnd="@dimen/_6dp"
+                android:layout_weight="1"
+                android:background="@drawable/phone_password_input_background"
+                android:fontFamily="@font/mont_semibold"
+                android:gravity="center"
+                android:text="Создать шаблон"
+                android:textColor="@color/red"
+                android:textSize="@dimen/_12sp" />
+            <TextView
+                android:id="@+id/repeat_operation_btn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/_6dp"
+                android:layout_weight="1"
+                android:background="@drawable/start_period_background"
+                android:text="Повторить"
                 android:textColor="@color/white"
-                android:textSize="@dimen/_16sp"
+                android:textSize="@dimen/_12sp"
                 android:fontFamily="@font/mont_semibold"
                 android:gravity="center"/>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

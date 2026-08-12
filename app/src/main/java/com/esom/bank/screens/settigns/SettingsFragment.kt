@@ -77,12 +77,19 @@ class SettingsFragment : Fragment() {
                 is UiState.Loading -> Unit
                 is UiState.Error -> binding.root.showErrorSnackbar(state.message)
                 is UiState.Success -> {
-                    val firstName = state.data.firstName.ifBlank { "Профиль" }
-                    binding.fio.text = firstName
-                    binding.compactName.text = firstName
+                    val fullName = listOf(
+                        state.data.lastName,
+                        state.data.firstName,
+                        state.data.middleName.orEmpty()
+                    ).filter(String::isNotBlank).joinToString(" ").ifBlank { "Профиль" }
+                    binding.fio.text = fullName
+                    binding.compactName.text = state.data.firstName.ifBlank { fullName }
+                    binding.fullName.text = fullName
+                    binding.login.text = model.getLogin().ifBlank { "Не указан" }
                     binding.phone.text = state.data.phone.formatPhone()
                     binding.mail.text = state.data.email.ifBlank { "Не указана" }
                 }
+                null -> Unit
             }
         }
     }

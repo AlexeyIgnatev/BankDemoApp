@@ -110,6 +110,7 @@ class ChatFragment : Fragment() {
                         if (shouldScrollToBottom) scrollToLastMessage()
                     }
                 }
+                null -> Unit
             }
         }
 

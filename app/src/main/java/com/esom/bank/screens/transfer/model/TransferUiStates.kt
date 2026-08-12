@@ -15,7 +15,8 @@ data class TransferUiState(
     val fromCurrency: CurrencyEnum = CurrencyEnum.SOM,
     val toPhoneNumber: Boolean = true,
     val currencyPanelOptions: List<CurrencyEnum> = emptyList(),
-    val pendingTemplate: TransferTemplate? = null
+    val pendingTemplate: TransferTemplate? = null,
+    val automaticRepeatStarted: Boolean = false
 ) : Parcelable
 
 @Keep

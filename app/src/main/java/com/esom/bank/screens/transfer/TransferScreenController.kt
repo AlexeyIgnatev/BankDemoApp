@@ -81,6 +81,9 @@ internal class TransferScreenController(
             binding.contact.setText(args.contact)
             binding.contact.setSelection(binding.contact.text?.length ?: 0)
         }
+        if (args.amount > 0f) {
+            binding.sumInput.setText(formatTemplateAmount(args.amount.toDouble()))
+        }
         model.getFees()
         initInitialBalances()
         setupQuickAmounts()
@@ -112,7 +115,6 @@ internal class TransferScreenController(
 
         binding.sendBtn.setOnClickListener { handleTransferButtonClick() }
         setupTransferConfirmationResultListener()
-        renderTemplates()
 
         model.myData.observe(viewLifecycleOwner) {
             if (it is UiState.Success) {
@@ -125,6 +127,7 @@ internal class TransferScreenController(
         model.fees.observe(viewLifecycleOwner) {
             if (it is UiState.Success) {
                 updateCommissionAndTotal(binding.sumInput.text.toString())
+                executeAutomaticRepeatIfReady()
             }
         }
 
@@ -145,7 +148,7 @@ internal class TransferScreenController(
                 }
 
                 is UiState.Success -> {
-                    uiModel.consumePendingTemplate()?.let(model::addTransferTemplate)
+                    uiModel.setPendingTemplate(null)
                     model.updateUserData()
                     model.updateLastSuccessOperationReceipt(
                         transactionId = it.data.transactionId,
@@ -159,6 +162,37 @@ internal class TransferScreenController(
                 else -> {}
             }
         }
+        executeAutomaticRepeatIfReady()
+    }
+
+    private fun executeAutomaticRepeatIfReady() {
+        if (!args.autoExecute || args.amount <= 0f || args.contact.isBlank()) return
+        if (model.fees.value !is UiState.Success) return
+        if (!uiModel.startAutomaticRepeat()) return
+
+        val amount = args.amount.toDouble()
+        val contact = args.contact.trim()
+        val phone = if (uiModel.uiState.value.toPhoneNumber) contact.kyrgyzPhoneDigits() else ""
+        val address = contact.takeIf { !uiModel.uiState.value.toPhoneNumber }
+        val currency = uiModel.uiState.value.fromCurrency
+        val fee = calculateTransferCommission(amount, currency)
+
+        model.setLastSuccessOperation(
+            SuccessOperationModel(
+                amount = amount,
+                currency = currency,
+                operationTitle = getString(R.string.transfer),
+                paidFromAccount = getCurrentUserAccountForSuccess(),
+                recipient = contact,
+                recipientName = args.recipientName,
+                receiptNumber = "",
+                fee = fee,
+                creditedAmount = amount,
+                totalDebitedAmount = amount + fee,
+                senderName = currentUserFullName()
+            )
+        )
+        model.transferToUser(amount, phone, address, currency)
     }
 
     private fun requireContext() = fragment.requireContext()
@@ -193,13 +227,6 @@ internal class TransferScreenController(
             val fee = bundle.getDouble(TransferConfirmationFragment.FEE_KEY)
             val totalDebited = bundle.getDouble(TransferConfirmationFragment.TOTAL_DEBITED_KEY)
 
-            uiModel.setPendingTemplate(TransferTemplate(
-                amount = amount,
-                currency = currency.name,
-                recipient = recipient,
-                isPhone = phone.isNotBlank()
-            ))
-
             model.setLastSuccessOperation(
                 SuccessOperationModel(
                     amount = amount,
@@ -211,7 +238,8 @@ internal class TransferScreenController(
                     receiptNumber = "",
                     fee = fee,
                     creditedAmount = amount,
-                    totalDebitedAmount = totalDebited
+                    totalDebitedAmount = totalDebited,
+                    senderName = currentUserFullName()
                 )
             )
             model.transferToUser(amount, phone, address, currency)
@@ -435,14 +463,22 @@ internal class TransferScreenController(
 
     private fun setupQuickAmounts() {
         listOf(
-            binding.sum50Layout to "50",
-            binding.sum100Layout to "100",
-            binding.sum1000Layout to "1000",
-            binding.sum10000Layout to "10000"
+            binding.sum50Layout to BigDecimal("50"),
+            binding.sum100Layout to BigDecimal("100"),
+            binding.sum1000Layout to BigDecimal("1000"),
+            binding.sum10000Layout to BigDecimal("10000")
         ).forEach { (layout, value) ->
             layout.setOnClickListener {
-                binding.sumInput.setText(value)
-                updateCommissionAndTotal(value)
+                val currentAmount = binding.sumInput.text
+                    ?.toString()
+                    ?.trim()
+                    ?.replace(',', '.')
+                    ?.toBigDecimalOrNull()
+                    ?: BigDecimal.ZERO
+                val updatedAmount = currentAmount.add(value).stripTrailingZeros().toPlainString()
+                binding.sumInput.setText(updatedAmount)
+                binding.sumInput.setSelection(updatedAmount.length)
+                updateCommissionAndTotal(updatedAmount)
             }
         }
     }
@@ -674,6 +710,13 @@ internal class TransferScreenController(
         CurrencyEnum.SOM -> "Сом"
         CurrencyEnum.ESOM -> "Салам"
         CurrencyEnum.USDT_TRC20 -> "USDT"
+    }
+
+    private fun currentUserFullName(): String {
+        val user = (model.myData.value as? UiState.Success)?.data ?: return ""
+        return listOf(user.firstName, user.middleName.orEmpty(), user.lastName)
+            .filter(String::isNotBlank)
+            .joinToString(" ")
     }
 
     private fun slideIn(view: View) {

@@ -10,5 +10,6 @@ data class TransferTemplate(
     val amount: Double,
     val currency: String,
     val recipient: String,
-    val isPhone: Boolean
+    val isPhone: Boolean,
+    val name: String? = null
 ) : Parcelable

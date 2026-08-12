@@ -257,7 +257,7 @@ object ReceiptFileUtils {
             context.getString(R.string.total_withdrawn_from_account) to withdrawnAmountText,
             "Реквизиты счета" to accountDetailsValue,
             "Получатель" to recipientValue,
-            "Оплачено со счета" to paidFromAccountValue,
+            context.getString(R.string.paid_from_account) to paidFromAccountValue,
             "Номер квитанции" to sanitizeOneLineValue(receipt.receiptNumber)
         )
 

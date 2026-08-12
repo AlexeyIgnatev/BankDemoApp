@@ -28,6 +28,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.Normalizer
+import java.util.Locale
 
 @AndroidEntryPoint
 class TransferRecipientFragment : Fragment() {
@@ -84,7 +86,7 @@ class TransferRecipientFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             uiModel.setContacts(withContext(Dispatchers.IO) { readContacts() })
-            showContacts(uiModel.uiState.value.contacts, getString(R.string.payment_contacts_not_found))
+            filterContacts(binding.recipientInput.text?.toString().orEmpty())
         }
     }
 
@@ -106,7 +108,7 @@ class TransferRecipientFragment : Fragment() {
             )?.use { cursor ->
                 val nameIndex = cursor.getColumnIndexOrThrow(projection[0])
                 val phoneIndex = cursor.getColumnIndexOrThrow(projection[1])
-                while (cursor.moveToNext() && result.size < MAX_CONTACTS) {
+                while (cursor.moveToNext()) {
                     val name = cursor.getString(nameIndex)?.trim().orEmpty()
                     val phone = cursor.getString(phoneIndex)?.trim().orEmpty()
                     val phoneKey = phone.filter(Char::isDigit)
@@ -123,17 +125,26 @@ class TransferRecipientFragment : Fragment() {
 
     private fun filterContacts(query: String) {
         val normalizedQuery = query.trim()
+        val searchableQuery = normalizedQuery.toSearchableText()
         val queryDigits = normalizedQuery.filter(Char::isDigit)
         val filtered = if (normalizedQuery.isBlank()) {
             uiModel.uiState.value.contacts
         } else {
             uiModel.uiState.value.contacts.filter { contact ->
-                contact.name.contains(normalizedQuery, ignoreCase = true) ||
+                contact.name.toSearchableText().contains(searchableQuery) ||
                     (queryDigits.isNotBlank() && contact.phone.filter(Char::isDigit).contains(queryDigits))
             }
         }
         showContacts(filtered, getString(R.string.recipient_not_found))
     }
+
+    private fun String.toSearchableText(): String =
+        Normalizer.normalize(this, Normalizer.Form.NFD)
+            .replace(Regex("\\p{Mn}+"), "")
+            .lowercase(Locale.getDefault())
+            .replace('ё', 'е')
+            .replace(Regex("\\s+"), " ")
+            .trim()
 
     private fun showContacts(items: List<PaymentContact>, emptyText: String) {
         adapter.submitList(items)
@@ -162,7 +173,6 @@ class TransferRecipientFragment : Fragment() {
     }
 
     companion object {
-        private const val MAX_CONTACTS = 250
         private const val MIN_PHONE_DIGITS = 7
     }
 }

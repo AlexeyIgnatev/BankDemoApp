@@ -27,6 +27,18 @@ class RecentTemplateLocalDataSource @Inject constructor() {
         writeList(SWAP_KEY, listOf(template) + getSwapTemplates())
     }
 
+    fun renameTransferTemplate(template: TransferTemplate, name: String) {
+        writeList(TRANSFER_KEY, getTransferTemplates().map { current ->
+            if (current == template) current.copy(name = name) else current
+        })
+    }
+
+    fun renameSwapTemplate(template: SwapTemplate, name: String) {
+        writeList(SWAP_KEY, getSwapTemplates().map { current ->
+            if (current == template) current.copy(name = name) else current
+        })
+    }
+
     private inline fun <reified T> readList(key: String): List<T> {
         val raw = storage.decodeString(key) ?: return emptyList()
         return try {

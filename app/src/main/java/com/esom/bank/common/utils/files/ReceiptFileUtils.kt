@@ -19,6 +19,8 @@ import android.text.TextUtils
 import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import com.esom.bank.R
+import com.esom.bank.common.utils.formatReceiptAccountTail
+import com.esom.bank.common.utils.formatReceiptPersonName
 import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.model.ReceiptModel
 import java.io.ByteArrayOutputStream
@@ -239,7 +241,10 @@ object ReceiptFileUtils {
                 )
             )
         )
-        val recipientValue = accountDetailsValue
+        val recipientValue = formatReceiptParty(
+            receipt.recipientFullName,
+            accountDetailsValue
+        )
         val paidFromAccountValue = sanitizeOneLineValue(
             formatMaskedAccountWithVisibleTail(
                 pickBestAccountCandidate(
@@ -250,6 +255,10 @@ object ReceiptFileUtils {
                 )
             )
         )
+        val senderValue = formatReceiptParty(
+            receipt.senderFullName,
+            paidFromAccountValue
+        )
         val rows = listOf(
             "Дата и время" to "$dateText $timeText",
             "Комиссия" to feeText,
@@ -257,7 +266,7 @@ object ReceiptFileUtils {
             context.getString(R.string.total_withdrawn_from_account) to withdrawnAmountText,
             "Реквизиты счета" to accountDetailsValue,
             "Получатель" to recipientValue,
-            context.getString(R.string.paid_from_account) to paidFromAccountValue,
+            context.getString(R.string.paid_from_account) to senderValue,
             "Номер квитанции" to sanitizeOneLineValue(receipt.receiptNumber)
         )
 
@@ -350,6 +359,14 @@ object ReceiptFileUtils {
         } else {
             "Перевод по номеру телефона."
         }
+    }
+
+    private fun formatReceiptParty(fullName: String, account: String): String {
+        val name = formatReceiptPersonName(fullName)
+        val accountTail = formatReceiptAccountTail(account)
+        return listOf(name, accountTail)
+            .filter(String::isNotBlank)
+            .joinToString(" · ")
     }
 
     fun createReceiptPdfForShare(context: Context, receipt: ReceiptModel): Uri {

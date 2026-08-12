@@ -17,6 +17,8 @@ import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.notification.dto.FinancialReportResponseDto
 import com.esom.bank.screens.notification.dto.NotificationDto
 import com.esom.bank.screens.swap.dto.ConvertDto
+import com.esom.bank.screens.transfer.dto.RecipientLookupRequestDto
+import com.esom.bank.screens.transfer.dto.RecipientLookupResponseDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.Calendar
@@ -172,6 +174,19 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
         currencyEnum: CurrencyEnum
     ): Flow<ApiResponse<StatusDto>> = flow {
         emit(ApiResponse.Error(R.string.wallet_ban, null, null))
+    }
+
+    override fun recipientInfo(request: RecipientLookupRequestDto): Flow<ApiResponse<RecipientLookupResponseDto>> = flow {
+        emit(
+            ApiResponse.Success(
+                RecipientLookupResponseDto(
+                    firstName = "Мирлан",
+                    middleName = "Талантович",
+                    lastName = "Асанов"
+                ),
+                code = 200
+            )
+        )
     }
 
     override fun history(

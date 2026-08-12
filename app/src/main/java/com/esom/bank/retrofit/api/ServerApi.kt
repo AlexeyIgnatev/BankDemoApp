@@ -18,6 +18,8 @@ import com.esom.bank.screens.notification.dto.FinancialReportRequestDto
 import com.esom.bank.screens.notification.dto.FinancialReportResponseDto
 import com.esom.bank.screens.notification.dto.NotificationDto
 import com.esom.bank.screens.swap.dto.ConvertDto
+import com.esom.bank.screens.transfer.dto.RecipientLookupRequestDto
+import com.esom.bank.screens.transfer.dto.RecipientLookupResponseDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -50,6 +52,11 @@ interface ServerApi {
     suspend fun transfer(
         @Body transferDto: TransferDto
     ): Response<StatusDto>
+
+    @POST("payments/recipient-info")
+    suspend fun recipientInfo(
+        @Body request: RecipientLookupRequestDto
+    ): Response<RecipientLookupResponseDto>
 
     @POST("payments/history")
     suspend fun history(

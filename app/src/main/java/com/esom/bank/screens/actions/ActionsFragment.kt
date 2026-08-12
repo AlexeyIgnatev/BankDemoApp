@@ -7,7 +7,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Gravity
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
@@ -121,11 +123,11 @@ class ActionsFragment : Fragment() {
     private fun showTransferTemplate(template: TransferTemplate) {
         val currency = CurrencyEnum.fromNameOrNull(template.currency) ?: return
         val details = "Перевод ${currencyTitle(currency)} получателю ${template.recipient} на сумму ${template.amount} ${currencyTitle(currency)}"
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(templateTitle(template))
-            .setMessage(details)
-            .setNegativeButton("Изменить название") { _, _ -> renameTransferTemplate(template) }
-            .setPositiveButton("Применить шаблон") { _, _ ->
+        showTemplateDialog(
+            title = templateTitle(template),
+            details = details,
+            rename = { renameTransferTemplate(template) },
+            apply = {
                 findParentNavController().navigate(
                     NavGraphDirections.startTransferFragment(
                         template.currency,
@@ -135,23 +137,64 @@ class ActionsFragment : Fragment() {
                     )
                 )
             }
-            .show()
+        )
     }
 
     private fun showSwapTemplate(template: SwapTemplate) {
         val from = CurrencyEnum.fromNameOrNull(template.fromCurrency) ?: return
         val to = CurrencyEnum.fromNameOrNull(template.toCurrency) ?: return
         val details = "Конвертация ${template.amount} ${currencyTitle(from)} из ${currencyTitle(from)} в ${currencyTitle(to)}"
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(templateTitle(template))
-            .setMessage(details)
-            .setNegativeButton("Изменить название") { _, _ -> renameSwapTemplate(template) }
-            .setPositiveButton("Применить шаблон") { _, _ ->
+        showTemplateDialog(
+            title = templateTitle(template),
+            details = details,
+            rename = { renameSwapTemplate(template) },
+            apply = {
                 findParentNavController().navigate(
                     NavGraphDirections.startSwapFragment(from.name, to.name, template.amount.toFloat())
                 )
             }
-            .show()
+        )
+    }
+
+    private fun showTemplateDialog(
+        title: String,
+        details: String,
+        rename: () -> Unit,
+        apply: () -> Unit
+    ) {
+        val titleView = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(24), dp(16), dp(8), dp(4))
+        }
+        titleView.addView(TextView(requireContext()).apply {
+            text = title
+            textSize = 20f
+            setTextColor(context.getColor(R.color.title))
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+
+        val closeButton = ImageButton(requireContext()).apply {
+            setImageResource(R.drawable.ic_close)
+            setColorFilter(context.getColor(R.color.title))
+            background = context.obtainStyledAttributes(
+                intArrayOf(android.R.attr.selectableItemBackgroundBorderless)
+            ).let { attributes ->
+                attributes.getDrawable(0).also { attributes.recycle() }
+            }
+            contentDescription = "Закрыть"
+            setPadding(dp(14), dp(14), dp(14), dp(14))
+        }
+        titleView.addView(closeButton, LinearLayout.LayoutParams(dp(48), dp(48)))
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setCustomTitle(titleView)
+            .setMessage(details)
+            .setNegativeButton("Изменить название") { _, _ -> rename() }
+            .setPositiveButton("Применить шаблон") { _, _ -> apply() }
+            .create()
+        closeButton.setOnClickListener { dialog.dismiss() }
+        dialog.show()
     }
 
     private fun renameTransferTemplate(template: TransferTemplate) = showRenameDialog(templateTitle(template)) { name ->

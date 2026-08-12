@@ -24,6 +24,8 @@ import com.esom.bank.screens.notification.dto.FinancialReportRequestDto
 import com.esom.bank.screens.notification.dto.FinancialReportResponseDto
 import com.esom.bank.screens.notification.dto.NotificationDto
 import com.esom.bank.screens.swap.dto.ConvertDto
+import com.esom.bank.screens.transfer.dto.RecipientLookupRequestDto
+import com.esom.bank.screens.transfer.dto.RecipientLookupResponseDto
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -35,6 +37,7 @@ interface MainCloudDataSource {
     fun fiatToCrypto(amount: Double): Flow<ApiResponse<StatusDto>>
     fun cryptoToFiat(amount: Double): Flow<ApiResponse<StatusDto>>
     fun transfer(amount: Double, phone: String, address: String? = null, currencyEnum: CurrencyEnum): Flow<ApiResponse<StatusDto>>
+    fun recipientInfo(request: RecipientLookupRequestDto): Flow<ApiResponse<RecipientLookupResponseDto>>
     fun history(currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
                 take: Int, skip: Int): Flow<ApiResponse<List<TransactionDto?>>>
     fun receipt(transactionId: Long, conversionSide: ConversionSide? = null): Flow<ApiResponse<ReceiptResponseDto>>
@@ -82,6 +85,9 @@ class MainCloudDataSourceImpl @Inject constructor(
         safeApiCall {
             serverApi.transfer(TransferDto(amount, phone, address, currencyEnum))
         }
+
+    override fun recipientInfo(request: RecipientLookupRequestDto): Flow<ApiResponse<RecipientLookupResponseDto>> =
+        safeApiCall { serverApi.recipientInfo(request) }
 
     override fun history(
         currencyEnum: List<CurrencyEnum>?,

@@ -80,12 +80,9 @@ class QrFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.backLayout.doOnApplyWindowInsets { target, insets, _ ->
+        binding.modeToggleGroup.doOnApplyWindowInsets { target, insets, _ ->
             val statusBar = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
             target.updateLayoutParams<ConstraintLayout.LayoutParams> {
-                topMargin = resources.getDimensionPixelSize(R.dimen._10dp) + statusBar
-            }
-            binding.modeToggleGroup.updateLayoutParams<ConstraintLayout.LayoutParams> {
                 topMargin = resources.getDimensionPixelSize(R.dimen._10dp) + statusBar
             }
             insets
@@ -95,7 +92,6 @@ class QrFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-        binding.backBtn.setOnClickListener { findNavController().popBackStack() }
         uiModel.initializePrimaryCurrency(model.getPrimaryCurrency())
         setupPrimaryCurrencyActions()
         setupTabs()

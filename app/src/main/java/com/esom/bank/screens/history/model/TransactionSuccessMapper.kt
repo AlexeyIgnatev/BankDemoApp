@@ -59,14 +59,15 @@ object TransactionSuccessMapper {
             createdAt = operation.createdAt,
             fee = operation.fee,
             accountDetails = operation.recipient,
-            recipientFullName = operation.recipient,
+            recipientFullName = operation.recipientName,
             paidFromAccount = operation.paidFromAccount,
             conversionSide = transaction.conversionSide,
             absAccount = "",
             absFromAccount = "",
             absToAccount = "",
             receiptNumber = operation.receiptNumber,
-            totalDebitedAmount = operation.totalDebitedAmount
+            totalDebitedAmount = operation.totalDebitedAmount,
+            senderFullName = operation.senderName
         )
 
     private fun TransactionModel.title(context: Context, currency: CurrencyEnum): String {
@@ -141,7 +142,7 @@ object TransactionSuccessMapper {
     }
 
     private fun UserModel?.fullName(): String = this?.let {
-        listOf(it.firstName, it.middleName.orEmpty(), it.lastName)
+        listOf(it.lastName, it.firstName, it.middleName.orEmpty())
             .filter(String::isNotBlank)
             .joinToString(" ")
     }.orEmpty()

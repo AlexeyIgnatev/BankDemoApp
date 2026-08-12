@@ -82,10 +82,6 @@ class ReceiveFragment : Fragment() {
         }
 
 
-        binding.backBtn.setOnClickListener {
-            findNavController().popBackStack()
-        }
-
         binding.copyBtn.setOnClickListener {
             val phone =
                 (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == currency }?.address

@@ -16,7 +16,9 @@ data class TransferUiState(
     val toPhoneNumber: Boolean = true,
     val currencyPanelOptions: List<CurrencyEnum> = emptyList(),
     val pendingTemplate: TransferTemplate? = null,
-    val automaticRepeatStarted: Boolean = false
+    val automaticRepeatStarted: Boolean = false,
+    val recipientName: String = "",
+    val recipientLookupKey: String = ""
 ) : Parcelable
 
 @Keep

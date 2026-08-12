@@ -895,7 +895,7 @@ internal class SwapScreenController(
 
     private fun currentUserFullName(): String {
         val user = (model.myData.value as? UiState.Success)?.data ?: return ""
-        return listOf(user.firstName, user.middleName.orEmpty(), user.lastName)
+        return listOf(user.lastName, user.firstName, user.middleName.orEmpty())
             .filter(String::isNotBlank)
             .joinToString(" ")
     }

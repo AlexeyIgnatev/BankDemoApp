@@ -28,6 +28,8 @@ import com.esom.bank.screens.swap.dto.ConvertDto
 import com.esom.bank.screens.main.data.RecentTemplateLocalDataSource
 import com.esom.bank.screens.swap.model.SwapTemplate
 import com.esom.bank.screens.transfer.model.TransferTemplate
+import com.esom.bank.screens.transfer.dto.RecipientLookupRequestDto
+import com.esom.bank.screens.transfer.dto.RecipientLookupResponseDto
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -90,6 +92,8 @@ interface MainRepository {
         address: String? = null,
         currencyEnum: CurrencyEnum
     ): Flow<UiState<StatusDto>>
+
+    fun recipientInfo(request: RecipientLookupRequestDto): Flow<UiState<RecipientLookupResponseDto>>
 
     fun history(
         currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
@@ -290,6 +294,14 @@ class MainRepositoryImpl @Inject constructor(
             when (response) {
                 is ApiResponse.Success -> return@map UiState.Success(response.data)
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
+            }
+        }
+
+    override fun recipientInfo(request: RecipientLookupRequestDto): Flow<UiState<RecipientLookupResponseDto>> =
+        mainCloudDataSource.recipientInfo(request).map { response ->
+            when (response) {
+                is ApiResponse.Success -> UiState.Success(response.data)
+                is ApiResponse.Error -> UiState.Error(response.toString(context))
             }
         }
 

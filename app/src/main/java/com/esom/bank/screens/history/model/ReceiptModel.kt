@@ -26,7 +26,8 @@ data class ReceiptModel(
     val absToAccount: String,
     val receiptNumber: String,
     val targetCurrency: String = "",
-    val totalDebitedAmount: Double? = null
+    val totalDebitedAmount: Double? = null,
+    val senderFullName: String = ""
 ) : Parcelable
 
 fun ReceiptResponseDto.toModel(requestedConversionSide: ConversionSide? = null): ReceiptModel =

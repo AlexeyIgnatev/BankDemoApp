@@ -13,6 +13,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
@@ -36,6 +39,7 @@ import com.esom.bank.screens.transfer.model.TransferTemplate
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlinx.coroutines.launch
 
 internal class TransferScreenController(
     private val fragment: Fragment,
@@ -68,6 +72,7 @@ internal class TransferScreenController(
             currency = CurrencyEnum.fromNameOrNull(args.currency) ?: CurrencyEnum.SOM,
             contact = args.contact
         )
+        uiModel.setInitialRecipientName(args.recipientName)
         updateCurrencyIcon(uiModel.uiState.value.fromCurrency)
         updateCurrencyOptionsPanel()
         setContactHint()
@@ -90,6 +95,9 @@ internal class TransferScreenController(
         binding.sumInput.setOnUserTextChangeListener { text ->
             updateCommissionAndTotal(text.toString())
         }
+        binding.contact.setOnUserTextChangeListener(::lookupRecipientIfComplete)
+        observeRecipientName()
+        lookupRecipientIfComplete(binding.contact.text?.toString().orEmpty())
 
         binding.backBtn.setOnClickListener { findNavController().popBackStack() }
         binding.currentCurrencyLayout.setOnClickListener { toggleCurrencyPanel() }
@@ -224,6 +232,7 @@ internal class TransferScreenController(
             val phone = bundle.getString(TransferConfirmationFragment.PHONE_KEY).orEmpty()
             val address = bundle.getString(TransferConfirmationFragment.ADDRESS_KEY)
             val recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty()
+            val recipientName = bundle.getString(TransferConfirmationFragment.RECIPIENT_NAME_KEY).orEmpty()
             val fee = bundle.getDouble(TransferConfirmationFragment.FEE_KEY)
             val totalDebited = bundle.getDouble(TransferConfirmationFragment.TOTAL_DEBITED_KEY)
 
@@ -235,6 +244,7 @@ internal class TransferScreenController(
                         ?: getString(R.string.transfer),
                     paidFromAccount = bundle.getString(TransferConfirmationFragment.PAID_FROM_KEY).orEmpty(),
                     recipient = recipient,
+                    recipientName = recipientName,
                     receiptNumber = "",
                     fee = fee,
                     creditedAmount = amount,
@@ -351,7 +361,7 @@ internal class TransferScreenController(
             else -> currentWallet?.address?.takeLast(3)?.let { "*$it" } ?: ""
         }
 
-        binding.peopleTitle.text = args.recipientName.ifBlank { getString(R.string.recipient) }
+        renderRecipientName(uiModel.uiState.value.recipientName)
         binding.peopleIcon.setImageResource(
             when (uiModel.uiState.value.fromCurrency) {
                 CurrencyEnum.SOM -> R.drawable.som_icon
@@ -562,6 +572,37 @@ internal class TransferScreenController(
         binding.total.text = formatTransferAmount(totalAmount.coerceAtLeast(0.0))
     }
 
+    private fun observeRecipientName() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                uiModel.uiState.collect { state -> renderRecipientName(state.recipientName) }
+            }
+        }
+    }
+
+    private fun renderRecipientName(name: String) {
+        binding.peopleTitle.text = name.ifBlank { getString(R.string.recipient) }
+    }
+
+    private fun lookupRecipientIfComplete(value: String) {
+        val contact = value.trim()
+        val phone = if (uiModel.uiState.value.toPhoneNumber && contact.isCompleteKyrgyzPhone()) {
+            contact.kyrgyzPhoneDigits()
+        } else {
+            null
+        }
+        val address = if (!uiModel.uiState.value.toPhoneNumber && contact.length >= MIN_WALLET_ADDRESS_LENGTH) {
+            contact
+        } else {
+            null
+        }
+        if (phone == null && address == null) {
+            uiModel.clearRecipientName()
+            return
+        }
+        uiModel.lookupRecipient(phone, address, uiModel.uiState.value.fromCurrency)
+    }
+
     private fun calculateTransferCommission(amount: Double, currency: CurrencyEnum): Double {
         if (amount <= 0.0) return 0.0
         return model.calculateTransferFee(amount, currency)
@@ -686,7 +727,8 @@ internal class TransferScreenController(
                 TransferConfirmationFragment.ADDRESS_KEY to address,
                 TransferConfirmationFragment.OPERATION_TITLE_KEY to getString(R.string.transfer),
                 TransferConfirmationFragment.PAID_FROM_KEY to getCurrentUserAccountForSuccess(),
-                TransferConfirmationFragment.RECIPIENT_KEY to recipient
+                TransferConfirmationFragment.RECIPIENT_KEY to recipient,
+                TransferConfirmationFragment.RECIPIENT_NAME_KEY to uiModel.uiState.value.recipientName
             )
         )
         findNavController().navigate(NavGraphDirections.startTransferConfirmationFragment())
@@ -704,6 +746,7 @@ internal class TransferScreenController(
 
     companion object {
         private const val OPERATION_TRANSFER = "transfer"
+        private const val MIN_WALLET_ADDRESS_LENGTH = 20
     }
 
     private fun getCurrencyName(currency: CurrencyEnum): String = when (currency) {
@@ -714,7 +757,7 @@ internal class TransferScreenController(
 
     private fun currentUserFullName(): String {
         val user = (model.myData.value as? UiState.Success)?.data ?: return ""
-        return listOf(user.firstName, user.middleName.orEmpty(), user.lastName)
+        return listOf(user.lastName, user.firstName, user.middleName.orEmpty())
             .filter(String::isNotBlank)
             .joinToString(" ")
     }

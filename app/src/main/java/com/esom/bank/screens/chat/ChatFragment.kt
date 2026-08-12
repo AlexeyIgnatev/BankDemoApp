@@ -15,6 +15,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
@@ -63,6 +64,7 @@ class ChatFragment : Fragment() {
 
         binding.messages.adapter = adapter
         binding.messages.itemAnimator = null
+        binding.backBtn.setOnClickListener { findNavController().navigateUp() }
 
         binding.swipeRefreshLayout.setOnRefreshListener {
             refreshMessages()

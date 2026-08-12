@@ -82,8 +82,9 @@ class SettingsFragment : Fragment() {
                         state.data.firstName,
                         state.data.middleName.orEmpty()
                     ).filter(String::isNotBlank).joinToString(" ").ifBlank { "Профиль" }
-                    binding.fio.text = fullName
-                    binding.compactName.text = state.data.firstName.ifBlank { fullName }
+                    val firstName = state.data.firstName.ifBlank { "Профиль" }
+                    binding.fio.text = firstName
+                    binding.compactName.text = firstName
                     binding.fullName.text = fullName
                     binding.login.text = model.getLogin().ifBlank { "Не указан" }
                     binding.phone.text = state.data.phone.formatPhone()

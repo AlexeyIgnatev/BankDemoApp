@@ -15,6 +15,8 @@ import androidx.navigation.fragment.findNavController
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
 import com.esom.bank.common.model.UiState
+import com.esom.bank.common.utils.formatReceiptAccountTail
+import com.esom.bank.common.utils.formatReceiptPersonName
 import com.esom.bank.common.utils.files.ReceiptFileUtils
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
@@ -144,10 +146,11 @@ class SuccessTransferFragment : Fragment() {
         binding.operation.text = data.operationTitle
         binding.dateValue.text = dateTimeText
         binding.receiptValue.text = data.receiptNumber.ifBlank { getString(R.string.empty_value) }
-        val senderAccount = formatAccountForDisplay(data.paidFromAccount)
+        val senderAccount = formatReceiptAccountTail(data.paidFromAccount)
+        val senderName = formatReceiptPersonName(data.senderName)
         binding.paidFromValue.text = when {
-            data.senderName.isNotBlank() && senderAccount.isNotBlank() -> "${data.senderName}\n$senderAccount"
-            data.senderName.isNotBlank() -> data.senderName
+            senderName.isNotBlank() && senderAccount.isNotBlank() -> "$senderName\n$senderAccount"
+            senderName.isNotBlank() -> senderName
             else -> senderAccount.ifBlank { getString(R.string.empty_value) }
         }
         binding.recipientValue.text = formatRecipientForDisplay(data)
@@ -247,11 +250,12 @@ class SuccessTransferFragment : Fragment() {
         }
 
     private fun formatRecipientForDisplay(operation: SuccessOperationModel): String {
-        val account = formatAccountForDisplay(operation.recipient)
+        val account = formatReceiptAccountTail(operation.recipient)
+        val recipientName = formatReceiptPersonName(operation.recipientName)
         return when {
-            operation.recipientName.isNotBlank() && account.isNotBlank() ->
-                "${operation.recipientName}\n$account"
-            operation.recipientName.isNotBlank() -> operation.recipientName
+            recipientName.isNotBlank() && account.isNotBlank() ->
+                "$recipientName\n$account"
+            recipientName.isNotBlank() -> recipientName
             account.isNotBlank() -> account
             else -> getString(R.string.empty_value)
         }
@@ -305,6 +309,12 @@ class SuccessTransferFragment : Fragment() {
                 receipt.absToAccount,
                 currentOperation.recipient
             ),
+            recipientFullName = receipt.recipientFullName.ifBlank {
+                currentOperation.recipientName
+            },
+            senderFullName = receipt.senderFullName.ifBlank {
+                currentOperation.senderName
+            },
             receiptNumber = receipt.receiptNumber.ifBlank {
                 currentOperation.receiptNumber
             },

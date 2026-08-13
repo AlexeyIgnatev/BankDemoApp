@@ -151,12 +151,13 @@
             android:id="@+id/pin_layout"
             android:layout_width="match_parent"
             android:layout_height="@dimen/lock_pin_row_height"
-            android:layout_marginTop="@dimen/lock_pin_row_top_margin"
             android:gravity="center"
             android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@id/pin_digs_lay"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed">
 
             <View android:id="@+id/one" android:layout_width="@dimen/lock_pin_slot_width" android:layout_height="@dimen/lock_pin_slot_height" android:layout_marginHorizontal="@dimen/lock_pin_slot_margin" android:background="@drawable/lock_pin_slot_empty" />
             <View android:id="@+id/two" android:layout_width="@dimen/lock_pin_slot_width" android:layout_height="@dimen/lock_pin_slot_height" android:layout_marginHorizontal="@dimen/lock_pin_slot_margin" android:background="@drawable/lock_pin_slot_empty" />
@@ -171,6 +172,7 @@
             android:layout_marginTop="@dimen/lock_keypad_top_margin"
             android:columnCount="3"
             android:rowCount="4"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/pin_layout">

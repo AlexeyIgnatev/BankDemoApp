@@ -1,7 +1,5 @@
 package com.esom.bank.common.utils
 
-import java.util.Locale
-
 fun formatReceiptPersonName(fullName: String): String {
     val parts = fullName
         .trim()
@@ -20,13 +18,7 @@ fun formatReceiptPersonName(fullName: String): String {
 }
 
 fun formatReceiptAccountTail(value: String): String {
-    val digits = value.filter(Char::isDigit)
-    if (digits.isNotBlank()) {
-        return RECEIPT_ACCOUNT_MASK + digits.takeLast(RECEIPT_ACCOUNT_VISIBLE_LENGTH)
-    }
-
     val tail = value
-        .uppercase(Locale.getDefault())
         .filter(Char::isLetterOrDigit)
         .takeLast(RECEIPT_ACCOUNT_VISIBLE_LENGTH)
     return if (tail.isBlank()) "" else RECEIPT_ACCOUNT_MASK + tail

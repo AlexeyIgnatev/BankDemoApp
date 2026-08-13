@@ -233,12 +233,7 @@ object ReceiptFileUtils {
             "${formatNumber(withdrawnAmount)} ${formatCurrencyForDocument(receipt.currency)}"
         val accountDetailsValue = sanitizeOneLineValue(
             formatMaskedAccountWithVisibleTail(
-                pickBestAccountCandidate(
-                    resolveAccountDetailsForReceipt(receipt),
-                    receipt.accountDetails,
-                    receipt.absToAccount,
-                    receipt.absAccount
-                )
+                resolveAccountDetailsForReceipt(receipt)
             )
         )
         val recipientValue = formatReceiptParty(
@@ -247,12 +242,7 @@ object ReceiptFileUtils {
         )
         val paidFromAccountValue = sanitizeOneLineValue(
             formatMaskedAccountWithVisibleTail(
-                pickBestAccountCandidate(
-                    resolvePaidFromAccountForReceipt(receipt),
-                    receipt.paidFromAccount,
-                    receipt.absFromAccount,
-                    receipt.absAccount
-                )
+                resolvePaidFromAccountForReceipt(receipt)
             )
         )
         val senderValue = formatReceiptParty(
@@ -430,13 +420,7 @@ object ReceiptFileUtils {
     }
 
     private fun resolvePaidFromAccountForReceipt(receipt: ReceiptModel): String {
-        return if (receipt.type.equals("CONVERSION", ignoreCase = true) &&
-            receipt.conversionSide == ConversionSide.OUT
-        ) {
-            firstNotBlank(receipt.absFromAccount, receipt.absAccount, receipt.paidFromAccount)
-        } else {
-            firstNotBlank(receipt.paidFromAccount, receipt.absFromAccount, receipt.absAccount)
-        }
+        return firstNotBlank(receipt.paidFromAccount, receipt.absFromAccount, receipt.absAccount)
     }
 
     private fun resolveCreditedCurrency(receipt: ReceiptModel): String {

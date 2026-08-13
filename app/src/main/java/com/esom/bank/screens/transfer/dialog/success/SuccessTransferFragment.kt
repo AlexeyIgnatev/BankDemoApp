@@ -331,12 +331,12 @@ class SuccessTransferFragment : Fragment() {
         val currentOperation = uiModel.uiState.value.operation ?: return receipt
         return receipt.copy(
             amount = currentOperation.amount,
-            paidFromAccount = bestAccountCandidate(
+            paidFromAccount = firstNotBlank(
                 receipt.paidFromAccount,
                 receipt.absFromAccount,
                 currentOperation.paidFromAccount
             ),
-            accountDetails = bestAccountCandidate(
+            accountDetails = firstNotBlank(
                 receipt.accountDetails,
                 receipt.absToAccount,
                 currentOperation.recipient
@@ -358,9 +358,9 @@ class SuccessTransferFragment : Fragment() {
 
     private fun resolvePaidFromAccount(receipt: ReceiptModel): String {
         val currentOperation = uiModel.uiState.value.operation
-        return bestAccountCandidate(
-            receipt.absFromAccount,
+        return firstNotBlank(
             receipt.paidFromAccount,
+            receipt.absFromAccount,
             receipt.absAccount,
             currentOperation?.paidFromAccount.orEmpty()
         )
@@ -368,7 +368,7 @@ class SuccessTransferFragment : Fragment() {
 
     private fun resolveRecipientAccount(receipt: ReceiptModel): String {
         val currentOperation = uiModel.uiState.value.operation
-        return bestAccountCandidate(
+        return firstNotBlank(
             receipt.accountDetails,
             receipt.absToAccount,
             receipt.absAccount,

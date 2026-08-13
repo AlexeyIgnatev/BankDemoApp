@@ -13,6 +13,7 @@
     <dimen name="lock_pin_row_height">46dp</dimen>
     <dimen name="lock_pin_row_top_margin">8dp</dimen>
     <dimen name="lock_keypad_top_margin">10dp</dimen>
+    <dimen name="lock_content_width">300dp</dimen>
     <dimen name="lock_key_height">52dp</dimen>
     <dimen name="lock_key_margin">3dp</dimen>
     <dimen name="lock_pattern_size">240dp</dimen>

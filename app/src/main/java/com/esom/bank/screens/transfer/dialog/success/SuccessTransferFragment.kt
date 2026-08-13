@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.FrameLayout
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
@@ -175,10 +176,21 @@ class SuccessTransferFragment : Fragment() {
         val operation = uiModel.uiState.value.operation ?: return
         if (operation.openedFromHistory) return
         val input = EditText(requireContext()).apply { hint = "Например, Детский сад" }
+        val inputContainer = FrameLayout(requireContext()).apply {
+            val horizontalPadding = dp(24)
+            setPadding(horizontalPadding, 0, horizontalPadding, 0)
+            addView(
+                input,
+                FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+        }
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle("Создать шаблон")
             .setMessage(templateDescription(operation))
-            .setView(input)
+            .setView(inputContainer, 0, 0, 0, 0)
             .setNegativeButton("Отмена", null)
             .setPositiveButton("Создать шаблон", null)
             .create()
@@ -216,6 +228,9 @@ class SuccessTransferFragment : Fragment() {
             ))
         }
     }
+
+    private fun dp(value: Int): Int =
+        (value * resources.displayMetrics.density).toInt()
 
     private fun repeatOperation() {
         val operation = uiModel.uiState.value.operation ?: return

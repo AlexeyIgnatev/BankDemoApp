@@ -21,6 +21,8 @@ import com.esom.bank.common.utils.displayName
 import com.esom.bank.common.utils.iconRes
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
+import com.esom.bank.common.utils.views.setupDecimalAmountInput
+import com.esom.bank.common.utils.views.toDecimalAmountOrNull
 import com.esom.bank.common.utils.views.setTextProgrammatically
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.slideInFromTop
@@ -61,6 +63,8 @@ internal class SwapScreenController(
             insets
         }
 
+        binding.sum.setupDecimalAmountInput()
+        binding.peopleSum.setupDecimalAmountInput()
         initInitialIcons()
         setupQuickAmounts()
         setupClickListeners()
@@ -766,7 +770,7 @@ internal class SwapScreenController(
 
     private fun parseAmount(value: String?): Double {
         if (value.isNullOrBlank()) return 0.0
-        return value.replace(",", ".").toDoubleOrNull() ?: 0.0
+        return value.toDecimalAmountOrNull() ?: 0.0
     }
 
     private fun calculateFeePreview(fromAmount: Double): Double {

@@ -27,9 +27,11 @@ import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.isCompleteKyrgyzPhone
 import com.esom.bank.common.utils.views.kyrgyzPhoneDigits
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
+import com.esom.bank.common.utils.views.setupDecimalAmountInput
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.slideInFromBottom
 import com.esom.bank.common.utils.views.slideOut
+import com.esom.bank.common.utils.views.toDecimalAmountOrNull
 import com.esom.bank.databinding.FragmentTransferBinding
 import com.esom.bank.screens.main.dialog.TransferConfirmationFragment
 import com.esom.bank.screens.main.MainViewModel
@@ -92,6 +94,7 @@ internal class TransferScreenController(
         model.getFees()
         initInitialBalances()
         setupQuickAmounts()
+        binding.sumInput.setupDecimalAmountInput()
         binding.sumInput.setOnUserTextChangeListener { text ->
             updateCommissionAndTotal(text.toString())
         }
@@ -563,7 +566,7 @@ internal class TransferScreenController(
     }
 
     private fun updateCommissionAndTotal(amountText: String) {
-        val amount = amountText.toDoubleOrNull() ?: 0.0
+        val amount = amountText.toDecimalAmountOrNull() ?: 0.0
         val commission = calculateTransferCommission(amount, uiModel.uiState.value.fromCurrency)
 
         val totalAmount = amount + commission
@@ -642,7 +645,7 @@ internal class TransferScreenController(
 
     private fun handleTransferButtonClick() {
         if (model.transferRes.value is UiState.Loading) return
-        val sum = binding.sumInput.text.toString().toDoubleOrNull()
+        val sum = binding.sumInput.text.toString().toDecimalAmountOrNull()
         val contactInfo = binding.contact.text.toString().trim()
         if (sum == null) {
             binding.root.showErrorSnackbar("Введите сумму для перевода")

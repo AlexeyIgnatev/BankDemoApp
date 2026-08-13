@@ -85,6 +85,7 @@
     <string name="qr_copy_phone">Номер телефона скопирован</string>
     <string name="qr_copy_address">Адрес кошелька скопирован</string>
     <string name="qr_invalid_scan">Это не QR-код из приложения</string>
+    <string name="qr_camera_permission_required">Для сканирования QR разрешите доступ к камере</string>
     <string name="support">Техподдержка</string>
     <string name="support_title">Здравствуйте, Асан! \nКак мы можем Вам помочь?</string>
     <string name="send_message">Отправить сообщение</string>

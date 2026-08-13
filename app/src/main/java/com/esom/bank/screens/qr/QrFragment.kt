@@ -34,6 +34,7 @@ import com.esom.bank.common.utils.QrShareUtils
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.showSuccessSnackbar
+import com.esom.bank.common.utils.views.showToast
 import com.esom.bank.databinding.FragmentQrBinding
 import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
@@ -55,8 +56,12 @@ class QrFragment : Fragment() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         uiModel.setCameraRequestInFlight(false)
-        if (granted) startEmbeddedScanner()
-        else binding.root.showErrorSnackbar(getString(R.string.something_went_wrong))
+        if (granted) {
+            startEmbeddedScanner()
+        } else {
+            requireContext().showToast(getString(R.string.qr_camera_permission_required))
+            findNavController().navigateUp()
+        }
     }
 
     private val qrGalleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->

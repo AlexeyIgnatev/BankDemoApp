@@ -177,10 +177,13 @@ class ChatFragment : Fragment() {
     }
 
     private fun applyKeyboardInsets(insets: WindowInsetsCompat) {
-        val imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+        val bottomInset = maxOf(
+            insets.getInsets(WindowInsetsCompat.Type.ime()).bottom,
+            insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+        )
         binding.swipeRefreshLayout.updatePadding(
             top = uiModel.uiState.value.initialTopPadding + insets.getInsets(WindowInsetsCompat.Type.statusBars()).top,
-            bottom = if (imeVisible) insets.getInsets(WindowInsetsCompat.Type.ime()).bottom else 0
+            bottom = bottomInset
         )
     }
 }

@@ -22,13 +22,13 @@ sealed class ApiResponse<out T> : Parcelable {
     ) :
         ApiResponse<T>() {
         fun toString(context: Context): String {
-            return data?.message ?: context.getString(message)
+            return data?.message?.takeIf { it.isNotBlank() } ?: context.getString(message)
         }
     }
 
     fun <T> ApiResponse<T>.toUiState(context: Context): UiState<T> {
         return when (this) {
-            is Error -> UiState.Error(context.getString(this.message))
+            is Error -> UiState.Error(this.toString(context))
             is Success -> UiState.Success(this.data)
         }
     }

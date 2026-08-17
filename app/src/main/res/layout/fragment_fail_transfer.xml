@@ -3,8 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/_250dp"
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/_250dp"
     android:background="@drawable/fail_success_background"
+    android:paddingTop="@dimen/_14dp"
     android:paddingBottom="@dimen/_32dp"
     tools:context=".screens.transfer.dialog.fail.FailTransferFragment"
     tools:ignore="MissingConstraints">

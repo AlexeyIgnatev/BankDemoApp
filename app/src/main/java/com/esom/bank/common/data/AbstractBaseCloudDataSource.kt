@@ -4,7 +4,6 @@ import com.esom.bank.R
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.model.ErrorResponse
 import com.esom.bank.retrofit.exception.NotLoggedInException
-import com.google.gson.Gson
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -31,13 +30,10 @@ abstract class AbstractBaseCloudDataSource {
                     )
                 }
             } else {
-                val errorData = try {
-                    Gson().fromJson(
-                        response.errorBody()?.string(), ErrorResponse::class.java
-                    )
-                } catch (e: Exception) {
-                    null
-                }
+                val errorData = ErrorResponse.fromJson(
+                    response.errorBody()?.string(),
+                    response.code()
+                )
                 emit(
                     ApiResponse.Error(
                         R.string.something_went_wrong,
@@ -70,13 +66,10 @@ abstract class AbstractBaseCloudDataSource {
             if (response.isSuccessful) {
                 emit(ApiResponse.Success(data = Unit, code = response.code()))
             } else {
-                val errorData = try {
-                    Gson().fromJson(
-                        response.errorBody()?.string(), ErrorResponse::class.java
-                    )
-                } catch (e: Exception) {
-                    null
-                }
+                val errorData = ErrorResponse.fromJson(
+                    response.errorBody()?.string(),
+                    response.code()
+                )
                 emit(
                     ApiResponse.Error(
                         R.string.something_went_wrong,

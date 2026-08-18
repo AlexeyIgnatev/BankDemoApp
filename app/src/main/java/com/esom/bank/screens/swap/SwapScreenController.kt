@@ -617,7 +617,7 @@ internal class SwapScreenController(
         currency.displayName(requireContext())
 
     private fun updateSomIconsVisibility() {
-        binding.thirdIconSwap.isVisible = uiModel.uiState.value.fromCurrency == CurrencyEnum.SOM
+        binding.thirdIconSwap.isVisible = uiModel.uiState.value.toCurrency == CurrencyEnum.SOM
         binding.somIconSwap.isVisible = uiModel.uiState.value.fromCurrency == CurrencyEnum.SOM
         binding.salamIconSwap.isVisible = uiModel.uiState.value.toCurrency == CurrencyEnum.SOM
         binding.totalSomIcon.isVisible = uiModel.uiState.value.toCurrency == CurrencyEnum.SOM
@@ -726,7 +726,7 @@ internal class SwapScreenController(
         val convertedFee = convertWithoutFee(fee)
         val netConvertedAmount = (actualConvertedAmount - convertedFee).coerceAtLeast(0.0)
 
-        binding.thirdValue.text = formatCurrencyAmount(fee)
+        binding.thirdValue.text = formatCurrencyAmount(convertedFee)
         binding.comissionValue.text = formatCurrencyAmount(grossAmount)
         binding.secondValue.text = formatCurrencyAmount(actualConvertedAmount)
         binding.total.text = formatCurrencyAmount(netConvertedAmount)
@@ -740,7 +740,10 @@ internal class SwapScreenController(
         if (!isSomToEsomConversion()) {
             Log.d(TAG, "Курс обмена: ${getExchangeRate()}")
         }
-        Log.d(TAG, "Комиссия: $fee ${getCurrencyName(uiModel.uiState.value.fromCurrency)}")
+        Log.d(
+            TAG,
+            "Комиссия: $convertedFee ${getCurrencyName(uiModel.uiState.value.toCurrency)}"
+        )
     }
 
     private fun calculateReceivedFromSend(fromAmount: Double): Double {
@@ -857,6 +860,8 @@ internal class SwapScreenController(
         val amountText = "${formatCurrencyAmount(amount)} ${getCurrencyName(uiModel.uiState.value.fromCurrency)}"
         val target = getCurrencyName(uiModel.uiState.value.toCurrency)
         val creditedAmount = calculateReceivedFromSend(amount)
+        val sourceFee = calculateFeePreview(amount)
+        val targetFee = convertWithoutFee(sourceFee)
         parentFragmentManager.setFragmentResult(
             TransferConfirmationFragment.DATA_REQUEST_KEY,
             bundleOf(
@@ -868,7 +873,8 @@ internal class SwapScreenController(
                 TransferConfirmationFragment.OPERATION_KEY to OPERATION_CONVERT,
                 TransferConfirmationFragment.AMOUNT_KEY to amount,
                 TransferConfirmationFragment.CREDITED_AMOUNT_KEY to creditedAmount,
-                TransferConfirmationFragment.FEE_KEY to calculateFeePreview(amount),
+                TransferConfirmationFragment.FEE_KEY to sourceFee,
+                TransferConfirmationFragment.DISPLAY_FEE_KEY to targetFee,
                 TransferConfirmationFragment.TOTAL_DEBITED_KEY to amount,
                 TransferConfirmationFragment.FROM_CURRENCY_KEY to uiModel.uiState.value.fromCurrency.name,
                 TransferConfirmationFragment.TO_CURRENCY_KEY to uiModel.uiState.value.toCurrency.name,

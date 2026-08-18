@@ -64,6 +64,7 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
         val amount = data.getDouble(AMOUNT_KEY)
         val creditedAmount = data.getDouble(CREDITED_AMOUNT_KEY, amount)
         val fee = data.getDouble(FEE_KEY)
+        val displayFee = data.getDouble(DISPLAY_FEE_KEY, fee)
         val totalDebited = data.getDouble(TOTAL_DEBITED_KEY, amount)
 
         binding.title.text = if (operation == OPERATION_CONVERT) {
@@ -75,7 +76,11 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
             .orEmpty()
             .ifBlank { getString(R.string.empty_value) }
         binding.amounts.amountValue.text = formatAmount(amount, fromCurrency)
-        binding.amounts.feeValue.text = formatAmount(fee, fromCurrency)
+        binding.amounts.feeValue.text = if (operation == OPERATION_CONVERT) {
+            formatAmount(displayFee, toCurrency)
+        } else {
+            formatAmount(fee, fromCurrency)
+        }
         binding.amounts.creditedValue.text = formatAmount(creditedAmount, toCurrency)
         binding.amounts.totalDebitedValue.text = formatAmount(totalDebited, fromCurrency)
     }
@@ -110,6 +115,7 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
         const val RECIPIENT_KEY = "transfer_confirmation_recipient"
         const val RECIPIENT_NAME_KEY = "transfer_confirmation_recipient_name"
         const val FEE_KEY = "transfer_confirmation_fee"
+        const val DISPLAY_FEE_KEY = "transfer_confirmation_display_fee"
         const val TOTAL_DEBITED_KEY = "transfer_confirmation_total_debited"
         private const val OPERATION_CONVERT = "convert"
     }

@@ -15,7 +15,9 @@ class RecentTemplateLocalDataSource @Inject constructor() {
     }
     private val gson = Gson()
 
-    fun getTransferTemplates(): List<TransferTemplate> = readList(TRANSFER_KEY)
+    fun getTransferTemplates(): List<TransferTemplate> =
+        readList<TransferTemplate>(TRANSFER_KEY)
+            .filterNot { '*' in it.recipient }
 
     fun getSwapTemplates(): List<SwapTemplate> = readList(SWAP_KEY)
 

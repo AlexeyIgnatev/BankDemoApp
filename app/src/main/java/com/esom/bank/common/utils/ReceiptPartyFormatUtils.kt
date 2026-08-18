@@ -24,5 +24,12 @@ fun formatReceiptAccountTail(value: String): String {
     return if (tail.isBlank()) "" else RECEIPT_ACCOUNT_MASK + tail
 }
 
+fun resolveReusableRecipient(vararg values: String): String {
+    val candidates = values.map(String::trim).filter(String::isNotBlank)
+    return candidates.firstOrNull { '*' !in it }
+        ?: candidates.firstOrNull()
+        ?: ""
+}
+
 private const val RECEIPT_ACCOUNT_VISIBLE_LENGTH = 8
 private const val RECEIPT_ACCOUNT_MASK = "****"

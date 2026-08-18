@@ -18,6 +18,7 @@ import com.esom.bank.R
 import com.esom.bank.common.model.UiState
 import com.esom.bank.common.utils.formatReceiptAccountTail
 import com.esom.bank.common.utils.formatReceiptPersonName
+import com.esom.bank.common.utils.resolveReusableRecipient
 import com.esom.bank.common.utils.files.ReceiptFileUtils
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
@@ -368,11 +369,11 @@ class SuccessTransferFragment : Fragment() {
 
     private fun resolveRecipientAccount(receipt: ReceiptModel): String {
         val currentOperation = uiModel.uiState.value.operation
-        return firstNotBlank(
+        return resolveReusableRecipient(
+            currentOperation?.recipient.orEmpty(),
             receipt.accountDetails,
             receipt.absToAccount,
-            receipt.absAccount,
-            currentOperation?.recipient.orEmpty()
+            receipt.absAccount
         )
     }
 

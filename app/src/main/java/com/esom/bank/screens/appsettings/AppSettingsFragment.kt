@@ -288,7 +288,6 @@ class AppSettingsFragment : Fragment() {
             .setNegativeButton("Отмена", null)
             .setPositiveButton("Выйти") { _, _ ->
                 model.clearAllDataAndNavigate()
-                findParentNavController().navigate(NavGraphDirections.startAuthFragment())
             }
             .show()
     }

@@ -43,6 +43,18 @@ class MainActivityViewModel @Inject constructor(
     fun hasLock(): Boolean = repository.hasLock()
     fun getThemeMode(): Int = repository.getThemeMode()
 
+    fun handleSessionExpired() {
+        repository.clearAllLocalData()
+        _uiState.update {
+            it.copy(
+                lastInteractionAt = SystemClock.elapsedRealtime(),
+                isLockDestination = false,
+                lockRequested = false,
+                shouldLock = false
+            )
+        }
+    }
+
     fun onActivityResumed(isLockDestination: Boolean) {
         _uiState.update {
             it.copy(isResumed = true, isLockDestination = isLockDestination)

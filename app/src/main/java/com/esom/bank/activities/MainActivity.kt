@@ -16,14 +16,18 @@ import androidx.navigation.findNavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.esom.bank.R
+import com.esom.bank.common.session.SessionManager
 import com.esom.bank.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainActivityViewModel by viewModels()
+    @Inject
+    lateinit var sessionManager: SessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,12 +43,17 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupStartDestination()
+        observeSessionEvents()
         observeUiState()
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.onActivityResumed(isLockDestination())
+        val forceAuth = !viewModel.isAuthenticated()
+        if (forceAuth) {
+            handleSessionState()
+        }
+        viewModel.onActivityResumed(forceAuth || isLockDestination())
     }
 
     override fun onPause() {
@@ -95,6 +104,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun observeSessionEvents() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                sessionManager.loggedOutAt.collect { loggedOutAt ->
+                    if (loggedOutAt == 0L) return@collect
+                    handleSessionState()
+                    sessionManager.consumeLoggedOut()
+                }
+            }
+        }
+    }
+
+    private fun handleSessionState() {
+        if (viewModel.isAuthenticated()) return
+        viewModel.handleSessionExpired()
+        viewModel.onUserInteraction(true)
+        if (!isAuthDestination()) {
+            navigateToAuth()
+        }
+    }
+
+    private fun navigateToAuth() {
+        findNavController(R.id.nav_host_fragment).navigate(
+            R.id.startAuthFragment,
+            null,
+            NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .build()
+        )
+    }
+
     private fun isLockDestination(): Boolean {
         return findNavController(R.id.nav_host_fragment).currentDestination?.id in setOf(
             R.id.authFragment,
@@ -102,5 +142,9 @@ class MainActivity : AppCompatActivity() {
             R.id.pinCreateFragment,
             R.id.bioFragment
         )
+    }
+
+    private fun isAuthDestination(): Boolean {
+        return findNavController(R.id.nav_host_fragment).currentDestination?.id == R.id.authFragment
     }
 }

@@ -2,6 +2,7 @@ package com.esom.bank.retrofit.interceptor
 
 import android.util.Base64
 import android.util.Log
+import com.esom.bank.common.session.SessionManager
 import com.esom.bank.retrofit.exception.NotLoggedInException
 import com.esom.bank.screens.auth.data.AuthLocalDataSource
 import okhttp3.Credentials
@@ -13,7 +14,8 @@ import javax.inject.Inject
 
 
 class AuthInterceptor @Inject constructor(
-    private val authLocalDataSource: AuthLocalDataSource
+    private val authLocalDataSource: AuthLocalDataSource,
+    private val sessionManager: SessionManager
 ) :
     Interceptor {
     companion object {
@@ -39,6 +41,7 @@ class AuthInterceptor @Inject constructor(
             if (response.code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 authLocalDataSource.setLogin(null)
                 authLocalDataSource.setPassword(null)
+                sessionManager.notifyLoggedOut()
                 throw NotLoggedInException()
             }
         }

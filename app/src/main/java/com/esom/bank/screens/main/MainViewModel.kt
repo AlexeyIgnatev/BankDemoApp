@@ -9,6 +9,7 @@ import com.esom.bank.common.utils.SingleLiveEvent
 import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.model.ReceiptModel
 import com.esom.bank.screens.history.model.TransactionModel
+import com.esom.bank.common.session.SessionManager
 import com.esom.bank.screens.main.data.MainRepository
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.UserModel
@@ -42,7 +43,8 @@ import kotlin.math.abs
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val mainRepository: MainRepository
+    private val mainRepository: MainRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
     private val _balancesVisible = MutableLiveData(mainRepository.areBalancesVisible())
     val balancesVisible: LiveData<Boolean> = _balancesVisible
@@ -99,6 +101,7 @@ class MainViewModel @Inject constructor(
 
     fun clearAllDataAndNavigate() {
         mainRepository.clearAllLocalData()
+        sessionManager.notifyLoggedOut()
         _myData.value = null
         _swapRes.clear()
         _transferRes.clear()

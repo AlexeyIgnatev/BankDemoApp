@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.esom.bank.common.model.UiState
+import com.esom.bank.common.utils.toMoneyAmount
 import com.esom.bank.common.utils.SingleLiveEvent
 import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.model.ReceiptModel
@@ -237,7 +238,7 @@ class MainViewModel @Inject constructor(
                 to: CurrencyEnum,
                 fromAmount: Double) {
         _swapRes.value = UiState.Loading()
-        mainRepository.convert(from, to, fromAmount).onEach {
+        mainRepository.convert(from, to, fromAmount.toMoneyAmount()).onEach {
             _swapRes.value = it
         } .launchIn(viewModelScope)
     }
@@ -258,7 +259,12 @@ class MainViewModel @Inject constructor(
 
     fun transferToUser(amount: Double, phone: String, address: String?, currencyEnum: CurrencyEnum) {
         _transferRes.value = UiState.Loading()
-        mainRepository.transferToUser(amount, phone, address, currencyEnum).onEach {
+        mainRepository.transferToUser(
+            amount.toMoneyAmount(),
+            phone,
+            address,
+            currencyEnum
+        ).onEach {
             _transferRes.value = it
         }.launchIn(viewModelScope)
     }

@@ -20,6 +20,10 @@ fun Double.formatBalanceNew(): String {
         .trimEnd('.').ifEmpty { "0" }
 }
 
+fun Double.toMoneyAmount(): Double = BigDecimal.valueOf(this)
+    .setScale(2, RoundingMode.HALF_UP)
+    .toDouble()
+
 fun Double.round(digits: Int = 2) =
     format(digits).toDoubleOrNull() ?: this
 

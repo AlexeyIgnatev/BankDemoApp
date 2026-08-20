@@ -17,12 +17,12 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.findNavController as findActivityNavController
 import androidx.navigation.navOptions
 import com.esom.bank.R
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.databinding.FragmentSecurityBinding
-import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,7 +52,7 @@ class SecurityFragment : Fragment() {
             insets
         }
         binding.changePinBtn.setOnClickListener {
-            findParentNavController().navigate(
+            requireActivity().findActivityNavController(R.id.nav_host_fragment).navigate(
                 R.id.startPinCreateFragment,
                 bundleOf("fromSettings" to true)
             )

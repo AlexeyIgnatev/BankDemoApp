@@ -296,7 +296,10 @@ internal class SwapScreenController(
 
         binding.peopleSum.setOnUserTextChangeListener {
             if (uiModel.uiState.value.updatingAmounts) return@setOnUserTextChangeListener
-            updateAmountsFromReceive(parseAmount(binding.peopleSum.text?.toString()))
+            updateAmountsFromReceive(
+                parseAmount(binding.peopleSum.text?.toString()),
+                preserveReceiveInput = true
+            )
         }
 
         binding.sendBtn.setOnClickListener {
@@ -706,16 +709,21 @@ internal class SwapScreenController(
         updateCommissionAndTotal(fromAmount, grossConvertedAmount)
     }
 
-    private fun updateAmountsFromReceive(receivedAmount: Double) {
+    private fun updateAmountsFromReceive(
+        receivedAmount: Double,
+        preserveReceiveInput: Boolean = false
+    ) {
         val fromAmount = calculateSendFromReceived(receivedAmount)
 
         uiModel.setUpdatingAmounts(true)
         binding.sum.setTextProgrammatically(formatInputAmount(fromAmount))
         binding.sum.setSelection(binding.sum.text?.length ?: 0)
-        binding.peopleSum.setTextProgrammatically(
-            formatInputAmount(receivedAmount)
-        )
-        binding.peopleSum.setSelection(binding.peopleSum.text?.length ?: 0)
+        if (!preserveReceiveInput) {
+            binding.peopleSum.setTextProgrammatically(
+                formatInputAmount(receivedAmount)
+            )
+            binding.peopleSum.setSelection(binding.peopleSum.text?.length ?: 0)
+        }
         uiModel.setUpdatingAmounts(false)
 
         updateCommissionAndTotal(fromAmount, receivedAmount)

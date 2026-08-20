@@ -99,6 +99,7 @@ class QrFragment : Fragment() {
 
         uiModel.initializePrimaryCurrency(model.getPrimaryCurrency())
         setupPrimaryCurrencyActions()
+        setupQrCardActions()
         setupTabs()
         setupScanActions()
         setupEmbeddedScanner()
@@ -185,34 +186,19 @@ class QrFragment : Fragment() {
             bindQrCard(
             image = binding.phoneQrImage,
             value = binding.phoneQrValue,
-            button = binding.phoneQrCopyBtn,
-            shareButton = binding.phoneQrShareBtn,
             text = if (phone.isBlank()) getString(R.string.empty_value) else phone.formatPhone(),
-            copyText = phone,
-            copySuccessMessage = getString(R.string.qr_copy_phone),
-            shareCurrency = uiModel.uiState.value.primaryCurrency,
             bitmap = bitmaps.first
             )
             bindQrCard(
             image = binding.salamQrImage,
             value = binding.salamQrValue,
-            button = binding.salamQrCopyBtn,
-            shareButton = binding.salamQrShareBtn,
             text = if (salam.isBlank()) getString(R.string.empty_value) else salam,
-            copyText = salam,
-            copySuccessMessage = getString(R.string.qr_copy_address),
-            shareCurrency = CurrencyEnum.ESOM,
             bitmap = bitmaps.second
             )
             bindQrCard(
             image = binding.usdtQrImage,
             value = binding.usdtQrValue,
-            button = binding.usdtQrCopyBtn,
-            shareButton = binding.usdtQrShareBtn,
             text = if (usdt.isBlank()) getString(R.string.empty_value) else usdt,
-            copyText = usdt,
-            copySuccessMessage = getString(R.string.qr_copy_address),
-            shareCurrency = CurrencyEnum.USDT_TRC20,
             bitmap = bitmaps.third
             )
             renderPrimaryCurrency()
@@ -223,6 +209,60 @@ class QrFragment : Fragment() {
         binding.phonePrimaryBtn.setOnClickListener { selectPrimaryCurrency(CurrencyEnum.SOM) }
         binding.salamPrimaryBtn.setOnClickListener { selectPrimaryCurrency(CurrencyEnum.ESOM) }
         binding.usdtPrimaryBtn.setOnClickListener { selectPrimaryCurrency(CurrencyEnum.USDT_TRC20) }
+    }
+
+    private fun setupQrCardActions() {
+        bindQrCardActions(
+            copyButton = binding.phoneQrCopyBtn,
+            shareButton = binding.phoneQrShareBtn,
+            valueProvider = { uiModel.uiState.value.phone },
+            currencyProvider = { uiModel.uiState.value.primaryCurrency },
+            copySuccessMessage = getString(R.string.qr_copy_phone)
+        )
+        bindQrCardActions(
+            copyButton = binding.salamQrCopyBtn,
+            shareButton = binding.salamQrShareBtn,
+            valueProvider = { uiModel.uiState.value.salamAddress },
+            currencyProvider = { CurrencyEnum.ESOM },
+            copySuccessMessage = getString(R.string.qr_copy_address)
+        )
+        bindQrCardActions(
+            copyButton = binding.usdtQrCopyBtn,
+            shareButton = binding.usdtQrShareBtn,
+            valueProvider = { uiModel.uiState.value.usdtAddress },
+            currencyProvider = { CurrencyEnum.USDT_TRC20 },
+            copySuccessMessage = getString(R.string.qr_copy_address)
+        )
+    }
+
+    private fun bindQrCardActions(
+        copyButton: MaterialButton,
+        shareButton: MaterialButton,
+        valueProvider: () -> String,
+        currencyProvider: () -> CurrencyEnum,
+        copySuccessMessage: String
+    ) {
+        copyButton.isEnabled = true
+        shareButton.isEnabled = true
+        copyButton.setOnClickListener {
+            val value = valueProvider().trim()
+            if (value.isBlank()) {
+                binding.root.showErrorSnackbar(getString(R.string.qr_scan_empty))
+                return@setOnClickListener
+            }
+            val clipboard = requireContext()
+                .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.setPrimaryClip(ClipData.newPlainText(value, value))
+            binding.root.showSuccessSnackbar(copySuccessMessage)
+        }
+        shareButton.setOnClickListener {
+            val value = valueProvider().trim()
+            if (value.isBlank()) {
+                binding.root.showErrorSnackbar(getString(R.string.qr_scan_empty))
+                return@setOnClickListener
+            }
+            shareQrCode(value, currencyProvider())
+        }
     }
 
     private fun selectPrimaryCurrency(currency: CurrencyEnum) {
@@ -262,12 +302,7 @@ class QrFragment : Fragment() {
     private fun bindQrCard(
         image: ImageView,
         value: android.widget.TextView,
-        button: MaterialButton,
-        shareButton: MaterialButton,
         text: String,
-        copyText: String,
-        copySuccessMessage: String,
-        shareCurrency: CurrencyEnum,
         bitmap: Bitmap?
     ) {
         value.text = text
@@ -275,18 +310,6 @@ class QrFragment : Fragment() {
             image.setImageBitmap(bitmap)
         } else {
             image.setImageResource(R.drawable.qr_code)
-        }
-        button.isEnabled = copyText.isNotBlank()
-        shareButton.isEnabled = copyText.isNotBlank()
-        button.setOnClickListener {
-            if (copyText.isBlank()) return@setOnClickListener
-            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clipboard.setPrimaryClip(ClipData.newPlainText(copyText, copyText))
-            binding.root.showSuccessSnackbar(copySuccessMessage)
-        }
-        shareButton.setOnClickListener {
-            if (copyText.isBlank()) return@setOnClickListener
-            shareQrCode(copyText, shareCurrency)
         }
     }
 

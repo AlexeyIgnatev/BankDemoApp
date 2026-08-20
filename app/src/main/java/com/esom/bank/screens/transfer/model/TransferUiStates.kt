@@ -29,5 +29,11 @@ data class TransferRecipientUiState(val contacts: List<PaymentContact> = emptyLi
 @Parcelize
 data class SuccessTransferUiState(
     val operation: SuccessOperationModel? = null,
-    val shareAfterReceiptLoaded: Boolean = false
+    val pendingReceiptAction: ReceiptAction = ReceiptAction.NONE
 ) : Parcelable
+
+enum class ReceiptAction {
+    NONE,
+    PREVIEW,
+    SHARE
+}

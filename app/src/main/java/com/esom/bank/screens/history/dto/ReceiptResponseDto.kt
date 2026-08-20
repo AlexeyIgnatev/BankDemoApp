@@ -16,6 +16,14 @@ data class ReceiptResponseDto(
     val createdAt: Long?,
     @SerializedName("fee")
     val fee: Double?,
+    @SerializedName("fee_currency")
+    val feeCurrency: String? = null,
+    @SerializedName("credited_amount")
+    val creditedAmount: Double? = null,
+    @SerializedName("credited_currency")
+    val creditedCurrency: String? = null,
+    @SerializedName("debited_currency")
+    val debitedCurrency: String? = null,
     @SerializedName(value = "account_details", alternate = ["account", "to_account", "requisites"])
     val accountDetails: String?,
     @SerializedName(

@@ -215,7 +215,8 @@ object ReceiptFileUtils {
         }
 
         val (dateText, timeText) = formatDateAndTime(receipt.createdAt)
-        val feeText = "${formatNumber(receipt.fee)} ${formatCurrencyForDocument(receipt.currency)}"
+        val feeCurrency = receipt.feeCurrency.ifBlank { receipt.currency }
+        val feeText = "${formatNumber(receipt.fee)} ${formatCurrencyForDocument(feeCurrency)}"
         val creditedCurrency = resolveCreditedCurrency(receipt)
         val creditedAmount = receipt.creditedAmount ?: if (isConversionReceipt(receipt)) {
             (receipt.amount - receipt.fee).coerceAtLeast(0.0)
@@ -230,7 +231,7 @@ object ReceiptFileUtils {
             receipt.amount + receipt.fee
         }
         val withdrawnAmountText =
-            "${formatNumber(withdrawnAmount)} ${formatCurrencyForDocument(receipt.currency)}"
+            "${formatNumber(withdrawnAmount)} ${formatCurrencyForDocument(receipt.debitedCurrency.ifBlank { receipt.currency })}"
         val accountDetailsValue = sanitizeOneLineValue(
             formatMaskedAccountWithVisibleTail(
                 resolveAccountDetailsForReceipt(receipt)
@@ -424,6 +425,7 @@ object ReceiptFileUtils {
     }
 
     private fun resolveCreditedCurrency(receipt: ReceiptModel): String {
+        if (receipt.creditedCurrency.isNotBlank()) return receipt.creditedCurrency
         if (receipt.targetCurrency.isNotBlank()) return receipt.targetCurrency
         return when (receipt.conversionSide) {
             ConversionSide.IN -> "SOM"

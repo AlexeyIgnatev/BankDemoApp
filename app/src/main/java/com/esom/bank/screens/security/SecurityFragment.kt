@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
 import androidx.core.content.ContextCompat
@@ -15,6 +16,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.navOptions
 import com.esom.bank.R
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
@@ -53,6 +56,10 @@ class SecurityFragment : Fragment() {
                 R.id.startPinCreateFragment,
                 bundleOf("fromSettings" to true)
             )
+        }
+        binding.backBtn.setOnClickListener { returnToMain() }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            returnToMain()
         }
         setupBiometrics()
         setupNotifications()
@@ -126,5 +133,12 @@ class SecurityFragment : Fragment() {
 
     private fun refreshFcmToken() {
         FirebaseMessaging.getInstance().token.addOnSuccessListener(model::sendFcmToken)
+    }
+
+    private fun returnToMain() {
+        findNavController().navigate(R.id.mainFragment, null, navOptions {
+            launchSingleTop = true
+            popUpTo(R.id.mainFragment) { inclusive = true }
+        })
     }
 }

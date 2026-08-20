@@ -1,5 +1,7 @@
 package com.esom.bank.screens.transfer.dialog.success
 
+import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -28,6 +30,7 @@ import com.esom.bank.screens.history.model.ReceiptModel
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
+import com.esom.bank.screens.transfer.model.ReceiptAction
 import com.esom.bank.screens.transfer.model.TransferTemplate
 import com.esom.bank.screens.swap.model.SwapTemplate
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -68,7 +71,8 @@ class SuccessTransferFragment : Fragment() {
         binding.backBtn.setOnClickListener { closeSuccessScreen() }
         binding.createTemplateBtn.setOnClickListener { showCreateTemplateDialog() }
         binding.repeatOperationBtn.setOnClickListener { repeatOperation() }
-        binding.shareBtn.setOnClickListener { requestReceiptForShare() }
+        binding.previewReceiptBtn.setOnClickListener { requestReceipt(ReceiptAction.PREVIEW) }
+        binding.shareBtn.setOnClickListener { requestReceipt(ReceiptAction.SHARE) }
 
         model.lastSuccessOperation.observe(viewLifecycleOwner) { state ->
             uiModel.setOperation(state ?: uiModel.uiState.value.operation)
@@ -78,16 +82,19 @@ class SuccessTransferFragment : Fragment() {
         model.lastSuccessReceipt.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is UiState.Loading -> {
+                    binding.previewReceiptBtn.isEnabled = false
                     binding.shareBtn.isEnabled = false
                 }
                 is UiState.Error -> {
+                    binding.previewReceiptBtn.isEnabled = true
                     binding.shareBtn.isEnabled = true
-                    if (uiModel.uiState.value.shareAfterReceiptLoaded) {
-                        uiModel.consumeShareAfterLoad()
+                    if (uiModel.uiState.value.pendingReceiptAction != ReceiptAction.NONE) {
+                        uiModel.consumeReceiptAction()
                         showReceiptError(state.message)
                     }
                 }
                 is UiState.Success -> {
+                    binding.previewReceiptBtn.isEnabled = true
                     binding.shareBtn.isEnabled = true
                     val creditedAmount = resolveCreditedAmount(
                         currentOperation = uiModel.uiState.value.operation,
@@ -97,6 +104,9 @@ class SuccessTransferFragment : Fragment() {
                         receiptNumber = state.data.receiptNumber,
                         createdAt = state.data.createdAt,
                         fee = state.data.fee,
+                        feeCurrency = CurrencyEnum.fromNameOrNull(state.data.feeCurrency),
+                        creditedCurrency = CurrencyEnum.fromNameOrNull(state.data.creditedCurrency),
+                        debitedCurrency = CurrencyEnum.fromNameOrNull(state.data.debitedCurrency),
                         operationTitle = resolveOperationTitle(state.data, uiModel.uiState.value.operation),
                         paidFromAccount = resolvePaidFromAccount(state.data),
                         recipient = resolveRecipientAccount(state.data),
@@ -115,9 +125,10 @@ class SuccessTransferFragment : Fragment() {
                     ))
                     val enrichedReceipt = fillOnlyBlankReceiptFields(state.data)
                     bindOperation(uiModel.uiState.value.operation)
-                    if (uiModel.uiState.value.shareAfterReceiptLoaded) {
-                        uiModel.consumeShareAfterLoad()
-                        shareReceiptPdf(enrichedReceipt)
+                    when (uiModel.consumeReceiptAction()) {
+                        ReceiptAction.PREVIEW -> previewReceiptPdf(enrichedReceipt)
+                        ReceiptAction.SHARE -> shareReceiptPdf(enrichedReceipt)
+                        ReceiptAction.NONE -> Unit
                     }
                 }
                 null -> Unit
@@ -156,11 +167,14 @@ class SuccessTransferFragment : Fragment() {
             else -> senderAccount.ifBlank { getString(R.string.empty_value) }
         }
         binding.recipientValue.text = formatRecipientForDisplay(data)
-        binding.feeValue.text = formatAmount(data.fee, data.currency)
+        binding.feeValue.text = formatAmount(
+            data.fee,
+            data.feeCurrency ?: data.currency
+        )
         binding.totalValue.text = totalText
         binding.totalWithdrawnValue.text = formatAmount(
             data.totalDebitedAmount ?: data.amount,
-            data.currency
+            data.debitedCurrency ?: data.currency
         )
         binding.createTemplateBtn.visibility = if (data.openedFromHistory) View.GONE else View.VISIBLE
     }
@@ -236,13 +250,19 @@ class SuccessTransferFragment : Fragment() {
     private fun repeatOperation() {
         val operation = uiModel.uiState.value.operation ?: return
         val target = operation.targetCurrency
+        val expectedDestination = if (target != null) R.id.swapFragment else R.id.transferFragment
+        if (findNavController().previousBackStackEntry?.destination?.id == expectedDestination) {
+            findNavController().popBackStack()
+            return
+        }
+
         if (target != null) {
             findNavController().navigate(
                 NavGraphDirections.startSwapFragment(
                     operation.currency.name,
                     target.name,
                     operation.amount.toFloat(),
-                    true
+                    false
                 )
             )
         } else {
@@ -252,7 +272,7 @@ class SuccessTransferFragment : Fragment() {
                     operation.recipient,
                     operation.recipientName,
                     operation.amount.toFloat(),
-                    true
+                    false
                 )
             )
         }
@@ -294,13 +314,18 @@ class SuccessTransferFragment : Fragment() {
             ?: user.phone.ifBlank { operationAccount }
     }
 
-    private fun requestReceiptForShare() {
+    private fun requestReceipt(action: ReceiptAction) {
         val receipt = (model.lastSuccessReceipt.value as? UiState.Success)?.data
         if (receipt != null) {
-            shareReceiptPdf(fillOnlyBlankReceiptFields(receipt))
+            val enrichedReceipt = fillOnlyBlankReceiptFields(receipt)
+            when (action) {
+                ReceiptAction.PREVIEW -> previewReceiptPdf(enrichedReceipt)
+                ReceiptAction.SHARE -> shareReceiptPdf(enrichedReceipt)
+                ReceiptAction.NONE -> Unit
+            }
         } else {
             if (uiModel.uiState.value.operation?.transactionId != null) {
-                uiModel.requestShareAfterLoad()
+                uiModel.requestReceiptAction(action)
                 model.prepareReceiptForLastSuccessOperation()
             } else {
                 showReceiptError(MainViewModel.RECEIPT_OPERATION_NOT_FOUND)
@@ -308,13 +333,22 @@ class SuccessTransferFragment : Fragment() {
         }
     }
 
-    private fun shareReceiptPdf(receipt: ReceiptModel) {
-        val receiptUri = runCatching {
-            ReceiptFileUtils.createReceiptPdfForShare(requireContext(), receipt)
-        }.getOrElse { error ->
-            binding.root.showErrorSnackbar(error.message ?: getString(R.string.something_went_wrong))
-            return
+    private fun previewReceiptPdf(receipt: ReceiptModel) {
+        val receiptUri = createReceiptPdf(receipt) ?: return
+        val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(receiptUri, ReceiptFileUtils.PDF_MIME_TYPE)
+            clipData = ClipData.newRawUri(getString(R.string.preview_receipt), receiptUri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
+        try {
+            startActivity(viewIntent)
+        } catch (_: ActivityNotFoundException) {
+            binding.root.showErrorSnackbar(getString(R.string.receipt_viewer_not_found))
+        }
+    }
+
+    private fun shareReceiptPdf(receipt: ReceiptModel) {
+        val receiptUri = createReceiptPdf(receipt) ?: return
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = ReceiptFileUtils.PDF_MIME_TYPE
             putExtra(Intent.EXTRA_STREAM, receiptUri)
@@ -377,6 +411,13 @@ class SuccessTransferFragment : Fragment() {
         )
     }
 
+    private fun createReceiptPdf(receipt: ReceiptModel) = runCatching {
+        ReceiptFileUtils.createReceiptPdfForShare(requireContext(), receipt)
+    }.getOrElse { error ->
+        binding.root.showErrorSnackbar(error.message ?: getString(R.string.something_went_wrong))
+        null
+    }
+
     private fun resolveOperationTitle(
         receipt: ReceiptModel,
         currentOperation: SuccessOperationModel?
@@ -406,7 +447,7 @@ class SuccessTransferFragment : Fragment() {
         values.firstOrNull { it.isNotBlank() }.orEmpty()
 
     private fun resolveCreditedCurrency(operation: SuccessOperationModel): CurrencyEnum {
-        return operation.targetCurrency ?: when (operation.conversionSide) {
+        return operation.creditedCurrency ?: operation.targetCurrency ?: when (operation.conversionSide) {
             ConversionSide.IN -> CurrencyEnum.SOM
             ConversionSide.OUT -> CurrencyEnum.ESOM
             null -> operation.currency
@@ -417,6 +458,7 @@ class SuccessTransferFragment : Fragment() {
         currentOperation: SuccessOperationModel?,
         receipt: ReceiptModel
     ): Double? {
+        if (receipt.creditedAmount != null) return receipt.creditedAmount
         val operation = currentOperation ?: return receipt.creditedAmount
         val isSomEsomConversion = (
             operation.currency == CurrencyEnum.SOM && operation.targetCurrency == CurrencyEnum.ESOM

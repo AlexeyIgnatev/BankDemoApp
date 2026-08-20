@@ -10,6 +10,7 @@ object AppQrCode {
     private const val CONTACT_KEY = "contact"
 
     fun buildContent(contact: String, currency: CurrencyEnum): String {
+        val normalizedContact = normalizeContact(contact)
         return buildString {
             append(PREFIX)
             append("|")
@@ -22,19 +23,19 @@ object AppQrCode {
             append("|")
             append(CONTACT_KEY)
             append("=")
-            append(contact.trim())
+            append(normalizedContact)
         }
     }
 
     fun parsePayload(rawContent: String): AppQrPayload? {
         val map = parseKeyValuePairs(rawContent) ?: return null
-        val contact = map[CONTACT_KEY].orEmpty().trim()
+        val contact = normalizeContact(map[CONTACT_KEY].orEmpty())
         val currency = map[CURRENCY_KEY]
             ?.trim()
             ?.let { runCatching { CurrencyEnum.valueOf(it) }.getOrNull() }
         val version = map[VERSION_KEY]?.toIntOrNull() ?: 1
 
-        if (contact.isBlank() || currency == null) return null
+        if (contact.isBlank() || currency == null || isMalformedPhone(contact)) return null
 
         return AppQrPayload(
             contact = contact,
@@ -43,9 +44,35 @@ object AppQrCode {
         )
     }
 
+    private fun normalizeContact(value: String): String {
+        val raw = value.trim()
+        val phoneCharactersOnly = raw.all {
+            it.isDigit() || it == '+' || it == ' ' || it == '(' || it == ')' || it == '-'
+        }
+        if (!phoneCharactersOnly) return raw
+
+        val digits = raw.filter(Char::isDigit)
+        return when {
+            digits.startsWith("996") && digits.length == 12 -> "+" + digits
+            digits.startsWith("0") && digits.length == 10 -> "+996" + digits.drop(1)
+            digits.length == 9 -> "+996" + digits
+            raw.startsWith("+") -> "+" + digits
+            else -> raw
+        }
+    }
+
+    private fun isMalformedPhone(value: String): Boolean {
+        val phoneCharactersOnly = value.all {
+            it.isDigit() || it == '+' || it == ' ' || it == '(' || it == ')' || it == '-'
+        }
+        return phoneCharactersOnly && value.count(Char::isDigit) !in 9..12
+    }
+
     fun parseContact(rawContent: String): String? {
         val map = parseKeyValuePairs(rawContent) ?: return null
-        return map[CONTACT_KEY]?.trim()?.takeIf { it.isNotBlank() }
+        return map[CONTACT_KEY]
+            ?.let(::normalizeContact)
+            ?.takeIf { it.isNotBlank() && !isMalformedPhone(it) }
     }
 
     private fun parseKeyValuePairs(rawContent: String): Map<String, String>? {

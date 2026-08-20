@@ -152,6 +152,8 @@
     <string name="total">Итого отправлено</string>
     <string name="total_withdrawn_from_account">Итого снято со счета</string>
     <string name="share_success_operation">Поделиться платежом</string>
+    <string name="preview_receipt">Посмотреть квитанцию</string>
+    <string name="receipt_viewer_not_found">На устройстве нет приложения для просмотра PDF</string>
     <string name="empty_value">-</string>
     <string name="receipt_operation_not_found">&#1057;&#1077;&#1088;&#1074;&#1077;&#1088; &#1085;&#1077; &#1074;&#1077;&#1088;&#1085;&#1091;&#1083; &#1085;&#1086;&#1084;&#1077;&#1088; &#1086;&#1087;&#1077;&#1088;&#1072;&#1094;&#1080;&#1080; &#1076;&#1083;&#1103; &#1082;&#1074;&#1080;&#1090;&#1072;&#1085;&#1094;&#1080;&#1080;</string>
     <string name="cancel">Отменить</string>

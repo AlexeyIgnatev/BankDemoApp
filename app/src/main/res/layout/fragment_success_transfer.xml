@@ -148,10 +148,22 @@
             android:text="@string/transaction_details"
             android:textColor="@color/title"
             android:textSize="@dimen/_18sp"
-            app:layout_constraintEnd_toStartOf="@id/share_btn"
+            app:layout_constraintEnd_toStartOf="@id/preview_receipt_btn"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/share_btn"
             app:layout_constraintBottom_toBottomOf="@id/share_btn"/>
+
+        <ImageView
+            android:id="@+id/preview_receipt_btn"
+            android:layout_width="@dimen/_48dp"
+            android:layout_height="@dimen/_48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/preview_receipt"
+            android:padding="@dimen/_13dp"
+            android:src="@drawable/ic_eye_open"
+            app:tint="@color/title"
+            app:layout_constraintEnd_toStartOf="@id/share_btn"
+            app:layout_constraintTop_toBottomOf="@id/drag_handle" />
 
         <ImageView
             android:id="@+id/share_btn"

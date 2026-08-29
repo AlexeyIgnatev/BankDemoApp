@@ -9,5 +9,5 @@ data class ConvertDto(
     @SerializedName("asset_to")
     val assetTo: CurrencyEnum,
     @SerializedName("amount_from")
-    val amountFrom: Double
+    val amountFrom: String
 )

@@ -2,6 +2,7 @@ package com.esom.bank.screens.history.model
 
 import com.esom.bank.screens.history.enums.TransactionEnum
 import java.util.Locale
+import java.math.BigDecimal
 
 fun List<TransactionModel>.filterHistoryTransactions(
     state: HistoryAdapterUiState
@@ -11,7 +12,7 @@ fun List<TransactionModel>.filterHistoryTransactions(
     return asSequence()
         .filter { it.matchesHistoryType(state.typeFilter) }
         .filter { transaction ->
-            val amount = transaction.amount ?: 0.0
+            val amount = transaction.amount ?: BigDecimal.ZERO
             (state.minimumAmount == null || amount >= state.minimumAmount) &&
                 (state.maximumAmount == null || amount <= state.maximumAmount)
         }

@@ -5,15 +5,16 @@ import androidx.annotation.Keep
 import com.esom.bank.screens.main.dto.WalletDto
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import kotlinx.parcelize.Parcelize
+import java.math.BigDecimal
 
 @Keep
 @Parcelize
 data class WalletModel (
     val currency: CurrencyEnum,
     val address: String,
-    val balance: Double,
-    val buyRate: Double,
-    val sellRate: Double
+    val balance: BigDecimal,
+    val buyRate: BigDecimal,
+    val sellRate: BigDecimal
 ): Parcelable
 
 fun WalletDto.toModel(): WalletModel =

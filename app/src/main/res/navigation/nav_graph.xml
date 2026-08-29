@@ -54,8 +54,8 @@
             app:argType="string" />
         <argument
             android:name="amount"
-            android:defaultValue="0.0"
-            app:argType="float" />
+            android:defaultValue="0"
+            app:argType="string" />
         <argument
             android:name="autoExecute"
             android:defaultValue="false"
@@ -106,8 +106,8 @@
             app:argType="string" />
         <argument
             android:name="amount"
-            android:defaultValue="0.0"
-            app:argType="float" />
+            android:defaultValue="0"
+            app:argType="string" />
         <argument
             android:name="autoExecute"
             android:defaultValue="false"

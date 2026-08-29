@@ -123,7 +123,7 @@ class HistoryTransactionFiltersTest {
         type: TransactionEnum,
         side: ConversionSide? = null,
         createdAt: Long,
-        amount: Double,
+        amount: Number,
         senderName: String? = null,
         recipientName: String? = null
     ) = TransactionModel(
@@ -131,7 +131,7 @@ class HistoryTransactionFiltersTest {
         currencyEnum = currency,
         type = type,
         conversionSide = side,
-        amount = amount,
+        amount = amount.toString().toBigDecimal(),
         successful = true,
         createdAt = createdAt,
         senderFullName = senderName,

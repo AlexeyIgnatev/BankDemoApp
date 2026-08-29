@@ -32,6 +32,7 @@ import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.slideInFromBottom
 import com.esom.bank.common.utils.views.slideOut
 import com.esom.bank.common.utils.views.toDecimalAmountOrNull
+import com.esom.bank.common.utils.toMoneyDecimalOrZero
 import com.esom.bank.databinding.FragmentTransferBinding
 import com.esom.bank.screens.main.dialog.TransferConfirmationFragment
 import com.esom.bank.screens.main.MainViewModel
@@ -88,8 +89,9 @@ internal class TransferScreenController(
             binding.contact.setText(args.contact)
             binding.contact.setSelection(binding.contact.text?.length ?: 0)
         }
-        if (args.amount > 0f) {
-            binding.sumInput.setText(formatTemplateAmount(args.amount.toDouble()))
+        val initialAmount = args.amount.toMoneyDecimalOrZero()
+        if (initialAmount > BigDecimal.ZERO) {
+            binding.sumInput.setText(formatTemplateAmount(initialAmount))
         }
         model.getFees()
         initInitialBalances()
@@ -160,6 +162,7 @@ internal class TransferScreenController(
 
                 is UiState.Success -> {
                     uiModel.setPendingTemplate(null)
+                    uiModel.clearTransferIdempotencyKey()
                     model.updateUserData()
                     model.updateLastSuccessOperationReceipt(
                         transactionId = it.data.transactionId,
@@ -177,11 +180,11 @@ internal class TransferScreenController(
     }
 
     private fun executeAutomaticRepeatIfReady() {
-        if (!args.autoExecute || args.amount <= 0f || args.contact.isBlank()) return
+        val amount = args.amount.toMoneyDecimalOrZero()
+        if (!args.autoExecute || amount <= BigDecimal.ZERO || args.contact.isBlank()) return
         if (model.fees.value !is UiState.Success) return
         if (!uiModel.startAutomaticRepeat()) return
 
-        val amount = args.amount.toDouble()
         val contact = args.contact.trim()
         val phone = if (uiModel.uiState.value.toPhoneNumber) contact.kyrgyzPhoneDigits() else ""
         val address = contact.takeIf { !uiModel.uiState.value.toPhoneNumber }
@@ -203,7 +206,13 @@ internal class TransferScreenController(
                 senderName = currentUserFullName()
             )
         )
-        model.transferToUser(amount, phone, address, currency)
+        model.transferToUser(
+            amount,
+            phone,
+            address,
+            currency,
+            uiModel.startTransfer()
+        )
     }
 
     private fun requireContext() = fragment.requireContext()
@@ -228,7 +237,7 @@ internal class TransferScreenController(
                 return@setFragmentResultListener
             }
 
-            val amount = bundle.getDouble(TransferConfirmationFragment.AMOUNT_KEY)
+            val amount = bundle.getString(TransferConfirmationFragment.AMOUNT_KEY).orEmpty().toMoneyDecimalOrZero()
             val currencyName = bundle.getString(TransferConfirmationFragment.FROM_CURRENCY_KEY).orEmpty()
             val currency = CurrencyEnum.fromNameOrNull(currencyName)
                 ?: return@setFragmentResultListener
@@ -236,8 +245,8 @@ internal class TransferScreenController(
             val address = bundle.getString(TransferConfirmationFragment.ADDRESS_KEY)
             val recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty()
             val recipientName = bundle.getString(TransferConfirmationFragment.RECIPIENT_NAME_KEY).orEmpty()
-            val fee = bundle.getDouble(TransferConfirmationFragment.FEE_KEY)
-            val totalDebited = bundle.getDouble(TransferConfirmationFragment.TOTAL_DEBITED_KEY)
+            val fee = bundle.getString(TransferConfirmationFragment.FEE_KEY).orEmpty().toMoneyDecimalOrZero()
+            val totalDebited = bundle.getString(TransferConfirmationFragment.TOTAL_DEBITED_KEY).orEmpty().toMoneyDecimalOrZero()
 
             model.setLastSuccessOperation(
                 SuccessOperationModel(
@@ -255,7 +264,13 @@ internal class TransferScreenController(
                     senderName = currentUserFullName()
                 )
             )
-            model.transferToUser(amount, phone, address, currency)
+            model.transferToUser(
+                amount,
+                phone,
+                address,
+                currency,
+                uiModel.currentTransferIdempotencyKey()
+            )
         }
     }
 
@@ -321,7 +336,7 @@ internal class TransferScreenController(
         updateCommissionAndTotal(binding.sumInput.text.toString())
     }
 
-    private fun formatTemplateAmount(amount: Double): String =
+    private fun formatTemplateAmount(amount: BigDecimal): String =
         amount.formatBalanceNew()
 
     private fun dp(value: Int): Int =
@@ -566,13 +581,13 @@ internal class TransferScreenController(
     }
 
     private fun updateCommissionAndTotal(amountText: String) {
-        val amount = amountText.toDecimalAmountOrNull() ?: 0.0
+        val amount = amountText.toDecimalAmountOrNull() ?: BigDecimal.ZERO
         val commission = calculateTransferCommission(amount, uiModel.uiState.value.fromCurrency)
 
         val totalAmount = amount + commission
 
         binding.comissionValue.text = formatTransferAmount(commission)
-        binding.total.text = formatTransferAmount(totalAmount.coerceAtLeast(0.0))
+        binding.total.text = formatTransferAmount(totalAmount.max(BigDecimal.ZERO))
     }
 
     private fun observeRecipientName() {
@@ -606,13 +621,13 @@ internal class TransferScreenController(
         uiModel.lookupRecipient(phone, address, uiModel.uiState.value.fromCurrency)
     }
 
-    private fun calculateTransferCommission(amount: Double, currency: CurrencyEnum): Double {
-        if (amount <= 0.0) return 0.0
+    private fun calculateTransferCommission(amount: BigDecimal, currency: CurrencyEnum): BigDecimal {
+        if (amount <= BigDecimal.ZERO) return BigDecimal.ZERO
         return model.calculateTransferFee(amount, currency)
     }
 
-    private fun formatTransferAmount(amount: Double): String {
-        return BigDecimal.valueOf(amount)
+    private fun formatTransferAmount(amount: BigDecimal): String {
+        return amount
             .setScale(2, RoundingMode.HALF_UP)
             .stripTrailingZeros()
             .toPlainString()
@@ -674,7 +689,7 @@ internal class TransferScreenController(
 
         val walletBalance =
             (model.myData.value as? UiState.Success)?.data?.wallets?.find { it.currency == uiModel.uiState.value.fromCurrency }?.balance
-                ?: 0.0
+                ?: BigDecimal.ZERO
         val fee = calculateTransferCommission(sum, uiModel.uiState.value.fromCurrency)
         if (sum + fee > walletBalance) {
             val currencyName = getCurrencyName(uiModel.uiState.value.fromCurrency)
@@ -701,11 +716,12 @@ internal class TransferScreenController(
     }
 
     private fun showTransferConfirmation(
-        amount: Double,
+        amount: BigDecimal,
         phone: String,
         address: String?,
         recipient: String
     ) {
+        uiModel.startTransfer()
         val amountText = "${amount.formatBalanceNew()} ${getCurrencyName(uiModel.uiState.value.fromCurrency)}"
         parentFragmentManager.setFragmentResult(
             TransferConfirmationFragment.DATA_REQUEST_KEY,
@@ -716,15 +732,15 @@ internal class TransferScreenController(
                     recipient
                 ),
                 TransferConfirmationFragment.OPERATION_KEY to OPERATION_TRANSFER,
-                TransferConfirmationFragment.AMOUNT_KEY to amount,
-                TransferConfirmationFragment.CREDITED_AMOUNT_KEY to amount,
+                TransferConfirmationFragment.AMOUNT_KEY to amount.toPlainString(),
+                TransferConfirmationFragment.CREDITED_AMOUNT_KEY to amount.toPlainString(),
                 TransferConfirmationFragment.FEE_KEY to calculateTransferCommission(
                     amount,
                     uiModel.uiState.value.fromCurrency
-                ),
+                ).toPlainString(),
                 TransferConfirmationFragment.TOTAL_DEBITED_KEY to (
                     amount + calculateTransferCommission(amount, uiModel.uiState.value.fromCurrency)
-                ),
+                ).toPlainString(),
                 TransferConfirmationFragment.FROM_CURRENCY_KEY to uiModel.uiState.value.fromCurrency.name,
                 TransferConfirmationFragment.PHONE_KEY to phone,
                 TransferConfirmationFragment.ADDRESS_KEY to address,

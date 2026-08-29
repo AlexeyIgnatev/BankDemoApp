@@ -3,6 +3,7 @@ package com.esom.bank.screens.transfer
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -36,5 +37,18 @@ class TransferUiStateViewModelTest {
 
         assertEquals(CurrencyEnum.USDT_TRC20, viewModel.uiState.value.fromCurrency)
         assertFalse(viewModel.uiState.value.toPhoneNumber)
+    }
+
+    @Test
+    fun `transfer idempotency key is stable until the transfer is cleared`() {
+        val viewModel = TransferUiStateViewModel()
+
+        val firstKey = viewModel.startTransfer()
+
+        assertEquals(firstKey, viewModel.currentTransferIdempotencyKey())
+
+        viewModel.clearTransferIdempotencyKey()
+
+        assertNotEquals(firstKey, viewModel.currentTransferIdempotencyKey())
     }
 }

@@ -6,8 +6,8 @@ import javax.inject.Inject
 interface AuthLocalDataSource {
     fun getLogin(): String?
     fun setLogin(login: String?)
-    fun getPassword(): String?
-    fun setPassword(password: String?)
+    fun getAccessToken(): String?
+    fun setAccessToken(accessToken: String?)
     fun clearAuthData()
 }
 
@@ -24,13 +24,15 @@ class AuthLocalDataSourceImpl @Inject constructor(): AuthLocalDataSource {
         storage.encode("login", login)
     }
 
-    override fun getPassword(): String? = storage.decodeString("password")
-    override fun setPassword(password: String?) {
-        storage.encode("password", password)
+    override fun getAccessToken(): String? = storage.decodeString("access_token")
+    override fun setAccessToken(accessToken: String?) {
+        storage.encode("access_token", accessToken)
     }
 
     override fun clearAuthData() {
         storage.removeValueForKey("login")
+        storage.removeValueForKey("access_token")
+        // Remove credentials saved by older app versions.
         storage.removeValueForKey("password")
     }
 }

@@ -6,6 +6,7 @@ import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.UserModel
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
+import java.math.BigDecimal
 
 object TransactionSuccessMapper {
 
@@ -25,13 +26,13 @@ object TransactionSuccessMapper {
         }.orEmpty()
 
         return SuccessOperationModel(
-            amount = transaction.amount ?: 0.0,
+            amount = transaction.amount ?: BigDecimal.ZERO,
             currency = currency,
             operationTitle = transaction.title(context, currency),
             paidFromAccount = paidFromAccount,
             recipient = recipient,
             receiptNumber = receiptNumber,
-            fee = 0.0,
+            fee = BigDecimal.ZERO,
             transactionId = transaction.transactionId,
             conversionSide = transaction.conversionSide,
             createdAt = transaction.createdAt ?: System.currentTimeMillis(),

@@ -54,6 +54,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import java.math.BigDecimal
 
 @AndroidEntryPoint
 class HistoryFragment : Fragment() {
@@ -179,14 +180,14 @@ class HistoryFragment : Fragment() {
             .filter { it.currencyEnum == null || it.currencyEnum in model.getCurrency() }
             .filterHistoryTransactions(uiModel.uiState.value.adapterState)
 
-    private fun amountInSom(transaction: TransactionModel): Double {
+    private fun amountInSom(transaction: TransactionModel): BigDecimal {
         val rate = when (transaction.currencyEnum) {
-            CurrencyEnum.SOM, null -> 1.0
+            CurrencyEnum.SOM, null -> BigDecimal.ONE
             else -> uiModel.uiState.value.wallets.firstOrNull { it.currency == transaction.currencyEnum }
-                ?.let { if (it.sellRate > 0.0) it.sellRate else it.buyRate }
-                ?.takeIf { it > 0.0 } ?: 1.0
+                ?.let { if (it.sellRate > BigDecimal.ZERO) it.sellRate else it.buyRate }
+                ?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ONE
         }
-        return (transaction.amount ?: 0.0) * rate
+        return (transaction.amount ?: BigDecimal.ZERO) * rate
     }
 
     private fun showTypeFilter() {
@@ -332,7 +333,7 @@ class HistoryFragment : Fragment() {
         marginEnd = endMargin.dp
     }
 
-    private fun EditText.number(): Double? = text.toString().replace(',', '.').toDoubleOrNull()
+    private fun EditText.number(): BigDecimal? = text.toString().replace(',', '.').toBigDecimalOrNull()
     private val Int.dp: Int get() = (this * resources.displayMetrics.density).toInt()
 
     private fun showKeyboard(view: View) {

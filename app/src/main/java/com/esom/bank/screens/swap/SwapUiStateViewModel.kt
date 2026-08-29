@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.util.UUID
 
 class SwapUiStateViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(SwapUiState())
@@ -29,6 +30,26 @@ class SwapUiStateViewModel : ViewModel() {
     fun closePanels() = _uiState.update { it.copy(fromPanelShown = false, toPanelShown = false) }
     fun setUpdatingAmounts(updating: Boolean) = _uiState.update { it.copy(updatingAmounts = updating) }
     fun setPendingTemplate(template: SwapTemplate?) = _uiState.update { it.copy(pendingTemplate = template) }
+
+    fun getOrCreateConversionIdempotencyKey(fingerprint: String): String {
+        val current = _uiState.value
+        val existingKey = current.conversionIdempotencyKey
+        if (current.conversionFingerprint == fingerprint && !existingKey.isNullOrBlank()) {
+            return existingKey
+        }
+        val key = UUID.randomUUID().toString()
+        _uiState.update {
+            it.copy(
+                conversionFingerprint = fingerprint,
+                conversionIdempotencyKey = key,
+            )
+        }
+        return key
+    }
+
+    fun clearConversionIdempotencyKey() = _uiState.update {
+        it.copy(conversionFingerprint = null, conversionIdempotencyKey = null)
+    }
 
     fun consumePendingTemplate(): SwapTemplate? {
         val template = _uiState.value.pendingTemplate

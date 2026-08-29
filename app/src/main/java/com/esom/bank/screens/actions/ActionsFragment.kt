@@ -133,7 +133,7 @@ class ActionsFragment : Fragment() {
                         template.currency,
                         template.recipient,
                         "",
-                        template.amount.toFloat()
+                        template.amount.toPlainString()
                     )
                 )
             }
@@ -150,7 +150,7 @@ class ActionsFragment : Fragment() {
             rename = { renameSwapTemplate(template) },
             apply = {
                 findParentNavController().navigate(
-                    NavGraphDirections.startSwapFragment(from.name, to.name, template.amount.toFloat())
+                    NavGraphDirections.startSwapFragment(from.name, to.name, template.amount.toPlainString())
                 )
             }
         )

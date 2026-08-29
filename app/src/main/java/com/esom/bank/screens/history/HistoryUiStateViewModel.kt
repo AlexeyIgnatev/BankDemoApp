@@ -9,6 +9,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.math.BigDecimal
 
 class HistoryUiStateViewModel : ViewModel() {
     private val mutableUiState = MutableStateFlow(HistoryUiState())
@@ -27,7 +28,7 @@ class HistoryUiStateViewModel : ViewModel() {
         it.copy(adapterState = it.adapterState.copy(typeFilter = value))
     }
 
-    fun setAmountFilter(minimum: Double?, maximum: Double?) = mutableUiState.update {
+    fun setAmountFilter(minimum: BigDecimal?, maximum: BigDecimal?) = mutableUiState.update {
         it.copy(adapterState = it.adapterState.copy(minimumAmount = minimum, maximumAmount = maximum))
     }
 

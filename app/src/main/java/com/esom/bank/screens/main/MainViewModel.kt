@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.esom.bank.common.model.UiState
-import com.esom.bank.common.utils.toMoneyAmount
 import com.esom.bank.common.utils.SingleLiveEvent
 import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.model.ReceiptModel
@@ -41,6 +40,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.math.abs
+import java.math.BigDecimal
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -179,19 +179,19 @@ class MainViewModel @Inject constructor(
         return state.data.findByOperation(operation)
     }
 
-    fun calculateFee(amount: Double, operation: String?): Double {
-        if (amount <= 0.0) return 0.0
-        return feeForOperation(operation)?.calculateFee(amount) ?: 0.0
+    fun calculateFee(amount: BigDecimal, operation: String?): BigDecimal {
+        if (amount <= BigDecimal.ZERO) return BigDecimal.ZERO
+        return feeForOperation(operation)?.calculateFee(amount) ?: BigDecimal.ZERO
     }
 
-    fun calculateTransferFee(amount: Double, currency: CurrencyEnum): Double {
+    fun calculateTransferFee(amount: BigDecimal, currency: CurrencyEnum): BigDecimal {
         return calculateFeeForOperations(
             amount,
             PaymentFeeOperationResolver.transferOperations(currency)
         )
     }
 
-    fun calculateConvertFee(amount: Double, from: CurrencyEnum, to: CurrencyEnum): Double {
+    fun calculateConvertFee(amount: BigDecimal, from: CurrencyEnum, to: CurrencyEnum): BigDecimal {
         return calculateFeeForOperations(
             amount,
             PaymentFeeOperationResolver.convertOperations(from, to)
@@ -208,13 +208,13 @@ class MainViewModel @Inject constructor(
         )
     }
 
-    private fun calculateFeeForOperations(amount: Double, operations: List<String>): Double {
-        if (amount <= 0.0) return 0.0
+    private fun calculateFeeForOperations(amount: BigDecimal, operations: List<String>): BigDecimal {
+        if (amount <= BigDecimal.ZERO) return BigDecimal.ZERO
         return operations.asSequence()
             .mapNotNull { feeForOperation(it) }
             .map { it.calculateFee(amount) }
             .maxOrNull()
-            ?: 0.0
+            ?: BigDecimal.ZERO
     }
 
     private fun feeForOperations(operations: List<String>): PaymentFeeModel? {
@@ -226,44 +226,38 @@ class MainViewModel @Inject constructor(
 
     private fun feeForOperationsWithPositiveFee(
         operations: List<String>,
-        sampleAmount: Double = 1.0
+        sampleAmount: BigDecimal = BigDecimal.ONE
     ): PaymentFeeModel? {
         if (operations.isEmpty()) return null
         return operations.asSequence()
             .mapNotNull { feeForOperation(it) }
-            .firstOrNull { it.calculateFee(sampleAmount) > 0.0 }
+            .firstOrNull { it.calculateFee(sampleAmount) > BigDecimal.ZERO }
     }
 
     fun convert(from: CurrencyEnum,
                 to: CurrencyEnum,
-                fromAmount: Double) {
+                fromAmount: BigDecimal,
+                idempotencyKey: String) {
         _swapRes.value = UiState.Loading()
-        mainRepository.convert(from, to, fromAmount.toMoneyAmount()).onEach {
+        mainRepository.convert(from, to, fromAmount, idempotencyKey).onEach {
             _swapRes.value = it
         } .launchIn(viewModelScope)
     }
 
-    fun transferFromFiat(amount: Double) {
-        _swapRes.value = UiState.Loading()
-        mainRepository.transferFromFiat(amount).onEach {
-            _swapRes.value = it
-        }.launchIn(viewModelScope)
-    }
-
-    fun transferToFiat(amount: Double) {
-        _swapRes.value = UiState.Loading()
-        mainRepository.transferToFiat(amount).onEach {
-            _swapRes.value = it
-        }.launchIn(viewModelScope)
-    }
-
-    fun transferToUser(amount: Double, phone: String, address: String?, currencyEnum: CurrencyEnum) {
+    fun transferToUser(
+        amount: BigDecimal,
+        phone: String,
+        address: String?,
+        currencyEnum: CurrencyEnum,
+        idempotencyKey: String
+    ) {
         _transferRes.value = UiState.Loading()
         mainRepository.transferToUser(
-            amount.toMoneyAmount(),
+            amount,
             phone,
             address,
-            currencyEnum
+            currencyEnum,
+            idempotencyKey
         ).onEach {
             _transferRes.value = it
         }.launchIn(viewModelScope)

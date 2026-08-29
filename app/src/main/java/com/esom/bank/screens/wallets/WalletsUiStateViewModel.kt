@@ -6,12 +6,13 @@ import com.esom.bank.screens.wallet.model.WalletsUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.math.BigDecimal
 
 class WalletsUiStateViewModel : ViewModel() {
     private val mutableUiState = MutableStateFlow(WalletsUiState())
     val uiState = mutableUiState.asStateFlow()
 
     fun setBalancesVisible(visible: Boolean) = mutableUiState.update { it.copy(balancesVisible = visible) }
-    fun setWallets(wallets: List<WalletModel>, balanceInSom: (WalletModel) -> Double) =
+    fun setWallets(wallets: List<WalletModel>, balanceInSom: (WalletModel) -> BigDecimal) =
         mutableUiState.update { it.copy(totalBalanceInSom = wallets.sumOf(balanceInSom)) }
 }

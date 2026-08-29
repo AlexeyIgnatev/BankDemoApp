@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -35,6 +36,7 @@ class TransferUiStateViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TransferUiState())
     val uiState: StateFlow<TransferUiState> = _uiState.asStateFlow()
     private val recipientRequests = MutableSharedFlow<RecipientLookupRequestDto>(extraBufferCapacity = 1)
+    private var transferIdempotencyKey: String? = null
 
     init {
         repository?.let { recipientRepository -> viewModelScope.launch {
@@ -129,6 +131,17 @@ class TransferUiStateViewModel @Inject constructor(
         if (_uiState.value.automaticRepeatStarted) return false
         _uiState.update { it.copy(automaticRepeatStarted = true) }
         return true
+    }
+
+    fun startTransfer(): String = UUID.randomUUID().toString().also {
+        transferIdempotencyKey = it
+    }
+
+    fun currentTransferIdempotencyKey(): String =
+        transferIdempotencyKey ?: startTransfer()
+
+    fun clearTransferIdempotencyKey() {
+        transferIdempotencyKey = null
     }
 
     private fun isPhoneContact(contact: String): Boolean {

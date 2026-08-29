@@ -5,8 +5,8 @@ import com.google.gson.annotations.SerializedName
 data class StatusDto(
     @SerializedName("status")
     val status: String,
-    @SerializedName(value = "transaction_id", alternate = ["transactionId", "id"])
+    @SerializedName("transaction_id")
     val transactionId: Long? = null,
-    @SerializedName(value = "receipt_number", alternate = ["receiptNumber", "receipt_id", "receiptId"])
+    @SerializedName("receipt_number")
     val receiptNumber: String? = null
 )

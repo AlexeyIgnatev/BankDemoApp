@@ -7,6 +7,7 @@ import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import kotlinx.parcelize.Parcelize
+import java.math.BigDecimal
 
 @Keep
 @Parcelize
@@ -15,7 +16,7 @@ data class TransactionModel(
     val currencyEnum: CurrencyEnum?,
     val type: TransactionEnum?,
     val conversionSide: ConversionSide?,
-    val amount: Double?,
+    val amount: BigDecimal?,
     val successful: Boolean?,
     val createdAt: Long?,
     val recipientFullName: String? = null,
@@ -26,7 +27,7 @@ data class TransactionModel(
 fun TransactionDto?.toModel(): TransactionModel? =
     this?.let {
         TransactionModel(
-            transactionId = it.transactionId ?: it.id,
+            transactionId = it.transactionId,
             currencyEnum = it.currencyEnum,
             type = it.type,
             conversionSide = it.conversionSide,

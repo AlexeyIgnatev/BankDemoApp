@@ -5,26 +5,29 @@ import androidx.annotation.Keep
 import kotlinx.parcelize.Parcelize
 
 import com.esom.bank.screens.main.dto.PaymentFeeDto
+import java.math.BigDecimal
 import java.util.Locale
 
 @Keep
 @Parcelize
 data class PaymentFeeModel(
     val operation: String,
-    val percentFee: Double,
-    val fixedFee: Double
+    val percentFee: BigDecimal,
+    val fixedFee: BigDecimal
 ) : Parcelable {
-    fun calculateFee(amount: Double): Double {
-        if (amount <= 0.0) return 0.0
-        val percentAmount = amount * (percentFee.coerceAtLeast(0.0) / 100.0)
-        return maxOf(percentAmount, fixedFee.coerceAtLeast(0.0))
+    fun calculateFee(amount: BigDecimal): BigDecimal {
+        if (amount <= BigDecimal.ZERO) return BigDecimal.ZERO
+        val percentAmount = amount
+            .multiply(percentFee.max(BigDecimal.ZERO))
+            .divide(BigDecimal(100))
+        return percentAmount.max(fixedFee.max(BigDecimal.ZERO))
     }
 }
 
 fun PaymentFeeDto.toModel() = PaymentFeeModel(
     operation = operation.orEmpty(),
-    percentFee = percentFee?.toDoubleOrNull() ?: 0.0,
-    fixedFee = fixedFee?.toDoubleOrNull() ?: 0.0
+    percentFee = percentFee?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+    fixedFee = fixedFee?.toBigDecimalOrNull() ?: BigDecimal.ZERO
 )
 
 fun List<PaymentFeeDto>.toPaymentFeeModels(): List<PaymentFeeModel> =

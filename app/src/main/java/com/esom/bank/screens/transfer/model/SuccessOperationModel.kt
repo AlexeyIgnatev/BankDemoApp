@@ -6,19 +6,20 @@ import kotlinx.parcelize.Parcelize
 
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.history.enums.ConversionSide
+import java.math.BigDecimal
 
 @Keep
 @Parcelize
 data class SuccessOperationModel(
-    val amount: Double,
+    val amount: BigDecimal,
     val currency: CurrencyEnum,
     val operationTitle: String,
     val paidFromAccount: String,
     val recipient: String,
     val receiptNumber: String,
-    val fee: Double = 0.0,
+    val fee: BigDecimal = BigDecimal.ZERO,
     val feeCurrency: CurrencyEnum? = null,
-    val creditedAmount: Double? = null,
+    val creditedAmount: BigDecimal? = null,
     val creditedCurrency: CurrencyEnum? = null,
     val debitedCurrency: CurrencyEnum? = null,
     val transactionId: Long? = null,
@@ -29,7 +30,7 @@ data class SuccessOperationModel(
     val amountIsNet: Boolean = false,
     val recipientName: String = "",
     val openedFromHistory: Boolean = false,
-    val totalDebitedAmount: Double? = null,
+    val totalDebitedAmount: BigDecimal? = null,
     val amountIsIncoming: Boolean = false,
     val senderName: String = ""
 ) : Parcelable

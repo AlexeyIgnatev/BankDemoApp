@@ -2,12 +2,13 @@ package com.esom.bank.screens.history.dto
 
 import com.esom.bank.screens.history.enums.ConversionSide
 import com.google.gson.annotations.SerializedName
+import java.math.BigDecimal
 
 data class ReceiptResponseDto(
     @SerializedName("successful")
     val successful: Boolean?,
     @SerializedName("amount")
-    val amount: Double?,
+    val amount: BigDecimal?,
     @SerializedName("type")
     val type: String?,
     @SerializedName("currency")
@@ -15,37 +16,31 @@ data class ReceiptResponseDto(
     @SerializedName("created_at")
     val createdAt: Long?,
     @SerializedName("fee")
-    val fee: Double?,
+    val fee: BigDecimal?,
     @SerializedName("fee_currency")
     val feeCurrency: String? = null,
     @SerializedName("credited_amount")
-    val creditedAmount: Double? = null,
+    val creditedAmount: BigDecimal? = null,
     @SerializedName("credited_currency")
     val creditedCurrency: String? = null,
     @SerializedName("debited_currency")
     val debitedCurrency: String? = null,
-    @SerializedName(value = "account_details", alternate = ["account", "to_account", "requisites"])
+    @SerializedName("account_details")
     val accountDetails: String?,
-    @SerializedName(
-        value = "recipient_full_name",
-        alternate = ["recipient_name", "recipient", "recipientFullName"]
-    )
+    @SerializedName("recipient_full_name")
     val recipientFullName: String?,
-    @SerializedName(value = "paid_from_account", alternate = ["from_account", "source_account"])
+    @SerializedName("paid_from_account")
     val paidFromAccount: String?,
-    @SerializedName(value = "conversion_side", alternate = ["side"])
+    @SerializedName("conversion_side")
     val conversionSide: ConversionSide?,
-    @SerializedName(value = "abs_account", alternate = ["absAccount", "account_abs"])
+    @SerializedName("abs_account")
     val absAccount: String?,
-    @SerializedName(value = "abs_from_account", alternate = ["absFromAccount", "from_abs_account"])
+    @SerializedName("abs_from_account")
     val absFromAccount: String?,
-    @SerializedName(value = "abs_to_account", alternate = ["absToAccount", "to_abs_account"])
+    @SerializedName("abs_to_account")
     val absToAccount: String?,
-    @SerializedName(value = "receipt_number", alternate = ["receipt_id", "receiptId", "id"])
+    @SerializedName("receipt_number")
     val receiptNumber: String?,
-    @SerializedName(
-        value = "total_debited_amount",
-        alternate = ["debited_amount", "withdrawn_amount", "total_amount"]
-    )
-    val totalDebitedAmount: Double? = null
+    @SerializedName("total_debited_amount")
+    val totalDebitedAmount: BigDecimal? = null
 )

@@ -33,6 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.math.BigDecimal
 
 @AndroidEntryPoint
 class FinancialAnalysisFragment : Fragment() {
@@ -93,7 +94,7 @@ class FinancialAnalysisFragment : Fragment() {
             "${if (incomeMode) "+" else ""}${total.formatBalanceNew()} сом",
             model.balancesVisible.value ?: true
         )
-        binding.chart.setData(categories.map { it.amount }, monthLabel())
+        binding.chart.setData(categories.map { it.amount.toDouble() }, monthLabel())
         binding.categoriesContainer.removeAllViews()
         categories.forEachIndexed { index, category -> addCategory(category, index) }
         if (categories.isEmpty()) {
@@ -185,14 +186,14 @@ class FinancialAnalysisFragment : Fragment() {
         binding.categoriesContainer.addView(row)
     }
 
-    private fun amountInSom(item: TransactionModel): Double {
+    private fun amountInSom(item: TransactionModel): BigDecimal {
         val rate = when (item.currencyEnum) {
-            CurrencyEnum.SOM, null -> 1.0
+            CurrencyEnum.SOM, null -> BigDecimal.ONE
             else -> uiModel.uiState.value.wallets.firstOrNull { it.currency == item.currencyEnum }
-                ?.let { if (it.sellRate > 0.0) it.sellRate else it.buyRate }
-                ?.takeIf { it > 0.0 } ?: 1.0
+                ?.let { if (it.sellRate > BigDecimal.ZERO) it.sellRate else it.buyRate }
+                ?.takeIf { it > BigDecimal.ZERO } ?: BigDecimal.ONE
         }
-        return (item.amount ?: 0.0) * rate
+        return (item.amount ?: BigDecimal.ZERO) * rate
     }
 
     private fun TransactionModel.isIncoming() =

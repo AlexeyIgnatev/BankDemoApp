@@ -32,7 +32,9 @@ import com.esom.bank.screens.transfer.dto.RecipientLookupRequestDto
 import com.esom.bank.screens.transfer.dto.RecipientLookupResponseDto
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import java.math.BigDecimal
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -75,22 +77,16 @@ interface MainRepository {
     fun convert(
         from: CurrencyEnum,
         to: CurrencyEnum,
-        fromAmount: Double
-    ): Flow<UiState<StatusDto>>
-
-    fun transferFromFiat(
-        amount: Double,
-    ): Flow<UiState<StatusDto>>
-
-    fun transferToFiat(
-        amount: Double
+        fromAmount: BigDecimal,
+        idempotencyKey: String,
     ): Flow<UiState<StatusDto>>
 
     fun transferToUser(
-        amount: Double,
+        amount: BigDecimal,
         phone: String,
         address: String? = null,
-        currencyEnum: CurrencyEnum
+        currencyEnum: CurrencyEnum,
+        idempotencyKey: String
     ): Flow<UiState<StatusDto>>
 
     fun recipientInfo(request: RecipientLookupRequestDto): Flow<UiState<RecipientLookupResponseDto>>
@@ -147,7 +143,7 @@ class MainRepositoryImpl @Inject constructor(
     override fun getLogin(): String = authLocalDataSource.getLogin().orEmpty()
 
     override fun isAuthenticated(): Boolean =
-        authLocalDataSource.getLogin() != null && authLocalDataSource.getPassword() != null
+        !authLocalDataSource.getAccessToken().isNullOrBlank()
 
     override fun hasLock(): Boolean = pinLocalDataSource.hasLock()
 
@@ -211,21 +207,23 @@ class MainRepositoryImpl @Inject constructor(
         appPreferencesLocalDataSource.setWalletHistoryExpanded(expanded)
 
     override fun authenticate(login: String, password: String): Flow<UiState<UserModel>> = flow {
-        authLocalDataSource.setLogin(login)
-        authLocalDataSource.setPassword(password)
         var authenticated = false
         try {
-            emitAll(
-                mainCloudDataSource.getUserInfo().map { response ->
-                    when (response) {
+            when (val loginResponse = mainCloudDataSource.login(login, password).first()) {
+                is ApiResponse.Error -> emit(UiState.Error(loginResponse.toString(context)))
+                is ApiResponse.Success -> {
+                    authLocalDataSource.setLogin(login)
+                    authLocalDataSource.setAccessToken(loginResponse.data.accessToken)
+
+                    when (val userResponse = mainCloudDataSource.getUserInfo().first()) {
                         is ApiResponse.Success -> {
                             authenticated = true
-                            UiState.Success(response.data.toModel())
+                            emit(UiState.Success(userResponse.data.toModel()))
                         }
-                        is ApiResponse.Error -> UiState.Error(response.toString(context))
+                        is ApiResponse.Error -> emit(UiState.Error(userResponse.toString(context)))
                     }
                 }
-            )
+            }
         } finally {
             if (!authenticated) authLocalDataSource.clearAuthData()
         }
@@ -258,9 +256,13 @@ class MainRepositoryImpl @Inject constructor(
     override fun convert(
         from: CurrencyEnum,
         to: CurrencyEnum,
-        fromAmount: Double
+        fromAmount: BigDecimal,
+        idempotencyKey: String,
     ): Flow<UiState<StatusDto>> =
-        mainCloudDataSource.convert(ConvertDto(from, to, fromAmount)).map {
+        mainCloudDataSource.convert(
+            ConvertDto(from, to, fromAmount.toPlainString()),
+            idempotencyKey,
+        ).map {
             when (it) {
                 is ApiResponse.Success -> return@map UiState.Success(it.data)
                 is ApiResponse.Error -> return@map UiState.Error(it.toString(context))
@@ -268,29 +270,14 @@ class MainRepositoryImpl @Inject constructor(
         }
 
 
-    override fun transferFromFiat(amount: Double): Flow<UiState<StatusDto>> =
-        mainCloudDataSource.fiatToCrypto(amount).map { response ->
-            when (response) {
-                is ApiResponse.Success -> return@map UiState.Success(response.data)
-                is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
-            }
-        }
-
-    override fun transferToFiat(amount: Double): Flow<UiState<StatusDto>> =
-        mainCloudDataSource.cryptoToFiat(amount).map { response ->
-            when (response) {
-                is ApiResponse.Success -> return@map UiState.Success(response.data)
-                is ApiResponse.Error -> return@map UiState.Error(response.toString(context))
-            }
-        }
-
     override fun transferToUser(
-        amount: Double,
+        amount: BigDecimal,
         phone: String,
         address: String?,
-        currencyEnum: CurrencyEnum
+        currencyEnum: CurrencyEnum,
+        idempotencyKey: String
     ): Flow<UiState<StatusDto>> =
-        mainCloudDataSource.transfer(amount, phone, address, currencyEnum).map { response ->
+        mainCloudDataSource.transfer(amount, phone, address, currencyEnum, idempotencyKey).map { response ->
             when (response) {
                 is ApiResponse.Success -> return@map UiState.Success(response.data)
                 is ApiResponse.Error -> return@map UiState.Error(response.toString(context))

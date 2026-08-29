@@ -13,12 +13,12 @@ data class RecipientLookupRequestDto(
 )
 
 data class RecipientLookupResponseDto(
-    @SerializedName(value = "first_name", alternate = ["firstName"])
+    @SerializedName("first_name")
     val firstName: String? = null,
-    @SerializedName(value = "middle_name", alternate = ["middleName", "patronymic"])
+    @SerializedName("middle_name")
     val middleName: String? = null,
-    @SerializedName(value = "last_name", alternate = ["lastName", "surname"])
+    @SerializedName("last_name")
     val lastName: String? = null,
-    @SerializedName(value = "full_name", alternate = ["fullName", "recipient_full_name"])
+    @SerializedName("full_name")
     val fullName: String? = null
 )

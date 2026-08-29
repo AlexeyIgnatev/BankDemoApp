@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 data class TransferDto(
     @SerializedName("amount")
-    val amount: Double,
+    val amount: String,
     @SerializedName("phone_number")
     val phoneNumber: String? = null,
     @SerializedName("address")

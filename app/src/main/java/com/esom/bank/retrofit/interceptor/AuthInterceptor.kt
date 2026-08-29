@@ -1,15 +1,11 @@
 package com.esom.bank.retrofit.interceptor
 
-import android.util.Base64
-import android.util.Log
 import com.esom.bank.common.session.SessionManager
 import com.esom.bank.retrofit.exception.NotLoggedInException
 import com.esom.bank.screens.auth.data.AuthLocalDataSource
-import okhttp3.Credentials
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.net.HttpURLConnection
-import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 
@@ -25,13 +21,12 @@ class AuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         var request = chain.request()
 
-        val login = authLocalDataSource.getLogin()?.trim()
-        val password = authLocalDataSource.getPassword()?.trim()
+        val accessToken = authLocalDataSource.getAccessToken()?.trim()
+        val isLoginRequest = request.url.encodedPath.endsWith("/users/auth/login")
 
-        if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
-            Log.e("login+passowrd", "$login $password")
+        if (!accessToken.isNullOrEmpty() && !isLoginRequest) {
             request = request.newBuilder()
-                .header(AUTH_HEADER, Credentials.basic(login, password))
+                .header(AUTH_HEADER, "Bearer $accessToken")
                 .build()
         }
 
@@ -39,8 +34,7 @@ class AuthInterceptor @Inject constructor(
 
         if (!response.isSuccessful) {
             if (response.code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                authLocalDataSource.setLogin(null)
-                authLocalDataSource.setPassword(null)
+                authLocalDataSource.clearAuthData()
                 sessionManager.notifyLoggedOut()
                 throw NotLoggedInException()
             }

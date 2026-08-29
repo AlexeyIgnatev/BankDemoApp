@@ -24,6 +24,7 @@ import com.esom.bank.common.utils.resolveReusableRecipient
 import com.esom.bank.common.utils.files.ReceiptFileUtils
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.showErrorSnackbar
+import com.esom.bank.common.utils.toMoneyDecimalOrZero
 import com.esom.bank.databinding.FragmentSuccessTransferBinding
 import com.esom.bank.screens.history.enums.ConversionSide
 import com.esom.bank.screens.history.model.ReceiptModel
@@ -150,7 +151,7 @@ class SuccessTransferFragment : Fragment() {
         } else if (data.conversionSide == null && data.targetCurrency == null) {
             data.amount
         } else {
-            (data.amount - data.fee).coerceAtLeast(0.0)
+            (data.amount - data.fee).max(java.math.BigDecimal.ZERO)
         }
         val totalText = formatAmount(totalAmount, resolveCreditedCurrency(data))
         val dateTimeText = formatDateTime(data.createdAt)
@@ -261,7 +262,7 @@ class SuccessTransferFragment : Fragment() {
                 NavGraphDirections.startSwapFragment(
                     operation.currency.name,
                     target.name,
-                    operation.amount.toFloat(),
+                    operation.amount.toPlainString(),
                     false
                 )
             )
@@ -271,7 +272,7 @@ class SuccessTransferFragment : Fragment() {
                     operation.currency.name,
                     operation.recipient,
                     operation.recipientName,
-                    operation.amount.toFloat(),
+                    operation.amount.toPlainString(),
                     false
                 )
             )
@@ -457,7 +458,7 @@ class SuccessTransferFragment : Fragment() {
     private fun resolveCreditedAmount(
         currentOperation: SuccessOperationModel?,
         receipt: ReceiptModel
-    ): Double? {
+    ): java.math.BigDecimal? {
         if (receipt.creditedAmount != null) return receipt.creditedAmount
         val operation = currentOperation ?: return receipt.creditedAmount
         val isSomEsomConversion = (
@@ -467,7 +468,7 @@ class SuccessTransferFragment : Fragment() {
                 )
 
         return if (isSomEsomConversion) {
-            (operation.amount - receipt.fee).coerceAtLeast(0.0)
+            (operation.amount - receipt.fee).max(java.math.BigDecimal.ZERO)
         } else {
             receipt.creditedAmount ?: operation.creditedAmount
         }
@@ -506,7 +507,7 @@ class SuccessTransferFragment : Fragment() {
 
     private fun buildFallbackOperation(): SuccessOperationModel =
         SuccessOperationModel(
-            amount = 0.0,
+            amount = java.math.BigDecimal.ZERO,
             currency = CurrencyEnum.SOM,
             operationTitle = getString(R.string.transfer),
             paidFromAccount = "",
@@ -514,8 +515,8 @@ class SuccessTransferFragment : Fragment() {
             receiptNumber = ""
         )
 
-    private fun formatAmount(amount: Double, currency: CurrencyEnum): String {
-        val scaled = BigDecimal.valueOf(amount).setScale(2, RoundingMode.HALF_UP)
+    private fun formatAmount(amount: java.math.BigDecimal, currency: CurrencyEnum): String {
+        val scaled = amount.setScale(2, RoundingMode.HALF_UP)
         return "${scaled.toPlainString().replace('.', ',')} ${formatCurrency(currency)}"
     }
 

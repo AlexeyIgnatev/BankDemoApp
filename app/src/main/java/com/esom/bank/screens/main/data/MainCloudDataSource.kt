@@ -4,6 +4,8 @@ import com.esom.bank.common.data.AbstractBaseCloudDataSource
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.utils.PhoneInfo
 import com.esom.bank.retrofit.api.ServerApi
+import com.esom.bank.retrofit.dto.UserAuthRequestDto
+import com.esom.bank.retrofit.dto.UserAuthResponseDto
 import com.esom.bank.screens.chat.dto.SendMessageDto
 import com.esom.bank.screens.chat.dto.SupportDto
 import com.esom.bank.screens.history.dto.GetTransactionsDto
@@ -16,7 +18,6 @@ import com.esom.bank.screens.main.dto.FcmTokenDto
 import com.esom.bank.screens.main.dto.PaymentFeeDto
 import com.esom.bank.screens.main.dto.PushSettingsDto
 import com.esom.bank.screens.main.dto.StatusDto
-import com.esom.bank.screens.main.dto.SwapDto
 import com.esom.bank.screens.main.dto.TransferDto
 import com.esom.bank.screens.main.dto.UserDto
 import com.esom.bank.screens.main.enums.CurrencyEnum
@@ -28,15 +29,21 @@ import com.esom.bank.screens.transfer.dto.RecipientLookupRequestDto
 import com.esom.bank.screens.transfer.dto.RecipientLookupResponseDto
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import java.math.BigDecimal
 
 interface MainCloudDataSource {
+    fun login(username: String, password: String): Flow<ApiResponse<UserAuthResponseDto>>
     fun getUserInfo(): Flow<ApiResponse<UserDto>>
     fun getSettings(): Flow<ApiResponse<FeeDto>>
     fun getFees(): Flow<ApiResponse<List<PaymentFeeDto>>>
-    fun convert(convert: ConvertDto): Flow<ApiResponse<StatusDto>>
-    fun fiatToCrypto(amount: Double): Flow<ApiResponse<StatusDto>>
-    fun cryptoToFiat(amount: Double): Flow<ApiResponse<StatusDto>>
-    fun transfer(amount: Double, phone: String, address: String? = null, currencyEnum: CurrencyEnum): Flow<ApiResponse<StatusDto>>
+    fun convert(convert: ConvertDto, idempotencyKey: String): Flow<ApiResponse<StatusDto>>
+    fun transfer(
+        amount: BigDecimal,
+        phone: String,
+        address: String? = null,
+        currencyEnum: CurrencyEnum,
+        idempotencyKey: String
+    ): Flow<ApiResponse<StatusDto>>
     fun recipientInfo(request: RecipientLookupRequestDto): Flow<ApiResponse<RecipientLookupResponseDto>>
     fun history(currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
                 take: Int, skip: Int): Flow<ApiResponse<List<TransactionDto?>>>
@@ -57,6 +64,11 @@ class MainCloudDataSourceImpl @Inject constructor(
     private val serverApi: ServerApi
 ) : MainCloudDataSource,
     AbstractBaseCloudDataSource() {
+    override fun login(username: String, password: String): Flow<ApiResponse<UserAuthResponseDto>> =
+        safeApiCall {
+            serverApi.login(UserAuthRequestDto(username, password))
+        }
+
     override fun getUserInfo(): Flow<ApiResponse<UserDto>> = safeApiCall {
         serverApi.getUserInfo(PhoneInfo.getFormattedPhoneInfo())
     }
@@ -69,21 +81,22 @@ class MainCloudDataSourceImpl @Inject constructor(
         serverApi.getFees()
     }
 
-    override fun convert(convert: ConvertDto): Flow<ApiResponse<StatusDto>>  = safeApiCall {
-        serverApi.convert(convert)
+    override fun convert(convert: ConvertDto, idempotencyKey: String): Flow<ApiResponse<StatusDto>> = safeApiCall {
+        serverApi.convert(idempotencyKey, convert)
     }
 
-    override fun fiatToCrypto(amount: Double): Flow<ApiResponse<StatusDto>> = safeApiCall {
-        serverApi.fiatToCrypto(SwapDto(amount))
-    }
-
-    override fun cryptoToFiat(amount: Double): Flow<ApiResponse<StatusDto>> = safeApiCall {
-        serverApi.cryptoToFiat(SwapDto(amount))
-    }
-
-    override fun transfer(amount: Double, phone: String, address: String?, currencyEnum: CurrencyEnum): Flow<ApiResponse<StatusDto>> =
+    override fun transfer(
+        amount: BigDecimal,
+        phone: String,
+        address: String?,
+        currencyEnum: CurrencyEnum,
+        idempotencyKey: String
+    ): Flow<ApiResponse<StatusDto>> =
         safeApiCall {
-            serverApi.transfer(TransferDto(amount, phone, address, currencyEnum))
+            serverApi.transfer(
+                idempotencyKey,
+                TransferDto(amount.toPlainString(), phone, address, currencyEnum),
+            )
         }
 
     override fun recipientInfo(request: RecipientLookupRequestDto): Flow<ApiResponse<RecipientLookupResponseDto>> =

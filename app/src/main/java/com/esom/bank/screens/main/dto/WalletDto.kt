@@ -2,6 +2,7 @@ package com.esom.bank.screens.main.dto
 
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.google.gson.annotations.SerializedName
+import java.math.BigDecimal
 
 data class WalletDto (
     @SerializedName("currency")
@@ -9,9 +10,9 @@ data class WalletDto (
     @SerializedName("address")
     val address: String,
     @SerializedName("balance")
-    val balance: Double,
+    val balance: BigDecimal,
     @SerializedName("buy_rate")
-    val buyRate: Double,
+    val buyRate: BigDecimal,
     @SerializedName("sell_rate")
-    val sellRate: Double
+    val sellRate: BigDecimal
 )

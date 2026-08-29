@@ -4,6 +4,7 @@ import android.text.InputFilter
 import android.text.Spanned
 import android.text.method.DigitsKeyListener
 import android.widget.EditText
+import java.math.BigDecimal
 
 fun EditText.setupDecimalAmountInput(decimalPlaces: Int = 2) {
     inputType = android.text.InputType.TYPE_CLASS_NUMBER or
@@ -16,8 +17,8 @@ fun EditText.setupDecimalAmountInput(decimalPlaces: Int = 2) {
     filters = decimalFilters
 }
 
-fun String.toDecimalAmountOrNull(): Double? =
-    trim().replace(',', '.').toDoubleOrNull()
+fun String.toDecimalAmountOrNull(): BigDecimal? =
+    trim().replace(',', '.').toBigDecimalOrNull()
 
 private class DecimalAmountInputFilter(
     decimalPlaces: Int

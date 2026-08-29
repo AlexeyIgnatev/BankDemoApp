@@ -8,6 +8,6 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class FinancialAnalysisCategory(
     val title: String,
-    val amount: Double,
+    val amount: java.math.BigDecimal,
     val count: Int
 ) : Parcelable

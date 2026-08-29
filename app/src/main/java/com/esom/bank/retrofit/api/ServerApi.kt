@@ -11,7 +11,6 @@ import com.esom.bank.screens.main.dto.FcmTokenDto
 import com.esom.bank.screens.main.dto.PaymentFeeDto
 import com.esom.bank.screens.main.dto.PushSettingsDto
 import com.esom.bank.screens.main.dto.StatusDto
-import com.esom.bank.screens.main.dto.SwapDto
 import com.esom.bank.screens.main.dto.TransferDto
 import com.esom.bank.screens.main.dto.UserDto
 import com.esom.bank.screens.notification.dto.FinancialReportRequestDto
@@ -20,14 +19,22 @@ import com.esom.bank.screens.notification.dto.NotificationDto
 import com.esom.bank.screens.swap.dto.ConvertDto
 import com.esom.bank.screens.transfer.dto.RecipientLookupRequestDto
 import com.esom.bank.screens.transfer.dto.RecipientLookupResponseDto
+import com.esom.bank.retrofit.dto.UserAuthRequestDto
+import com.esom.bank.retrofit.dto.UserAuthResponseDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface ServerApi {
+    @POST("users/auth/login")
+    suspend fun login(
+        @Body request: UserAuthRequestDto
+    ): Response<UserAuthResponseDto>
+
     @GET("users/info")
     suspend fun getUserInfo(
         @Query("device") device: String
@@ -35,21 +42,13 @@ interface ServerApi {
 
     @POST("payments/convert")
     suspend fun convert(
+        @Header("X-Idempotency-Key") idempotencyKey: String,
         @Body convertDto: ConvertDto
-    ): Response<StatusDto>
-
-    @POST("payments/fiat-to-crypto")
-    suspend fun fiatToCrypto(
-        @Body swapDto: SwapDto
-    ): Response<StatusDto>
-
-    @POST("payments/crypto-to-fiat")
-    suspend fun cryptoToFiat(
-        @Body swapDto: SwapDto
     ): Response<StatusDto>
 
     @POST("payments/transfer")
     suspend fun transfer(
+        @Header("X-Idempotency-Key") idempotencyKey: String,
         @Body transferDto: TransferDto
     ): Response<StatusDto>
 

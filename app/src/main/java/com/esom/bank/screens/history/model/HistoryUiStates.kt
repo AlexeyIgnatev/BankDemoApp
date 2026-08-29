@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 
 import com.esom.bank.screens.history.HistoryFragment
 import com.esom.bank.screens.main.model.WalletModel
+import java.math.BigDecimal
 
 @Keep
 @Parcelize
@@ -28,8 +29,8 @@ data class FinancialAnalysisUiState(
 data class HistoryAdapterUiState(
     val withoutTransfers: Boolean = false,
     val typeFilter: HistoryTypeFilter = HistoryTypeFilter.ALL,
-    val minimumAmount: Double? = null,
-    val maximumAmount: Double? = null,
+    val minimumAmount: BigDecimal? = null,
+    val maximumAmount: BigDecimal? = null,
     val searchQuery: String = ""
 ) : Parcelable
 

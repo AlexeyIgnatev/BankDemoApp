@@ -18,5 +18,7 @@ data class SwapUiState(
     val toPanelCurrencies: List<CurrencyEnum> = emptyList(),
     val updatingAmounts: Boolean = false,
     val pendingTemplate: SwapTemplate? = null,
-    val automaticRepeatStarted: Boolean = false
+    val automaticRepeatStarted: Boolean = false,
+    val conversionIdempotencyKey: String? = null,
+    val conversionFingerprint: String? = null
 ) : Parcelable

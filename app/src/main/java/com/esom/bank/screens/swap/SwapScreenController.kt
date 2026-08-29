@@ -22,7 +22,7 @@ import com.esom.bank.common.utils.iconRes
 import com.esom.bank.common.utils.views.doOnApplyWindowInsets
 import com.esom.bank.common.utils.views.setOnUserTextChangeListener
 import com.esom.bank.common.utils.views.setupDecimalAmountInput
-import com.esom.bank.common.utils.views.toDecimalAmountOrNull
+import com.esom.bank.common.utils.toMoneyDecimalOrZero
 import com.esom.bank.common.utils.views.setTextProgrammatically
 import com.esom.bank.common.utils.views.showErrorSnackbar
 import com.esom.bank.common.utils.views.slideInFromTop
@@ -37,6 +37,7 @@ import com.esom.bank.screens.swap.model.SwapTemplate
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.UUID
 
 internal class SwapScreenController(
     private val fragment: Fragment,
@@ -49,6 +50,7 @@ internal class SwapScreenController(
     companion object {
         private const val TAG = "SwapFragment"
         private const val OPERATION_CONVERT = "convert"
+        private const val CONVERSION_IDEMPOTENCY_KEY = "conversion_idempotency_key"
     }
 
     fun bind() {
@@ -69,9 +71,10 @@ internal class SwapScreenController(
         setupQuickAmounts()
         setupClickListeners()
         setupTransferConfirmationResultListener()
-        if (args.amount > 0f) {
-            binding.sum.setTextProgrammatically(formatTemplateAmount(args.amount.toDouble()))
-            updateAmountsFromSend(args.amount.toDouble())
+        val initialAmount = args.amount.toMoneyDecimalOrZero()
+        if (initialAmount > BigDecimal.ZERO) {
+            binding.sum.setTextProgrammatically(formatTemplateAmount(initialAmount))
+            updateAmountsFromSend(initialAmount)
         }
 
         if (binding.sum.text.isNullOrBlank()) {
@@ -150,7 +153,10 @@ internal class SwapScreenController(
             TransferConfirmationFragment.RESULT_REQUEST_KEY,
             viewLifecycleOwner
         ) { _, bundle ->
-            if (!bundle.getBoolean(TransferConfirmationFragment.CONFIRMED_KEY)) return@setFragmentResultListener
+            if (!bundle.getBoolean(TransferConfirmationFragment.CONFIRMED_KEY)) {
+                uiModel.clearConversionIdempotencyKey()
+                return@setFragmentResultListener
+            }
             if (bundle.getString(TransferConfirmationFragment.OPERATION_KEY) != OPERATION_CONVERT) {
                 return@setFragmentResultListener
             }
@@ -161,10 +167,14 @@ internal class SwapScreenController(
             val toCurrency = CurrencyEnum.fromNameOrNull(
                 bundle.getString(TransferConfirmationFragment.TO_CURRENCY_KEY)
             ) ?: return@setFragmentResultListener
-            val amount = bundle.getDouble(TransferConfirmationFragment.AMOUNT_KEY)
-            val creditedAmount = bundle.getDouble(TransferConfirmationFragment.CREDITED_AMOUNT_KEY)
-            val fee = bundle.getDouble(TransferConfirmationFragment.FEE_KEY)
-            val totalDebited = bundle.getDouble(TransferConfirmationFragment.TOTAL_DEBITED_KEY)
+            val amount = bundle.getString(TransferConfirmationFragment.AMOUNT_KEY).orEmpty().toMoneyDecimalOrZero()
+            val creditedAmount = bundle.getString(TransferConfirmationFragment.CREDITED_AMOUNT_KEY).orEmpty().toMoneyDecimalOrZero()
+            val fee = bundle.getString(TransferConfirmationFragment.FEE_KEY).orEmpty().toMoneyDecimalOrZero()
+            val totalDebited = bundle.getString(TransferConfirmationFragment.TOTAL_DEBITED_KEY).orEmpty().toMoneyDecimalOrZero()
+            val idempotencyKey = bundle.getString(CONVERSION_IDEMPOTENCY_KEY)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?: UUID.randomUUID().toString()
 
             uiModel.setPendingTemplate(SwapTemplate(
                 amount = amount,
@@ -192,7 +202,7 @@ internal class SwapScreenController(
                     senderName = currentUserFullName()
                 )
             )
-            model.convert(fromCurrency, toCurrency, amount)
+            model.convert(fromCurrency, toCurrency, amount, idempotencyKey)
         }
     }
 
@@ -331,6 +341,7 @@ internal class SwapScreenController(
 
                 is UiState.Success -> {
                     uiModel.setPendingTemplate(null)
+                    uiModel.clearConversionIdempotencyKey()
                     model.updateUserData()
                     model.updateLastSuccessOperationReceipt(
                         transactionId = it.data.transactionId,
@@ -350,7 +361,7 @@ internal class SwapScreenController(
                 is UiState.Success -> {
                     Log.d(
                         TAG,
-                        "Settings loaded: esom_per_usd=${state.data.esomPerUsd}"
+                        "Settings loaded: usd_buy_rate=${state.data.usdBuyRate}"
                     )
                     updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
                     executeAutomaticRepeatIfReady()
@@ -374,11 +385,11 @@ internal class SwapScreenController(
     }
 
     private fun executeAutomaticRepeatIfReady() {
-        if (!args.autoExecute || args.amount <= 0f) return
+        val amount = args.amount.toMoneyDecimalOrZero()
+        if (!args.autoExecute || amount <= BigDecimal.ZERO) return
         if (model.fees.value !is UiState.Success || model.settings.value !is UiState.Success) return
         if (!uiModel.startAutomaticRepeat()) return
 
-        val amount = args.amount.toDouble()
         val from = uiModel.uiState.value.fromCurrency
         val to = uiModel.uiState.value.toCurrency
         model.setLastSuccessOperation(
@@ -397,7 +408,7 @@ internal class SwapScreenController(
                 senderName = currentUserFullName()
             )
         )
-        model.convert(from, to, amount)
+        model.convert(from, to, amount, UUID.randomUUID().toString())
     }
 
     private fun renderTemplates() {
@@ -458,7 +469,7 @@ internal class SwapScreenController(
         updateAmountsFromSend(template.amount)
     }
 
-    private fun formatTemplateAmount(amount: Double): String =
+    private fun formatTemplateAmount(amount: BigDecimal): String =
         amount.formatBalanceNew()
 
     private fun dp(value: Int): Int =
@@ -635,7 +646,7 @@ internal class SwapScreenController(
         val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return
 
         val fromWallet = wallets.find { it.currency == uiModel.uiState.value.fromCurrency }
-        val fromBalance = fromWallet?.balance ?: 0.0
+        val fromBalance = fromWallet?.balance ?: BigDecimal.ZERO
 
         binding.sendAvailableTitle.text =
             getString(R.string.available_title, fromBalance.formatBalanceNew())
@@ -691,12 +702,12 @@ internal class SwapScreenController(
         divider.isVisible = true
     }
 
-    private fun getAvailableFromBalance(): Double {
-        val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return 0.0
-        return wallets.find { it.currency == uiModel.uiState.value.fromCurrency }?.balance ?: 0.0
+    private fun getAvailableFromBalance(): BigDecimal {
+        val wallets = (model.myData.value as? UiState.Success)?.data?.wallets ?: return BigDecimal.ZERO
+        return wallets.find { it.currency == uiModel.uiState.value.fromCurrency }?.balance ?: BigDecimal.ZERO
     }
 
-    private fun updateAmountsFromSend(fromAmount: Double) {
+    private fun updateAmountsFromSend(fromAmount: BigDecimal) {
         val grossConvertedAmount = convertWithoutFee(fromAmount)
 
         uiModel.setUpdatingAmounts(true)
@@ -710,7 +721,7 @@ internal class SwapScreenController(
     }
 
     private fun updateAmountsFromReceive(
-        receivedAmount: Double,
+        receivedAmount: BigDecimal,
         preserveReceiveInput: Boolean = false
     ) {
         val fromAmount = calculateSendFromReceived(receivedAmount)
@@ -730,14 +741,14 @@ internal class SwapScreenController(
     }
 
     private fun updateCommissionAndTotal(
-        fromAmount: Double? = null,
-        convertedAmount: Double? = null
+        fromAmount: BigDecimal? = null,
+        convertedAmount: BigDecimal? = null
     ) {
         val grossAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
         val actualConvertedAmount = convertedAmount ?: convertWithoutFee(grossAmount)
         val fee = calculateFeePreview(grossAmount)
         val convertedFee = convertWithoutFee(fee)
-        val netConvertedAmount = (actualConvertedAmount - convertedFee).coerceAtLeast(0.0)
+        val netConvertedAmount = (actualConvertedAmount - convertedFee).max(BigDecimal.ZERO)
 
         binding.thirdValue.text = formatCurrencyAmount(fee)
         binding.comissionValue.text = formatCurrencyAmount(grossAmount)
@@ -759,15 +770,15 @@ internal class SwapScreenController(
         )
     }
 
-    private fun calculateReceivedFromSend(fromAmount: Double): Double {
-        if (fromAmount <= 0.0) return 0.0
+    private fun calculateReceivedFromSend(fromAmount: BigDecimal): BigDecimal {
+        if (fromAmount <= BigDecimal.ZERO) return BigDecimal.ZERO
         val fee = calculateFeePreview(fromAmount)
-        val netAmount = (fromAmount - fee).coerceAtLeast(0.0)
+        val netAmount = (fromAmount - fee).max(BigDecimal.ZERO)
         return convertWithoutFee(netAmount)
     }
 
-    private fun calculateSendFromReceived(receivedAmount: Double): Double {
-        if (receivedAmount <= 0.0) return 0.0
+    private fun calculateSendFromReceived(receivedAmount: BigDecimal): BigDecimal {
+        if (receivedAmount <= BigDecimal.ZERO) return BigDecimal.ZERO
         return invertConvertWithoutFee(receivedAmount)
     }
 
@@ -776,70 +787,64 @@ internal class SwapScreenController(
                 (uiModel.uiState.value.fromCurrency == CurrencyEnum.ESOM && uiModel.uiState.value.toCurrency == CurrencyEnum.SOM)
     }
 
-    private fun formatInputAmount(amount: Double): String {
-        return if (amount == 0.0) {
+    private fun formatInputAmount(amount: BigDecimal): String {
+        return if (amount.compareTo(BigDecimal.ZERO) == 0) {
             "0"
         } else {
             formatCurrencyAmount(amount)
         }
     }
 
-    private fun parseAmount(value: String?): Double {
-        if (value.isNullOrBlank()) return 0.0
-        return value.toDecimalAmountOrNull() ?: 0.0
+    private fun parseAmount(value: String?): BigDecimal {
+        if (value.isNullOrBlank()) return BigDecimal.ZERO
+        return value.toMoneyDecimalOrZero()
     }
 
-    private fun calculateFeePreview(fromAmount: Double): Double {
-        if (fromAmount <= 0.0) return 0.0
+    private fun calculateFeePreview(fromAmount: BigDecimal): BigDecimal {
+        if (fromAmount <= BigDecimal.ZERO) return BigDecimal.ZERO
         return model.calculateConvertFee(fromAmount, uiModel.uiState.value.fromCurrency, uiModel.uiState.value.toCurrency)
     }
 
-    private fun convertWithoutFee(fromAmount: Double): Double {
+    private fun convertWithoutFee(fromAmount: BigDecimal): BigDecimal {
         val exchangeRate = getExchangeRate()
-        if (exchangeRate == 0.0) return 0.0
+        if (exchangeRate.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO
         return if (uiModel.uiState.value.fromCurrency == CurrencyEnum.SOM || uiModel.uiState.value.fromCurrency == CurrencyEnum.ESOM) {
-            fromAmount / exchangeRate
+            fromAmount.divide(exchangeRate, 18, RoundingMode.HALF_UP)
         } else {
-            fromAmount * exchangeRate
+            fromAmount.multiply(exchangeRate)
         }
     }
 
-    private fun invertConvertWithoutFee(grossOut: Double): Double {
+    private fun invertConvertWithoutFee(grossOut: BigDecimal): BigDecimal {
         val exchangeRate = getExchangeRate()
-        if (exchangeRate == 0.0) return 0.0
+        if (exchangeRate.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO
         return if (uiModel.uiState.value.fromCurrency == CurrencyEnum.SOM || uiModel.uiState.value.fromCurrency == CurrencyEnum.ESOM) {
-            grossOut * exchangeRate
+            grossOut.multiply(exchangeRate)
         } else {
-            grossOut / exchangeRate
+            grossOut.divide(exchangeRate, 18, RoundingMode.HALF_UP)
         }
     }
 
-    private fun getEsomPerUsdOrNull(): Double? {
+    private fun getUsdBuyRateOrNull(): BigDecimal? {
         val settings = (model.settings.value as? UiState.Success)?.data ?: return null
-        val v = settings.esomPerUsd
-        return if (v > 0.0) v else null
+        return settings.usdBuyRate.takeIf { it > BigDecimal.ZERO }
     }
 
-    private fun getUsdBuyRateOrNull(): Double? {
+    private fun getUsdSellRateOrNull(): BigDecimal? {
         val settings = (model.settings.value as? UiState.Success)?.data ?: return null
-        return settings.usdBuyRate.takeIf { it > 0.0 } ?: getEsomPerUsdOrNull()
+        return settings.usdSellRate.takeIf { it > BigDecimal.ZERO }
     }
 
-    private fun getUsdSellRateOrNull(): Double? {
-        val settings = (model.settings.value as? UiState.Success)?.data ?: return null
-        return settings.usdSellRate.takeIf { it > 0.0 } ?: getEsomPerUsdOrNull()
-    }
-
-    private fun getExchangeRate(): Double {
+    private fun getExchangeRate(): BigDecimal {
         return when {
-            uiModel.uiState.value.fromCurrency == CurrencyEnum.ESOM && uiModel.uiState.value.toCurrency == CurrencyEnum.SOM -> 1.0
-            uiModel.uiState.value.fromCurrency == CurrencyEnum.SOM && uiModel.uiState.value.toCurrency == CurrencyEnum.ESOM -> 1.0
+            uiModel.uiState.value.fromCurrency == CurrencyEnum.ESOM && uiModel.uiState.value.toCurrency == CurrencyEnum.SOM -> BigDecimal.ONE
+            uiModel.uiState.value.fromCurrency == CurrencyEnum.SOM && uiModel.uiState.value.toCurrency == CurrencyEnum.ESOM -> BigDecimal.ONE
             (uiModel.uiState.value.fromCurrency == CurrencyEnum.ESOM || uiModel.uiState.value.fromCurrency == CurrencyEnum.SOM) &&
-                    uiModel.uiState.value.toCurrency == CurrencyEnum.USDT_TRC20 -> getUsdSellRateOrNull() ?: 1.0
+                    uiModel.uiState.value.toCurrency == CurrencyEnum.USDT_TRC20 -> getUsdSellRateOrNull() ?: BigDecimal.ONE
             uiModel.uiState.value.fromCurrency == CurrencyEnum.USDT_TRC20 &&
                     (uiModel.uiState.value.toCurrency == CurrencyEnum.ESOM || uiModel.uiState.value.toCurrency == CurrencyEnum.SOM) ->
-                getUsdBuyRateOrNull() ?: 1.0
-            else -> 1.0
+                getUsdBuyRateOrNull() ?: BigDecimal.ONE
+            else -> BigDecimal.ONE
         }
     }
 
@@ -847,14 +852,14 @@ internal class SwapScreenController(
         if (model.swapRes.value is UiState.Loading) return
 
         val fromAmount = parseAmount(binding.sum.text?.toString())
-        if (fromAmount <= 0.0) {
+        if (fromAmount <= BigDecimal.ZERO) {
             binding.root.showErrorSnackbar("Введите сумму для обмена")
             return
         }
 
         val walletBalance = (model.myData.value as? UiState.Success)?.data?.wallets
             ?.find { it.currency == uiModel.uiState.value.fromCurrency }
-            ?.balance ?: 0.0
+            ?.balance ?: BigDecimal.ZERO
 
         if (fromAmount > walletBalance) {
             val currencyName = getCurrencyName(uiModel.uiState.value.fromCurrency)
@@ -869,9 +874,17 @@ internal class SwapScreenController(
         showConvertConfirmation(fromAmount)
     }
 
-    private fun showConvertConfirmation(amount: Double) {
+    private fun showConvertConfirmation(amount: BigDecimal) {
         val amountText = "${formatCurrencyAmount(amount)} ${getCurrencyName(uiModel.uiState.value.fromCurrency)}"
         val target = getCurrencyName(uiModel.uiState.value.toCurrency)
+        val idempotencyFingerprint = listOf(
+            uiModel.uiState.value.fromCurrency.name,
+            uiModel.uiState.value.toCurrency.name,
+            amount.toPlainString(),
+        ).joinToString(":")
+        val idempotencyKey = uiModel.getOrCreateConversionIdempotencyKey(
+            idempotencyFingerprint,
+        )
         val creditedAmount = calculateReceivedFromSend(amount)
         val sourceFee = calculateFeePreview(amount)
         parentFragmentManager.setFragmentResult(
@@ -883,12 +896,13 @@ internal class SwapScreenController(
                     target
                 ),
                 TransferConfirmationFragment.OPERATION_KEY to OPERATION_CONVERT,
-                TransferConfirmationFragment.AMOUNT_KEY to amount,
-                TransferConfirmationFragment.CREDITED_AMOUNT_KEY to creditedAmount,
-                TransferConfirmationFragment.FEE_KEY to sourceFee,
-                TransferConfirmationFragment.TOTAL_DEBITED_KEY to amount,
+                TransferConfirmationFragment.AMOUNT_KEY to amount.toPlainString(),
+                TransferConfirmationFragment.CREDITED_AMOUNT_KEY to creditedAmount.toPlainString(),
+                TransferConfirmationFragment.FEE_KEY to sourceFee.toPlainString(),
+                TransferConfirmationFragment.TOTAL_DEBITED_KEY to amount.toPlainString(),
                 TransferConfirmationFragment.FROM_CURRENCY_KEY to uiModel.uiState.value.fromCurrency.name,
                 TransferConfirmationFragment.TO_CURRENCY_KEY to uiModel.uiState.value.toCurrency.name,
+                CONVERSION_IDEMPOTENCY_KEY to idempotencyKey,
                 TransferConfirmationFragment.OPERATION_TITLE_KEY to getString(R.string.convertation),
                 TransferConfirmationFragment.PAID_FROM_KEY to getAccountForSuccess(uiModel.uiState.value.fromCurrency),
                 TransferConfirmationFragment.RECIPIENT_KEY to getAccountForSuccess(uiModel.uiState.value.toCurrency)
@@ -897,8 +911,8 @@ internal class SwapScreenController(
         findNavController().navigate(NavGraphDirections.startTransferConfirmationFragment())
     }
 
-    private fun formatCurrencyAmount(amount: Double): String {
-        return BigDecimal.valueOf(amount)
+    private fun formatCurrencyAmount(amount: BigDecimal): String {
+        return amount
             .setScale(2, RoundingMode.HALF_UP)
             .stripTrailingZeros()
             .toPlainString()

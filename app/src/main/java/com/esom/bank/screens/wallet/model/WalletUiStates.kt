@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.WalletModel
+import java.math.BigDecimal
 
 @Keep
 @Parcelize
@@ -19,7 +20,7 @@ data class WalletUiState(
 @Parcelize
 data class WalletsUiState(
     val balancesVisible: Boolean = true,
-    val totalBalanceInSom: Double = 0.0
+    val totalBalanceInSom: BigDecimal = BigDecimal.ZERO
 ) : Parcelable
 
 @Keep

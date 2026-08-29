@@ -219,7 +219,7 @@ object ReceiptFileUtils {
         val feeText = "${formatNumber(receipt.fee)} ${formatCurrencyForDocument(feeCurrency)}"
         val creditedCurrency = resolveCreditedCurrency(receipt)
         val creditedAmount = receipt.creditedAmount ?: if (isConversionReceipt(receipt)) {
-            (receipt.amount - receipt.fee).coerceAtLeast(0.0)
+            (receipt.amount - receipt.fee).max(BigDecimal.ZERO)
         } else {
             receipt.amount
         }
@@ -489,8 +489,8 @@ object ReceiptFileUtils {
         return dateFormat.format(date) to timeFormat.format(date)
     }
 
-    private fun formatNumber(value: Double): String {
-        val scaled = BigDecimal(value.toString()).setScale(2, java.math.RoundingMode.HALF_UP)
+    private fun formatNumber(value: BigDecimal): String {
+        val scaled = value.setScale(2, java.math.RoundingMode.HALF_UP)
         return scaled.toPlainString().replace('.', ',')
     }
 

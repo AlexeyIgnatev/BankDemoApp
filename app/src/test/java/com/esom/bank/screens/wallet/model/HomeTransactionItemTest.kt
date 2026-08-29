@@ -88,14 +88,14 @@ class HomeTransactionItemTest {
         currency: CurrencyEnum,
         side: ConversionSide?,
         createdAt: Long,
-        amount: Double,
+        amount: Number,
         type: TransactionEnum = TransactionEnum.CONVERSION
     ) = TransactionModel(
         transactionId = id,
         currencyEnum = currency,
         type = type,
         conversionSide = side,
-        amount = amount,
+        amount = amount.toString().toBigDecimal(),
         successful = true,
         createdAt = createdAt
     )

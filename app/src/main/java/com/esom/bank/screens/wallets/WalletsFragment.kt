@@ -27,6 +27,7 @@ import com.esom.bank.screens.main.MainFragment.Companion.findParentNavController
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.WalletModel
+import java.math.BigDecimal
 import com.esom.bank.screens.wallets.model.WalletsService
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -103,11 +104,11 @@ class WalletsFragment : Fragment() {
             .start()
     }
 
-    private fun balanceInSom(wallet: WalletModel): Double {
+    private fun balanceInSom(wallet: WalletModel): BigDecimal {
         if (wallet.currency == CurrencyEnum.SOM) return wallet.balance
-        val rate = wallet.sellRate.takeIf { it > 0.0 }
-            ?: wallet.buyRate.takeIf { it > 0.0 }
-            ?: 1.0
+        val rate = wallet.sellRate.takeIf { it > BigDecimal.ZERO }
+            ?: wallet.buyRate.takeIf { it > BigDecimal.ZERO }
+            ?: BigDecimal.ONE
         return wallet.balance * rate
     }
 

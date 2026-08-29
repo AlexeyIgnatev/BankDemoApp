@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import com.esom.bank.R
+import com.esom.bank.common.utils.toMoneyDecimalOrZero
 import com.esom.bank.databinding.FragmentTransferConfirmationBinding
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -61,10 +62,10 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
             ?: CurrencyEnum.SOM
         val toCurrency = CurrencyEnum.fromNameOrNull(data.getString(TO_CURRENCY_KEY))
             ?: fromCurrency
-        val amount = data.getDouble(AMOUNT_KEY)
-        val creditedAmount = data.getDouble(CREDITED_AMOUNT_KEY, amount)
-        val fee = data.getDouble(FEE_KEY)
-        val totalDebited = data.getDouble(TOTAL_DEBITED_KEY, amount)
+        val amount = data.getString(AMOUNT_KEY).orEmpty().toMoneyDecimalOrZero()
+        val creditedAmount = data.getString(CREDITED_AMOUNT_KEY).orEmpty().toMoneyDecimalOrZero()
+        val fee = data.getString(FEE_KEY).orEmpty().toMoneyDecimalOrZero()
+        val totalDebited = data.getString(TOTAL_DEBITED_KEY).orEmpty().toMoneyDecimalOrZero()
 
         binding.title.text = if (operation == OPERATION_CONVERT) {
             "Подтверждение конвертации"
@@ -80,8 +81,8 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
         binding.amounts.totalDebitedValue.text = formatAmount(totalDebited, fromCurrency)
     }
 
-    private fun formatAmount(amount: Double, currency: CurrencyEnum): String {
-        val value = BigDecimal.valueOf(amount)
+    private fun formatAmount(amount: BigDecimal, currency: CurrencyEnum): String {
+        val value = amount
             .setScale(2, RoundingMode.HALF_UP)
             .stripTrailingZeros()
             .toPlainString()

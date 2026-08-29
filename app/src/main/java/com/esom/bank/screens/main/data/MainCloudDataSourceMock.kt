@@ -2,6 +2,7 @@ package com.esom.bank.screens.main.data
 
 import com.esom.bank.R
 import com.esom.bank.common.model.ApiResponse
+import com.esom.bank.retrofit.dto.UserAuthResponseDto
 import com.esom.bank.screens.chat.dto.SupportDto
 import com.esom.bank.screens.chat.enums.SupportRole
 import com.esom.bank.screens.history.dto.ReceiptResponseDto
@@ -21,10 +22,15 @@ import com.esom.bank.screens.transfer.dto.RecipientLookupRequestDto
 import com.esom.bank.screens.transfer.dto.RecipientLookupResponseDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.math.BigDecimal
 import java.util.Calendar
 import javax.inject.Inject
 
 class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
+
+    override fun login(username: String, password: String): Flow<ApiResponse<UserAuthResponseDto>> = flow {
+        emit(ApiResponse.Success(UserAuthResponseDto(accessToken = "mock-user-token"), code = 200))
+    }
 
     override fun getUserInfo(): Flow<ApiResponse<UserDto>> = flow {
         emit(
@@ -36,28 +42,27 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                     lastName = "Байбосунова",
                     phone = "+996 555 687878",
                     email = "madina.b@fkb.kg",
-                    privateKey = null,
                     wallets = listOf(
                         WalletDto(
                             currency = CurrencyEnum.SOM,
                             address = "+996 555 687878",
-                            balance = 1010.62,
-                            buyRate = 1.0,
-                            sellRate = 1.0
+                            balance = BigDecimal("1010.62"),
+                            buyRate = BigDecimal.ONE,
+                            sellRate = BigDecimal.ONE
                         ),
                         WalletDto(
                             currency = CurrencyEnum.ESOM,
                             address = "esom_wallet_address_12345",
-                            balance = 500.0,
-                            buyRate = 1.05,
-                            sellRate = 0.95
+                            balance = BigDecimal("500.0"),
+                            buyRate = BigDecimal("1.05"),
+                            sellRate = BigDecimal("0.95")
                         ),
                         WalletDto(
                             currency = CurrencyEnum.USDT_TRC20,
                             address = "TJkTgPifKq1Q9crT9zNCy5dbcXrd71vvof",
-                            balance = 1000.0,
-                            buyRate = 88.5,
-                            sellRate = 87.2
+                            balance = BigDecimal("1000.0"),
+                            buyRate = BigDecimal("88.5"),
+                            sellRate = BigDecimal("87.2")
                         )
                     )
                 ),
@@ -71,9 +76,7 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
             ApiResponse.Success(
                 FeeDto(
                     id = 1,
-                    esomPerUsd = 1.0,
-                    esomSomConversionFeePct = "5.5",
-                    esomSomConversionFeeMin = "0"
+                    usdBuyRate = BigDecimal.ONE
                 ),
                 200
             )
@@ -90,11 +93,6 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                         fixedFee = "0"
                     ),
                     PaymentFeeDto(
-                        operation = "WALLET_TRANSFER_SALAM",
-                        percentFee = "0",
-                        fixedFee = "0"
-                    ),
-                    PaymentFeeDto(
                         operation = "WALLET_TRANSFER_ESOM",
                         percentFee = "0",
                         fixedFee = "0"
@@ -105,48 +103,23 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                         fixedFee = "0"
                     ),
                     PaymentFeeDto(
-                        operation = "CONVERT_SOM_TO_SOM",
-                        percentFee = "0",
-                        fixedFee = "0"
-                    ),
-                    PaymentFeeDto(
-                        operation = "CONVERT_SOM_TO_ESOM",
+                        operation = "SOM_TO_ESOM",
                         percentFee = "0.2",
                         fixedFee = "0"
                     ),
                     PaymentFeeDto(
-                        operation = "CONVERT_ESOM_TO_SOM",
+                        operation = "ESOM_TO_SOM",
                         percentFee = "0.2",
                         fixedFee = "0"
                     ),
                     PaymentFeeDto(
-                        operation = "CONVERT_ESOM_TO_ESOM",
-                        percentFee = "0",
-                        fixedFee = "0"
-                    ),
-                    PaymentFeeDto(
-                        operation = "CONVERT_SOM_TO_USDT_TRC20",
+                        operation = "ESOM_TO_USDT_TRC20",
                         percentFee = "0.2",
                         fixedFee = "0"
                     ),
                     PaymentFeeDto(
-                        operation = "CONVERT_USDT_TRC20_TO_SOM",
+                        operation = "USDT_TRC20_TO_ESOM",
                         percentFee = "0.2",
-                        fixedFee = "0"
-                    ),
-                    PaymentFeeDto(
-                        operation = "CONVERT_ESOM_TO_USDT_TRC20",
-                        percentFee = "0.2",
-                        fixedFee = "0"
-                    ),
-                    PaymentFeeDto(
-                        operation = "CONVERT_USDT_TRC20_TO_ESOM",
-                        percentFee = "0.2",
-                        fixedFee = "0"
-                    ),
-                    PaymentFeeDto(
-                        operation = "CONVERT_USDT_TRC20_TO_USDT_TRC20",
-                        percentFee = "0",
                         fixedFee = "0"
                     )
                 ),
@@ -155,23 +128,16 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
         )
     }
 
-    override fun convert(convert: ConvertDto): Flow<ApiResponse<StatusDto>> = flow {
+    override fun convert(convert: ConvertDto, idempotencyKey: String): Flow<ApiResponse<StatusDto>> = flow {
         emit(ApiResponse.Success(StatusDto("success", transactionId = 1L), 200))
     }
 
-    override fun fiatToCrypto(amount: Double): Flow<ApiResponse<StatusDto>> = flow {
-        emit(ApiResponse.Success(StatusDto("success", transactionId = 2L), code = 200))
-    }
-
-    override fun cryptoToFiat(amount: Double): Flow<ApiResponse<StatusDto>> = flow {
-        emit(ApiResponse.Success(StatusDto("success", transactionId = 3L), code = 200))
-    }
-
     override fun transfer(
-        amount: Double,
+        amount: BigDecimal,
         phone: String,
         address: String?,
-        currencyEnum: CurrencyEnum
+        currencyEnum: CurrencyEnum,
+        idempotencyKey: String
     ): Flow<ApiResponse<StatusDto>> = flow {
         emit(ApiResponse.Error(R.string.wallet_ban, null, null))
     }
@@ -223,7 +189,7 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
                 conversionSide = if (randomType == TransactionEnum.CONVERSION) {
                     if (index % 2 == 0) ConversionSide.IN else ConversionSide.OUT
                 } else null,
-                amount = (10..1000).random().toDouble(),
+                amount = BigDecimal((10..1000).random()),
                 successful = true,
                 createdAt = createdAt,
                 recipientFullName = counterparties[index % counterparties.size]
@@ -254,11 +220,11 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
             ApiResponse.Success(
                 ReceiptResponseDto(
                     successful = true,
-                    amount = 260.0,
+                    amount = BigDecimal("260.0"),
                     type = "TRANSFER",
                     currency = "SOM",
                     createdAt = System.currentTimeMillis(),
-                    fee = if (conversionSide != null) 5.5 else 0.0,
+                    fee = if (conversionSide != null) BigDecimal("5.5") else BigDecimal.ZERO,
                     accountDetails = "996557501281",
                     recipientFullName = "Мирлан Т. у.",
                     paidFromAccount = "****1234",

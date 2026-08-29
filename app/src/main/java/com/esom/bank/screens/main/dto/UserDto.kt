@@ -15,8 +15,6 @@ data class UserDto(
     val phone: String,
     @SerializedName("email")
     val email: String,
-    @SerializedName("private_key")
-    val privateKey: String? = null,
     @SerializedName("wallets")
     val wallets: List<WalletDto>
 )

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import java.math.BigDecimal
 import com.esom.bank.R
 import com.esom.bank.common.utils.formatBalanceNew
 import com.esom.bank.databinding.ItemTransactionBinding
@@ -43,7 +44,7 @@ class HomeTransactionAdapter(
 
             val isIncome = transaction.isDisplayedAsIncome()
             val sign = if (isIncome) "+" else "-"
-            val amount = "$sign${(transaction.amount ?: 0.0).formatBalanceNew()} ${currencyShort(transaction.currencyEnum)}"
+            val amount = "$sign${(transaction.amount ?: BigDecimal.ZERO).formatBalanceNew()} ${currencyShort(transaction.currencyEnum)}"
             binding.sum.setBalance(amount, balancesVisibleProvider())
             binding.sum.setTextColor(
                 context.getColor(if (isIncome) R.color.transaction_income else R.color.title)

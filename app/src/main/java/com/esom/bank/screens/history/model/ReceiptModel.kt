@@ -6,22 +6,23 @@ import kotlinx.parcelize.Parcelize
 
 import com.esom.bank.screens.history.dto.ReceiptResponseDto
 import com.esom.bank.screens.history.enums.ConversionSide
+import java.math.BigDecimal
 
 @Keep
 @Parcelize
 data class ReceiptModel(
     val successful: Boolean,
-    val amount: Double,
+    val amount: BigDecimal,
     val type: String,
     val currency: String,
     val createdAt: Long,
-    val fee: Double,
+    val fee: BigDecimal,
     val feeCurrency: String = "",
     val accountDetails: String,
     val recipientFullName: String,
     val paidFromAccount: String,
     val conversionSide: ConversionSide?,
-    val creditedAmount: Double? = null,
+    val creditedAmount: BigDecimal? = null,
     val creditedCurrency: String = "",
     val debitedCurrency: String = "",
     val absAccount: String,
@@ -29,18 +30,18 @@ data class ReceiptModel(
     val absToAccount: String,
     val receiptNumber: String,
     val targetCurrency: String = "",
-    val totalDebitedAmount: Double? = null,
+    val totalDebitedAmount: BigDecimal? = null,
     val senderFullName: String = ""
 ) : Parcelable
 
 fun ReceiptResponseDto.toModel(requestedConversionSide: ConversionSide? = null): ReceiptModel =
     ReceiptModel(
         successful = successful ?: false,
-        amount = amount ?: 0.0,
+        amount = amount ?: BigDecimal.ZERO,
         type = type.orEmpty(),
         currency = currency.orEmpty(),
         createdAt = createdAt ?: System.currentTimeMillis(),
-        fee = fee ?: 0.0,
+        fee = fee ?: BigDecimal.ZERO,
         feeCurrency = feeCurrency.orEmpty(),
         accountDetails = accountDetails.orEmpty(),
         recipientFullName = recipientFullName.orEmpty(),

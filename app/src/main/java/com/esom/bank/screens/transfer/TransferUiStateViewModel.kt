@@ -36,7 +36,6 @@ class TransferUiStateViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TransferUiState())
     val uiState: StateFlow<TransferUiState> = _uiState.asStateFlow()
     private val recipientRequests = MutableSharedFlow<RecipientLookupRequestDto>(extraBufferCapacity = 1)
-    private var transferIdempotencyKey: String? = null
 
     init {
         repository?.let { recipientRepository -> viewModelScope.launch {
@@ -133,16 +132,15 @@ class TransferUiStateViewModel @Inject constructor(
         return true
     }
 
-    fun startTransfer(): String = UUID.randomUUID().toString().also {
-        transferIdempotencyKey = it
+    fun startTransfer(): String = UUID.randomUUID().toString().also { key ->
+        _uiState.update { it.copy(transferIdempotencyKey = key) }
     }
 
     fun currentTransferIdempotencyKey(): String =
-        transferIdempotencyKey ?: startTransfer()
+        _uiState.value.transferIdempotencyKey ?: startTransfer()
 
-    fun clearTransferIdempotencyKey() {
-        transferIdempotencyKey = null
-    }
+    fun clearTransferIdempotencyKey() =
+        _uiState.update { it.copy(transferIdempotencyKey = null) }
 
     private fun isPhoneContact(contact: String): Boolean {
         val phoneCharactersOnly = contact.all {

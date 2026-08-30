@@ -18,7 +18,8 @@ data class TransferUiState(
     val pendingTemplate: TransferTemplate? = null,
     val automaticRepeatStarted: Boolean = false,
     val recipientName: String = "",
-    val recipientLookupKey: String = ""
+    val recipientLookupKey: String = "",
+    val transferIdempotencyKey: String? = null
 ) : Parcelable
 
 @Keep

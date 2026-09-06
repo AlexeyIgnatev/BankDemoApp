@@ -1,7 +1,7 @@
 package com.esom.bank.screens.history.data
 
 import com.esom.bank.screens.main.enums.CurrencyEnum
-import com.tencent.mmkv.MMKV
+import com.esom.bank.common.security.SecureMmkv
 import javax.inject.Inject
 
 interface HistoryLocalDataSource {
@@ -22,10 +22,7 @@ interface HistoryLocalDataSource {
 
 class HistoryLocalDataSourceImpl @Inject constructor(): HistoryLocalDataSource {
     private val storage by lazy {
-        MMKV.mmkvWithID(
-            "HistoryLocalDataSource",
-            MMKV.MULTI_PROCESS_MODE
-        )
+        SecureMmkv.storage("HistoryLocalDataSource")
     }
 
     override fun getCurrency(): List<CurrencyEnum> {

@@ -58,7 +58,9 @@ class TransferFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
     private val uiModel: TransferUiStateViewModel by viewModels()
     private val args: TransferFragmentArgs by navArgs()
-    private lateinit var binding: FragmentTransferBinding
+    private var _binding: FragmentTransferBinding? = null
+    private val binding: FragmentTransferBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,13 +70,13 @@ class TransferFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentTransferBinding.bind(view)
+        _binding = FragmentTransferBinding.bind(view)
         bind()
     }
 
     private fun bind() {
         binding.root.applyPaymentWindowInsets()
-        requireActivity().onBackPressedDispatcher.addCallback {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             findNavController().popBackStack()
         }
 
@@ -749,6 +751,11 @@ class TransferFragment : Fragment() {
         return listOf(user.lastName, user.firstName, user.middleName.orEmpty())
             .filter(String::isNotBlank)
             .joinToString(" ")
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }

@@ -29,16 +29,19 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ChatFragment : Fragment() {
-    private lateinit var binding: FragmentChatBinding
+    private var _binding: FragmentChatBinding? = null
+    private val binding: FragmentChatBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val uiModel: ChatUiStateViewModel by viewModels()
     private val adapter = ChatAdapter()
+    private var scrollToLastRunnable: Runnable? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentChatBinding.inflate(inflater, container, false)
+        _binding = FragmentChatBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -168,12 +171,18 @@ class ChatFragment : Fragment() {
     }
 
     private fun scrollToLastMessage() {
-        binding.messages.post {
-            val lastPosition = adapter.itemCount - 1
-            if (lastPosition >= 0) {
-                binding.messages.scrollToPosition(lastPosition)
+        val messages = binding.messages
+        scrollToLastRunnable?.let(messages::removeCallbacks)
+        val scrollRunnable = Runnable {
+            if (messages.isAttachedToWindow) {
+                val lastPosition = adapter.itemCount - 1
+                if (lastPosition >= 0) {
+                    messages.scrollToPosition(lastPosition)
+                }
             }
         }
+        scrollToLastRunnable = scrollRunnable
+        messages.post(scrollRunnable)
     }
 
     private fun applyKeyboardInsets(insets: WindowInsetsCompat) {
@@ -185,5 +194,15 @@ class ChatFragment : Fragment() {
             top = uiModel.uiState.value.initialTopPadding + insets.getInsets(WindowInsetsCompat.Type.statusBars()).top,
             bottom = bottomInset
         )
+    }
+
+    override fun onDestroyView() {
+        _binding?.messages?.let { messages ->
+            scrollToLastRunnable?.let(messages::removeCallbacks)
+        }
+        scrollToLastRunnable = null
+        _binding?.messages?.adapter = null
+        _binding = null
+        super.onDestroyView()
     }
 }

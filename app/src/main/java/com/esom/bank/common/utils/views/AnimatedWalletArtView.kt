@@ -41,7 +41,7 @@ class AnimatedWalletArtView @JvmOverloads constructor(
 
     fun setCurrency(value: CurrencyEnum) {
         currency = value
-        texture = null
+        releaseTexture()
         restartAnimation(resetTime = true)
     }
 
@@ -53,6 +53,11 @@ class AnimatedWalletArtView @JvmOverloads constructor(
     override fun onVisibilityChanged(changedView: View, visibility: Int) {
         super.onVisibilityChanged(changedView, visibility)
         if (visibility == VISIBLE && isAttachedToWindow) restartAnimation(resetTime = false)
+    }
+
+    override fun onDetachedFromWindow() {
+        releaseTexture()
+        super.onDetachedFromWindow()
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -252,6 +257,13 @@ class AnimatedWalletArtView @JvmOverloads constructor(
             CurrencyEnum.USDT_TRC20 -> R.drawable.wallet_motion_usdt
         }
     )
+
+    private fun releaseTexture() {
+        texture?.let { bitmap ->
+            if (!bitmap.isRecycled) bitmap.recycle()
+        }
+        texture = null
+    }
 
     private fun createRoundedShape(
         centerX: Float,

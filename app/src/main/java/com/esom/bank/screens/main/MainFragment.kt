@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import com.esom.bank.R
@@ -24,14 +25,17 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
-    private lateinit var binding: FragmentMainBinding
+    private var _binding: FragmentMainBinding? = null
+    private val binding: FragmentMainBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val uiModel: MainContainerUiStateViewModel by viewModels()
+    private var destinationListener: NavController.OnDestinationChangedListener? = null
     private val contactsPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
-        binding = FragmentMainBinding.inflate(inflater, container, false)
+        _binding = FragmentMainBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -68,7 +72,8 @@ class MainFragment : Fragment() {
             true
         }
 
-        findMainNavController().addOnDestinationChangedListener { _, destination, _ ->
+        val navController = findMainNavController()
+        val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
             uiModel.setDestination(destination.id)
             renderBottomNavigation()
             val menuItem = when (destination.id) {
@@ -80,6 +85,8 @@ class MainFragment : Fragment() {
             }
             menuItem?.let { binding.bottomNavigationView.menu.findItem(it).isChecked = true }
         }
+        destinationListener = listener
+        navController.addOnDestinationChangedListener(listener)
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             val controller = findMainNavController()
@@ -87,8 +94,14 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun findMainNavController(): NavController =
-        requireView().findViewById<View>(R.id.main_nav_host_fragment).findNavController()
+    private fun findMainNavController(): NavController {
+        val nestedHost = childFragmentManager.findFragmentById(R.id.main_nav_host_fragment)
+            as? NavHostFragment
+        return nestedHost?.navController
+            ?: runCatching {
+                requireView().findViewById<View>(R.id.main_nav_host_fragment).findNavController()
+            }.getOrElse { findNavController() }
+    }
 
     private fun renderBottomNavigation() {
         val state = uiModel.uiState.value
@@ -109,6 +122,21 @@ class MainFragment : Fragment() {
 
     companion object {
         fun Fragment.findParentNavController() =
-            (parentFragment!!.parentFragment as Fragment).findNavController()
+            generateSequence(parentFragment) { it.parentFragment }
+                .filterNot { it is NavHostFragment }
+                .mapNotNull { fragment ->
+                    runCatching { fragment.findNavController() }.getOrNull()
+                }
+                .firstOrNull()
+                ?: findNavController()
+    }
+
+    override fun onDestroyView() {
+        destinationListener?.let { listener ->
+            runCatching { findMainNavController().removeOnDestinationChangedListener(listener) }
+        }
+        destinationListener = null
+        _binding = null
+        super.onDestroyView()
     }
 }

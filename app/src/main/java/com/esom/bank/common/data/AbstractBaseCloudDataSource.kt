@@ -43,18 +43,14 @@ abstract class AbstractBaseCloudDataSource {
                 )
             }
         } catch (e: NotLoggedInException) {
-            e.printStackTrace()
             emit(ApiResponse.Error(R.string.logged_out))
         } catch (e: HttpException) {
-            e.printStackTrace()
             emit(ApiResponse.Error(R.string.server_error))
         } catch (e: IOException) {
-            e.printStackTrace()
             emit(ApiResponse.Error(R.string.check_internet))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            e.printStackTrace()
             emit(ApiResponse.Error(R.string.something_went_wrong))
         }
     }
@@ -79,18 +75,14 @@ abstract class AbstractBaseCloudDataSource {
                 )
             }
         } catch (e: NotLoggedInException) {
-            e.printStackTrace()
             emit(ApiResponse.Error(R.string.logged_out))
         } catch (e: HttpException) {
-            e.printStackTrace()
             emit(ApiResponse.Error(R.string.server_error))
         } catch (e: IOException) {
-            e.printStackTrace()
             emit(ApiResponse.Error(R.string.check_internet))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            e.printStackTrace()
             emit(ApiResponse.Error(R.string.something_went_wrong))
         }
     }

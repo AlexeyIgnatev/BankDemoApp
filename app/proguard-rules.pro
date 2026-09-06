@@ -19,3 +19,12 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Retrofit/Gson DTOs are instantiated and populated reflectively.
+-keepattributes Signature,*Annotation*
+-keep class com.esom.bank.**.dto.** { *; }
+
+# Optional TLS providers referenced by OkHttp on some platforms.
+-dontwarn org.bouncycastle.jsse.**
+-dontwarn org.conscrypt.**
+-dontwarn org.openjsse.**

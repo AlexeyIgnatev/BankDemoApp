@@ -37,11 +37,13 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AppSettingsFragment : Fragment() {
-    private lateinit var binding: FragmentAppSettingsBinding
+    private var _binding: FragmentAppSettingsBinding? = null
+    private val binding: FragmentAppSettingsBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
-        binding = FragmentAppSettingsBinding.inflate(inflater, container, false)
+        _binding = FragmentAppSettingsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -290,6 +292,11 @@ class AppSettingsFragment : Fragment() {
                 model.clearAllDataAndNavigate()
             }
             .show()
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 
 }

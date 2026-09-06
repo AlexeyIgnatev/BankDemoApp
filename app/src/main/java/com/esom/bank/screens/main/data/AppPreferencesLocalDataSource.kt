@@ -1,12 +1,16 @@
 package com.esom.bank.screens.main.data
 
-import com.tencent.mmkv.MMKV
+import com.esom.bank.common.security.SecureMmkv
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AppPreferencesLocalDataSource @Inject constructor() {
-    private val storage by lazy { MMKV.mmkvWithID(STORAGE_ID, MMKV.MULTI_PROCESS_MODE) }
+    private val storage by lazy { SecureMmkv.storage(STORAGE_ID) }
+
+    fun clearAll() {
+        storage.clearAll()
+    }
 
     fun getSeenNotificationIds(): Set<String> =
         storage.decodeStringSet(SEEN_NOTIFICATION_IDS, emptySet()).orEmpty()

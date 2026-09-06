@@ -17,14 +17,16 @@ import java.util.Calendar
 
 @AndroidEntryPoint
 class ChoosePeriodFragment : BottomSheetDialogFragment() {
-    private lateinit var binding: FragmentChoosePeriodBinding
+    private var _binding: FragmentChoosePeriodBinding? = null
+    private val binding: FragmentChoosePeriodBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentChoosePeriodBinding.inflate(inflater, container, false)
+        _binding = FragmentChoosePeriodBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -125,5 +127,10 @@ class ChoosePeriodFragment : BottomSheetDialogFragment() {
 
             dismiss()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

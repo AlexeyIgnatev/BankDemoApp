@@ -1,8 +1,8 @@
 package com.esom.bank.screens.history.pagingsource
 
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import kotlinx.coroutines.CancellationException
 import com.esom.bank.common.model.UiState
 import com.esom.bank.screens.history.enums.TransactionEnum
 import com.esom.bank.screens.history.model.TransactionModel
@@ -19,8 +19,6 @@ class TransactionsPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TransactionModel> {
         val offset = params.key ?: 0
         return try {
-            Log.d("PAGING", "Loading transactions with offset: $offset")
-
             val response = repository.history(
                 currencyEnum = currencyEnum,
                 fromTime = fromTime,
@@ -46,8 +44,6 @@ class TransactionsPagingSource(
                     // INCOME/EXPENSE transfers from other operations.
                     val transactions = finalResult.data.filterNotNull()
 
-                    Log.d("PAGING", "Loaded ${transactions.size} transactions")
-
                     val nextOffset = if (transactions.size < params.loadSize) null else offset + params.loadSize
                     val prevOffset = if (offset == 0) null else offset - params.loadSize
 
@@ -58,16 +54,15 @@ class TransactionsPagingSource(
                     )
                 }
                 is UiState.Error -> {
-                    Log.e("PAGING", "Error: ${finalResult.message}")
                     LoadResult.Error(Exception(finalResult.message))
                 }
                 else -> {
-                    Log.d("PAGING", "Empty or loading state")
                     LoadResult.Page(emptyList(), prevKey = null, nextKey = null)
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            Log.e("PAGING", "Exception in load: ${e.message}")
             LoadResult.Error(e)
         }
     }

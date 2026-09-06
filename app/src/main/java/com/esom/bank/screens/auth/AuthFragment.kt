@@ -24,7 +24,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AuthFragment : Fragment() {
-    private lateinit var binding: FragmentAuthBinding
+    private var _binding: FragmentAuthBinding? = null
+    private val binding: FragmentAuthBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
 
     private val model: MainViewModel by activityViewModels()
 
@@ -32,7 +34,7 @@ class AuthFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentAuthBinding.inflate(inflater, container, false)
+        _binding = FragmentAuthBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -108,5 +110,10 @@ class AuthFragment : Fragment() {
                 bundleOf("fromSettings" to false)
             )
         }
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 }

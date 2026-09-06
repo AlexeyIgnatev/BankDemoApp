@@ -36,6 +36,7 @@ class AuthInterceptor @Inject constructor(
             if (response.code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 authLocalDataSource.clearAuthData()
                 sessionManager.notifyLoggedOut()
+                response.close()
                 throw NotLoggedInException()
             }
         }

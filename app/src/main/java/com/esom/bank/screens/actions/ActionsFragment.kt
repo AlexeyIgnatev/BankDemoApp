@@ -40,7 +40,9 @@ import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class ActionsFragment : Fragment() {
-    private lateinit var binding: FragmentActionsBinding
+    private var _binding: FragmentActionsBinding? = null
+    private val binding: FragmentActionsBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val uiModel: ActionsUiStateViewModel by viewModels()
     private val contactsAdapter = PaymentContactsAdapter { contact ->
@@ -48,7 +50,7 @@ class ActionsFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
-        binding = FragmentActionsBinding.inflate(inflater, container, false)
+        _binding = FragmentActionsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -302,6 +304,7 @@ class ActionsFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             val contacts = withContext(Dispatchers.IO) { readContacts() }
+            if (_binding == null) return@launch
             showContacts(contacts, permissionMissing = false)
         }
     }
@@ -340,7 +343,7 @@ class ActionsFragment : Fragment() {
     }
 
     private fun showContacts(contacts: List<PaymentContact>, permissionMissing: Boolean) {
-        if (!isAdded) return
+        if (!isAdded || _binding == null) return
         contactsAdapter.submitList(contacts)
         renderSections()
         if (!permissionMissing && contacts.isEmpty()) {
@@ -348,6 +351,12 @@ class ActionsFragment : Fragment() {
         } else {
             binding.contactsEmpty.text = getString(R.string.payment_contacts_empty)
         }
+    }
+
+    override fun onDestroyView() {
+        _binding?.contactsList?.adapter = null
+        _binding = null
+        super.onDestroyView()
     }
 
     companion object {

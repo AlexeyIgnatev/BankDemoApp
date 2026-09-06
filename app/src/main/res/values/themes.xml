@@ -58,7 +58,8 @@
         <item name="android:layout_height">match_parent</item>
         <item name="android:fontFamily">@font/mont_semibold</item>
         <item name="android:gravity">center_vertical</item>
-        <item name="android:paddingHorizontal">18dp</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
         <item name="android:textColor">@color/title</item>
         <item name="android:textSize">16sp</item>
     </style>
@@ -92,7 +93,8 @@
         <item name="android:drawableEnd">@drawable/history_filter_arrow</item>
         <item name="android:drawablePadding">10dp</item>
         <item name="android:minWidth">128dp</item>
-        <item name="android:paddingHorizontal">20dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
         <item name="android:textColor">@color/title</item>
         <item name="android:textSize">14sp</item>
     </style>

@@ -67,7 +67,7 @@ interface ServerApi {
         @Body receiptRequestDto: ReceiptRequestDto
     ): Response<ReceiptResponseDto>
 
-    @GET("blockchain-config/settings")
+    @GET("users/settings")
     suspend fun getSettings(): Response<FeeDto>
 
     @GET("payments/fees")

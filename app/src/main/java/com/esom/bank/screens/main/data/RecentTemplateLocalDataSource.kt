@@ -2,7 +2,7 @@ package com.esom.bank.screens.main.data
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.tencent.mmkv.MMKV
+import com.esom.bank.common.security.SecureMmkv
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.esom.bank.screens.transfer.model.TransferTemplate
@@ -11,7 +11,7 @@ import com.esom.bank.screens.swap.model.SwapTemplate
 @Singleton
 class RecentTemplateLocalDataSource @Inject constructor() {
     private val storage by lazy {
-        MMKV.mmkvWithID(STORAGE_ID, MMKV.MULTI_PROCESS_MODE)
+        SecureMmkv.storage(STORAGE_ID)
     }
     private val gson = Gson()
 
@@ -39,6 +39,11 @@ class RecentTemplateLocalDataSource @Inject constructor() {
         writeList(SWAP_KEY, getSwapTemplates().map { current ->
             if (current == template) current.copy(name = name) else current
         })
+    }
+
+    fun clearTemplates() {
+        storage.removeValueForKey(TRANSFER_KEY)
+        storage.removeValueForKey(SWAP_KEY)
     }
 
     private inline fun <reified T> readList(key: String): List<T> {

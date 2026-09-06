@@ -8,7 +8,6 @@ import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import android.util.Log
 import android.view.View
 
 val ONE_TIME_VIBRATION_LONG = when (Build.BRAND.lowercase()) {
@@ -22,7 +21,6 @@ fun Context.vibrate(long: Long) {
 }
 
 private fun Context.vibrateInternal(long: Long) {
-    Log.d("VibrateUtils", "vibrate: $long")
     try {
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val vibratorManager =
@@ -50,7 +48,6 @@ private fun Context.vibrateInternal(long: Long) {
             vibrator.vibrate(long)
         }
     } catch (e: Exception) {
-        e.printStackTrace()
     }
 }
 

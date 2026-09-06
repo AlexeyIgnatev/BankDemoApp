@@ -18,13 +18,15 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class FailTransferFragment : DialogFragment() {
-    private lateinit var binding: FragmentFailTransferBinding
+    private var _binding: FragmentFailTransferBinding? = null
+    private val binding: FragmentFailTransferBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val args: FailTransferFragmentArgs by navArgs()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentFailTransferBinding.inflate(inflater, container, false)
+        _binding = FragmentFailTransferBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -52,5 +54,10 @@ class FailTransferFragment : DialogFragment() {
         binding.closeBtn.setOnClickListener {
             findNavController().popBackStack()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

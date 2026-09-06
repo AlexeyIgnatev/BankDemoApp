@@ -33,7 +33,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class WalletsFragment : Fragment() {
-    private lateinit var binding: FragmentWalletsBinding
+    private var _binding: FragmentWalletsBinding? = null
+    private val binding: FragmentWalletsBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val uiModel: WalletsUiStateViewModel by viewModels()
 
@@ -42,7 +44,7 @@ class WalletsFragment : Fragment() {
         container: ViewGroup?,
         state: Bundle?
     ): View {
-        binding = FragmentWalletsBinding.inflate(inflater, container, false)
+        _binding = FragmentWalletsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -204,6 +206,11 @@ class WalletsFragment : Fragment() {
         CurrencyEnum.SOM -> 0
         CurrencyEnum.ESOM -> 1
         CurrencyEnum.USDT_TRC20 -> 2
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }

@@ -17,14 +17,16 @@ import java.math.RoundingMode
 
 @AndroidEntryPoint
 class TransferConfirmationFragment : BottomSheetDialogFragment() {
-    private lateinit var binding: FragmentTransferConfirmationBinding
+    private var _binding: FragmentTransferConfirmationBinding? = null
+    private val binding: FragmentTransferConfirmationBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val uiModel: TransferConfirmationUiStateViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentTransferConfirmationBinding.inflate(inflater, container, false)
+        _binding = FragmentTransferConfirmationBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -92,6 +94,11 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
             CurrencyEnum.USDT_TRC20 -> "USDT"
         }
         return "$value $currencyName"
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {

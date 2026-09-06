@@ -33,7 +33,9 @@ import java.util.Locale
 
 @AndroidEntryPoint
 class TransferRecipientFragment : Fragment() {
-    private lateinit var binding: FragmentTransferRecipientBinding
+    private var _binding: FragmentTransferRecipientBinding? = null
+    private val binding: FragmentTransferRecipientBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val args: TransferRecipientFragmentArgs by navArgs()
     private val uiModel: TransferRecipientUiStateViewModel by viewModels()
     private val adapter = RecipientContactsAdapter(::selectContact)
@@ -43,7 +45,7 @@ class TransferRecipientFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentTransferRecipientBinding.inflate(inflater, container, false)
+        _binding = FragmentTransferRecipientBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -85,8 +87,11 @@ class TransferRecipientFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            uiModel.setContacts(withContext(Dispatchers.IO) { readContacts() })
-            filterContacts(binding.recipientInput.text?.toString().orEmpty())
+            val contacts = withContext(Dispatchers.IO) { readContacts() }
+            if (_binding == null) return@launch
+            uiModel.setContacts(contacts)
+            val currentBinding = _binding ?: return@launch
+            filterContacts(currentBinding.recipientInput.text?.toString().orEmpty())
         }
     }
 
@@ -147,6 +152,7 @@ class TransferRecipientFragment : Fragment() {
             .trim()
 
     private fun showContacts(items: List<PaymentContact>, emptyText: String) {
+        if (_binding == null) return
         adapter.submitList(items)
         binding.contactsList.isVisible = items.isNotEmpty()
         binding.emptyView.isVisible = items.isEmpty()
@@ -170,6 +176,12 @@ class TransferRecipientFragment : Fragment() {
         findNavController().navigate(
             NavGraphDirections.startTransferFragment(args.currency, contact, recipientName)
         )
+    }
+
+    override fun onDestroyView() {
+        _binding?.contactsList?.adapter = null
+        _binding = null
+        super.onDestroyView()
     }
 
     companion object {

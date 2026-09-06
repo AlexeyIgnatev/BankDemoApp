@@ -1,5 +1,6 @@
 package com.esom.bank.screens.transfer.dialog.success
 
+import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Intent
@@ -44,7 +45,9 @@ import java.util.Locale
 
 @AndroidEntryPoint
 class SuccessTransferFragment : Fragment() {
-    private lateinit var binding: FragmentSuccessTransferBinding
+    private var _binding: FragmentSuccessTransferBinding? = null
+    private val binding: FragmentSuccessTransferBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val uiModel: SuccessTransferUiStateViewModel by viewModels()
 
@@ -53,7 +56,7 @@ class SuccessTransferFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentSuccessTransferBinding.inflate(inflater, container, false)
+        _binding = FragmentSuccessTransferBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -188,6 +191,7 @@ class SuccessTransferFragment : Fragment() {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     private fun showCreateTemplateDialog() {
         val operation = uiModel.uiState.value.operation ?: return
         if (operation.openedFromHistory) return
@@ -530,6 +534,11 @@ class SuccessTransferFragment : Fragment() {
     private fun formatDateTime(timestamp: Long): String {
         val formatter = SimpleDateFormat("dd.MM.yyyy, HH:mm:ss", Locale("ru", "RU"))
         return formatter.format(Date(timestamp))
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private companion object {

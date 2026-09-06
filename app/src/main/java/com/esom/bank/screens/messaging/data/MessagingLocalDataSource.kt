@@ -1,6 +1,6 @@
 package com.esom.bank.screens.messaging.data
 
-import com.tencent.mmkv.MMKV
+import com.esom.bank.common.security.SecureMmkv
 import javax.inject.Inject
 
 interface MessagingLocalDataSource {
@@ -14,10 +14,7 @@ interface MessagingLocalDataSource {
 
 class MessagingLocalDataSourceImpl @Inject constructor() : MessagingLocalDataSource {
     private val storage by lazy {
-        MMKV.mmkvWithID(
-            "MessagingLocalDataSource",
-            MMKV.MULTI_PROCESS_MODE
-        )
+        SecureMmkv.storage("MessagingLocalDataSource")
     }
 
     override fun isPushNotificationsEnabled(): Boolean =

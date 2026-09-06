@@ -29,7 +29,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class SecurityFragment : Fragment() {
-    private lateinit var binding: FragmentSecurityBinding
+    private var _binding: FragmentSecurityBinding? = null
+    private val binding: FragmentSecurityBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
 
     private val notificationPermission = registerForActivityResult(
@@ -41,7 +43,7 @@ class SecurityFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
-        binding = FragmentSecurityBinding.inflate(inflater, container, false)
+        _binding = FragmentSecurityBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -140,5 +142,10 @@ class SecurityFragment : Fragment() {
             launchSingleTop = true
             popUpTo(R.id.mainFragment) { inclusive = true }
         })
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

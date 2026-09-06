@@ -1,11 +1,13 @@
 package com.esom.bank.common.utils.views
 
 import android.view.View
+import androidx.core.view.doOnLayout
 
 fun View.slideInFromTop(distancePx: Float, durationMs: Long = 180L) {
     alpha = 0f
     visibility = View.VISIBLE
-    post {
+    doOnLayout {
+        if (!isAttachedToWindow) return@doOnLayout
         translationY = -distancePx
         animate().translationY(0f).alpha(1f).setDuration(durationMs).start()
     }
@@ -14,7 +16,8 @@ fun View.slideInFromTop(distancePx: Float, durationMs: Long = 180L) {
 fun View.slideInFromBottom(durationMs: Long = 450L) {
     alpha = 0f
     visibility = View.VISIBLE
-    post {
+    doOnLayout {
+        if (!isAttachedToWindow) return@doOnLayout
         translationY = height.toFloat()
         animate().translationY(0f).alpha(1f).setDuration(durationMs).start()
     }

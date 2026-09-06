@@ -17,6 +17,7 @@ import android.provider.MediaStore
 import android.text.TextPaint
 import android.text.TextUtils
 import androidx.core.content.FileProvider
+import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import com.esom.bank.R
 import com.esom.bank.common.utils.formatReceiptAccountTail
@@ -516,6 +517,7 @@ object ReceiptFileUtils {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun saveWithMediaStore(context: Context, fileName: String, data: ByteArray): Uri {
         val resolver = context.contentResolver
         val contentValues = ContentValues().apply {
@@ -528,16 +530,23 @@ object ReceiptFileUtils {
         val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
             ?: throw IllegalStateException("Failed to create download entry")
 
-        resolver.openOutputStream(uri)?.use { stream ->
-            stream.write(data)
-            stream.flush()
-        } ?: throw IllegalStateException("Failed to open output stream for $fileName")
+        return try {
+            resolver.openOutputStream(uri)?.use { stream ->
+                stream.write(data)
+                stream.flush()
+            } ?: throw IllegalStateException("Failed to open output stream for $fileName")
 
-        val completeValues = ContentValues().apply {
-            put(MediaStore.Downloads.IS_PENDING, 0)
+            val completeValues = ContentValues().apply {
+                put(MediaStore.Downloads.IS_PENDING, 0)
+            }
+            check(resolver.update(uri, completeValues, null, null) == 1) {
+                "Failed to finalize download entry"
+            }
+            uri
+        } catch (error: Exception) {
+            resolver.delete(uri, null, null)
+            throw error
         }
-        resolver.update(uri, completeValues, null, null)
-        return uri
     }
 
     @Suppress("DEPRECATION")

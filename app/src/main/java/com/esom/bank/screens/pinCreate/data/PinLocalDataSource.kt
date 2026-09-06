@@ -2,7 +2,7 @@ package com.esom.bank.screens.pinCreate.data
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.tencent.mmkv.MMKV
+import com.esom.bank.common.security.SecureMmkv
 import javax.inject.Inject
 
 enum class LockType(val value: String) {
@@ -32,10 +32,7 @@ interface PinLocalDataSource {
 
 class PinLocalDataSourceImpl @Inject constructor() : PinLocalDataSource {
     private val storage by lazy {
-        MMKV.mmkvWithID(
-            "PinLocalDataSource",
-            MMKV.MULTI_PROCESS_MODE
-        )
+        SecureMmkv.storage("PinLocalDataSource")
     }
     private val gson = Gson()
 

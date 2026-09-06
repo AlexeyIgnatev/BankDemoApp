@@ -23,7 +23,7 @@ fun View.hideKeyboard() {
     imm.hideSoftInputFromWindow(windowToken, 0)
 }
 
-fun TextInputLayout.getText() = editText!!.text.toString()
+fun TextInputLayout.getText() = editText?.text?.toString().orEmpty()
 
 fun EditText.addFocusListener(onFocusChanged: (Boolean) -> Unit = {}) {
     setOnFocusChangeListener { _, hasFocus ->

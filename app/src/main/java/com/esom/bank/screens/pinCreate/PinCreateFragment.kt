@@ -29,7 +29,9 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class PinCreateFragment : Fragment() {
-    private lateinit var binding: FragmentPinCreateBinding
+    private var _binding: FragmentPinCreateBinding? = null
+    private val binding: FragmentPinCreateBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val args: PinCreateFragmentArgs by navArgs()
     private val model: MainViewModel by activityViewModels()
     private val uiModel: PinCreateUiStateViewModel by viewModels()
@@ -39,7 +41,7 @@ class PinCreateFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentPinCreateBinding.inflate(inflater, container, false)
+        _binding = FragmentPinCreateBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -246,5 +248,10 @@ class PinCreateFragment : Fragment() {
 
     private fun navigateBack() {
         findNavController().popBackStack()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

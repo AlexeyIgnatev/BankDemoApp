@@ -1,7 +1,6 @@
 package com.esom.bank.screens.swap
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
@@ -45,7 +44,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
 
-private const val TAG = "SwapFragment"
 private const val OPERATION_CONVERT = "convert"
 private const val CONVERSION_IDEMPOTENCY_KEY = "conversion_idempotency_key"
 
@@ -54,7 +52,9 @@ class SwapFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
     private val uiModel: SwapUiStateViewModel by viewModels()
     private val args: SwapFragmentArgs by navArgs()
-    private lateinit var binding: FragmentSwapBinding
+    private var _binding: FragmentSwapBinding? = null
+    private val binding: FragmentSwapBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,7 +64,7 @@ class SwapFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentSwapBinding.bind(view)
+        _binding = FragmentSwapBinding.bind(view)
         bind()
     }
 
@@ -206,7 +206,7 @@ class SwapFragment : Fragment() {
         binding.backBtn.setOnClickListener {
             findNavController().popBackStack()
         }
-        requireActivity().onBackPressedDispatcher.addCallback {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             findNavController().popBackStack()
         }
 
@@ -355,19 +355,10 @@ class SwapFragment : Fragment() {
         model.settings.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is UiState.Success -> {
-                    Log.d(
-                        TAG,
-                        "Settings loaded: usd_buy_rate=${state.data.usdBuyRate}"
-                    )
                     updateAmountsFromSend(parseAmount(binding.sum.text?.toString()))
                     executeAutomaticRepeatIfReady()
                 }
-                is UiState.Error -> {
-                    Log.e(TAG, "Settings load error: ${state.message}")
-                }
-                is UiState.Loading -> {
-                    Log.d(TAG, "Settings loading...")
-                }
+                is UiState.Error, is UiState.Loading -> Unit
                 null -> Unit
             }
         }
@@ -476,10 +467,6 @@ class SwapFragment : Fragment() {
             CurrencyEnum.fromNameOrNull(args.to) ?: CurrencyEnum.ESOM
         )
 
-        Log.d(TAG, "=== initInitialIcons() ===")
-        Log.d(TAG, "uiModel.uiState.value.fromCurrency: $uiModel.uiState.value.fromCurrency")
-        Log.d(TAG, "uiModel.uiState.value.toCurrency: $uiModel.uiState.value.toCurrency")
-
         updateCurrencyViews()
         updateFromPanelViews()
         updateToPanelViews()
@@ -488,7 +475,6 @@ class SwapFragment : Fragment() {
         updateSomIconsVisibility()
         updateCommissionTitles()
 
-        Log.d(TAG, "=== END initInitialIcons() ===")
     }
 
     private fun updateCurrencyViews() {
@@ -717,19 +703,6 @@ class SwapFragment : Fragment() {
         binding.secondValue.text = formatCurrencyAmount(actualConvertedAmount)
         binding.total.text = formatCurrencyAmount(netConvertedAmount)
 
-        Log.d(
-            TAG,
-            "Conversion: $grossAmount ${paymentName(uiModel.uiState.value.fromCurrency)} -> " +
-                    "$actualConvertedAmount ${paymentName(uiModel.uiState.value.toCurrency)}; " +
-                    "net=$netConvertedAmount ${paymentName(uiModel.uiState.value.toCurrency)}"
-        )
-        if (!isSomToEsomConversion()) {
-            Log.d(TAG, "Курс обмена: ${getExchangeRate()}")
-        }
-        Log.d(
-            TAG,
-            "Комиссия: $fee ${paymentName(uiModel.uiState.value.fromCurrency)}"
-        )
     }
 
     private fun calculateReceivedFromSend(fromAmount: BigDecimal): BigDecimal {
@@ -829,10 +802,6 @@ class SwapFragment : Fragment() {
             return
         }
 
-        Log.d(TAG, "Запуск конвертации:")
-        Log.d(TAG, "From: $uiModel.uiState.value.fromCurrency, To: $uiModel.uiState.value.toCurrency, Amount: $fromAmount")
-        Log.d(TAG, "Курс: ${getExchangeRate()}")
-
         showConvertConfirmation(fromAmount)
     }
 
@@ -913,6 +882,11 @@ class SwapFragment : Fragment() {
     private fun slideOut(view: View, onEnd: (() -> Unit)? = null) {
         val distance = (8 * resources.displayMetrics.density).toFloat()
         view.slideOut(-distance, 160L, onEnd)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }

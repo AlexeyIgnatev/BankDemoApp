@@ -57,10 +57,8 @@ fun View.addBottomNavigationMargin(
     doOnApplyWindowInsets { _, insets, _ ->
         targetView.isVisible = !insets.isVisible(WindowInsetsCompat.Type.ime())
 
-        targetView.post {
-            targetView.updateLayoutParams<ConstraintLayout.LayoutParams> {
-                bottomMargin = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-            }
+        targetView.updateLayoutParams<ConstraintLayout.LayoutParams> {
+            bottomMargin = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
         }
 
         if (excludeInsets) {

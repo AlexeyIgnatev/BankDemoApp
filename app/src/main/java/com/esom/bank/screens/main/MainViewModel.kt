@@ -39,6 +39,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.cancelChildren
 import kotlin.math.abs
 import java.math.BigDecimal
 
@@ -101,8 +102,16 @@ class MainViewModel @Inject constructor(
     private val supportMessagesUiState = MutableStateFlow(SupportMessagesUiState())
 
     fun clearAllDataAndNavigate() {
+        clearSessionState()
         mainRepository.clearAllLocalData()
         sessionManager.notifyLoggedOut()
+    }
+
+    /** Clears in-memory state as well as cancelling requests belonging to the old session. */
+    fun clearSessionState() {
+        // Stop in-flight requests before clearing state so an old user's response
+        // cannot repopulate the UI after logout.
+        viewModelScope.coroutineContext.cancelChildren()
         _myData.value = null
         _swapRes.clear()
         _transferRes.clear()
@@ -118,6 +127,7 @@ class MainViewModel @Inject constructor(
         _hasUnreadNotifications.value = false
         _lastSuccessOperation.value = null
         _lastSuccessReceipt.value = null
+        supportMessagesUiState.value = SupportMessagesUiState()
     }
 
 

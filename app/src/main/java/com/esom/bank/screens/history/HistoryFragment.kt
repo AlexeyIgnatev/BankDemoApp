@@ -58,7 +58,9 @@ import java.math.BigDecimal
 
 @AndroidEntryPoint
 class HistoryFragment : Fragment() {
-    private lateinit var binding: FragmentHistoryBinding
+    private var _binding: FragmentHistoryBinding? = null
+    private val binding: FragmentHistoryBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val uiModel: HistoryUiStateViewModel by viewModels()
 
@@ -67,7 +69,7 @@ class HistoryFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
-        binding = FragmentHistoryBinding.inflate(inflater, container, false)
+        _binding = FragmentHistoryBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -384,7 +386,11 @@ class HistoryFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(historyReceiver)
+        context?.let {
+            runCatching { LocalBroadcastManager.getInstance(it).unregisterReceiver(historyReceiver) }
+        }
+        _binding?.history?.adapter = null
+        _binding = null
         super.onDestroyView()
     }
 

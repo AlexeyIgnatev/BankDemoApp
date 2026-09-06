@@ -22,7 +22,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class NotificationFragment : Fragment() {
-    private lateinit var binding: FragmentNotificationBinding
+    private var _binding: FragmentNotificationBinding? = null
+    private val binding: FragmentNotificationBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val adapter = NotificationAdapter()
 
@@ -30,7 +32,7 @@ class NotificationFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentNotificationBinding.inflate(inflater, container, false)
+        _binding = FragmentNotificationBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -64,5 +66,11 @@ class NotificationFragment : Fragment() {
                 null -> Unit
             }
         }
+    }
+
+    override fun onDestroyView() {
+        _binding?.notifications?.adapter = null
+        _binding = null
+        super.onDestroyView()
     }
 }

@@ -18,14 +18,16 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class BioFragment : Fragment() {
-    private lateinit var binding: FragmentBioBinding
+    private var _binding: FragmentBioBinding? = null
+    private val binding: FragmentBioBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentBioBinding.inflate(inflater, container, false)
+        _binding = FragmentBioBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -45,5 +47,10 @@ class BioFragment : Fragment() {
         binding.onlyPasswordTitle.setOnClickListener {
             findNavController().navigate(NavGraphDirections.startMainFragment())
         }
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
     }
 }

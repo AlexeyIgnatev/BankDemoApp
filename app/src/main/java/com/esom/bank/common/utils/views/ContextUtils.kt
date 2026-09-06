@@ -8,9 +8,6 @@ import android.view.View
 import android.widget.Toast
 import com.esom.bank.activities.MainActivity
 import com.esom.bank.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 
 fun Context.reloadApp() {
@@ -20,13 +17,11 @@ fun Context.reloadApp() {
 }
 
 fun Context.showToast(message: String?) {
-    CoroutineScope(Dispatchers.Main.immediate).launch {
-        Toast.makeText(
-            this@showToast,
-            message ?: getString(R.string.something_went_wrong),
-            Toast.LENGTH_SHORT
-        ).show()
-    }
+    Toast.makeText(
+        applicationContext,
+        message ?: getString(R.string.something_went_wrong),
+        Toast.LENGTH_SHORT
+    ).show()
 }
 
 fun Activity.syncStatusBarWithTheme() {

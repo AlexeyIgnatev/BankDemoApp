@@ -1,6 +1,6 @@
 package com.esom.bank.screens.auth.data
 
-import com.tencent.mmkv.MMKV
+import com.esom.bank.common.security.SecureMmkv
 import javax.inject.Inject
 
 interface AuthLocalDataSource {
@@ -13,10 +13,7 @@ interface AuthLocalDataSource {
 
 class AuthLocalDataSourceImpl @Inject constructor(): AuthLocalDataSource {
     private val storage by lazy {
-        MMKV.mmkvWithID(
-            "AuthLocalDataSource",
-            MMKV.MULTI_PROCESS_MODE
-        )
+        SecureMmkv.storage("AuthLocalDataSource")
     }
 
     override fun getLogin(): String? = storage.decodeString("login")

@@ -12,11 +12,12 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.findNavController
-import androidx.navigation.NavOptions
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.NavOptions
 import com.esom.bank.R
 import com.esom.bank.common.session.SessionManager
+import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainActivityViewModel by viewModels()
+    private val mainViewModel: MainViewModel by viewModels()
     @Inject
     lateinit var sessionManager: SessionManager
 
@@ -73,8 +75,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupStartDestination() {
-        val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val controller = navHost.navController
+        val controller = rootNavController()
         val graph = controller.navInflater.inflate(R.navigation.nav_graph)
         graph.setStartDestination(
             when {
@@ -91,7 +92,7 @@ class MainActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     if (!state.shouldLock || isLockDestination()) return@collect
-                    findNavController(R.id.nav_host_fragment).navigate(
+                    rootNavController().navigate(
                         R.id.logInFragment,
                         null,
                         NavOptions.Builder()
@@ -119,6 +120,7 @@ class MainActivity : AppCompatActivity() {
     private fun handleSessionState() {
         if (viewModel.isAuthenticated()) return
         viewModel.handleSessionExpired()
+        mainViewModel.clearSessionState()
         viewModel.onUserInteraction(true)
         if (!isAuthDestination()) {
             navigateToAuth()
@@ -126,7 +128,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToAuth() {
-        findNavController(R.id.nav_host_fragment).navigate(
+        rootNavController().navigate(
             R.id.startAuthFragment,
             null,
             NavOptions.Builder()
@@ -136,7 +138,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isLockDestination(): Boolean {
-        return findNavController(R.id.nav_host_fragment).currentDestination?.id in setOf(
+        return rootNavController().currentDestination?.id in setOf(
             R.id.authFragment,
             R.id.logInFragment,
             R.id.pinCreateFragment,
@@ -145,6 +147,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isAuthDestination(): Boolean {
-        return findNavController(R.id.nav_host_fragment).currentDestination?.id == R.id.authFragment
+        return rootNavController().currentDestination?.id == R.id.authFragment
+    }
+
+    /** Resolves the host directly instead of relying on a view tag that may not yet be set. */
+    private fun rootNavController(): NavController {
+        val host = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+            ?: error("Root NavHostFragment is missing")
+        return host.navController
     }
 }

@@ -103,6 +103,7 @@
         android:id="@+id/reset_text"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
+        android:layout_marginTop="2dp"
         android:fontFamily="@font/mont_semibold"
         android:gravity="center"
         android:paddingHorizontal="10dp"
@@ -110,9 +111,10 @@
         android:textColor="@color/red"
         android:textSize="13sp"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/lock_subtitle"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/lock_subtitle" />
+        app:layout_constraintTop_toBottomOf="@id/lock_subtitle"
+        app:layout_constraintHorizontal_bias="0.5" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/error_card"
@@ -125,7 +127,7 @@
         app:cardElevation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/lock_subtitle">
+        app:layout_constraintTop_toBottomOf="@id/reset_text">
 
         <TextView
             android:id="@+id/error_text"

@@ -48,25 +48,29 @@ import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class QrFragment : Fragment() {
-    private lateinit var binding: FragmentQrBinding
+    private var _binding: FragmentQrBinding? = null
+    private val binding: FragmentQrBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val uiModel: QrUiStateViewModel by viewModels()
+    private var displayedQrBitmaps: Triple<Bitmap?, Bitmap?, Bitmap?>? = null
 
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         uiModel.setCameraRequestInFlight(false)
-        if (granted) {
+        if (granted && isAdded && _binding != null) {
             startEmbeddedScanner()
-        } else {
+        } else if (!granted && isAdded && _binding != null) {
             requireContext().showToast(getString(R.string.qr_camera_permission_required))
             findNavController().navigateUp()
         }
     }
 
     private val qrGalleryLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri == null) return@registerForActivityResult
+        if (uri == null || _binding == null || !isAdded) return@registerForActivityResult
         val content = decodeQrFromImageUri(uri)
+        if (_binding == null || !isAdded) return@registerForActivityResult
         if (content.isNullOrBlank()) {
             binding.root.showErrorSnackbar(getString(R.string.qr_scan_empty))
         } else {
@@ -79,7 +83,7 @@ class QrFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentQrBinding.inflate(inflater, container, false)
+        _binding = FragmentQrBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -126,9 +130,10 @@ class QrFragment : Fragment() {
         binding.fullScreenScanner.statusView.visibility = View.GONE
         binding.fullScreenScanner.viewFinder.visibility = View.GONE
         binding.fullScreenScanner.decodeContinuous { result ->
+            if (_binding == null || !isAdded) return@decodeContinuous
             if (uiModel.uiState.value.scanHandled || result.text.isNullOrBlank()) return@decodeContinuous
             uiModel.setScanHandled(true)
-            binding.fullScreenScanner.pause()
+            _binding?.fullScreenScanner?.pause()
             handleScannedContent(result.text)
         }
         ensureCameraAndStart()
@@ -169,35 +174,54 @@ class QrFragment : Fragment() {
         uiModel.updateAddresses(phone, salam, usdt)
         val generation = uiModel.nextRenderGeneration()
         viewLifecycleOwner.lifecycleScope.launch {
-            val bitmaps = withContext(Dispatchers.Default) {
-                Triple(
-                    if (phone.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
-                        address = phone, currency = uiModel.uiState.value.primaryCurrency, width = QR_SIZE, height = QR_SIZE
-                    ),
-                    if (salam.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
-                        address = salam, currency = CurrencyEnum.ESOM, width = QR_SIZE, height = QR_SIZE
-                    ),
-                    if (usdt.isBlank()) null else QRCodeGenerator.generateCryptoQRCodeWithScheme(
-                        address = usdt, currency = CurrencyEnum.USDT_TRC20, width = QR_SIZE, height = QR_SIZE
+            val generatedBitmaps = mutableListOf<Bitmap>()
+            val bitmaps = try {
+                withContext(Dispatchers.Default) {
+                    fun generate(address: String, currency: CurrencyEnum): Bitmap {
+                        return QRCodeGenerator.generateCryptoQRCodeWithScheme(
+                            address = address,
+                            currency = currency,
+                            width = QR_SIZE,
+                            height = QR_SIZE
+                        ).also { generatedBitmaps += it }
+                    }
+                    Triple(
+                        if (phone.isBlank()) null else generate(phone, uiModel.uiState.value.primaryCurrency),
+                        if (salam.isBlank()) null else generate(salam, CurrencyEnum.ESOM),
+                        if (usdt.isBlank()) null else generate(usdt, CurrencyEnum.USDT_TRC20)
                     )
-                )
+                }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                generatedBitmaps.forEach { bitmap ->
+                    if (!bitmap.isRecycled) bitmap.recycle()
+                }
+                throw cancelled
             }
-            if (generation != uiModel.uiState.value.renderGeneration) return@launch
+            if (generation != uiModel.uiState.value.renderGeneration) {
+                recycleQrBitmaps(bitmaps)
+                return@launch
+            }
+            val currentBinding = _binding ?: run {
+                recycleQrBitmaps(bitmaps)
+                return@launch
+            }
+            displayedQrBitmaps?.let(::recycleQrBitmaps)
+            displayedQrBitmaps = bitmaps
             bindQrCard(
-            image = binding.phoneQrImage,
-            value = binding.phoneQrValue,
+            image = currentBinding.phoneQrImage,
+            value = currentBinding.phoneQrValue,
             text = if (phone.isBlank()) getString(R.string.empty_value) else phone.formatPhone(),
             bitmap = bitmaps.first
             )
             bindQrCard(
-            image = binding.salamQrImage,
-            value = binding.salamQrValue,
+            image = currentBinding.salamQrImage,
+            value = currentBinding.salamQrValue,
             text = if (salam.isBlank()) getString(R.string.empty_value) else salam,
             bitmap = bitmaps.second
             )
             bindQrCard(
-            image = binding.usdtQrImage,
-            value = binding.usdtQrValue,
+            image = currentBinding.usdtQrImage,
+            value = currentBinding.usdtQrValue,
             text = if (usdt.isBlank()) getString(R.string.empty_value) else usdt,
             bitmap = bitmaps.third
             )
@@ -313,6 +337,12 @@ class QrFragment : Fragment() {
         }
     }
 
+    private fun recycleQrBitmaps(bitmaps: Triple<Bitmap?, Bitmap?, Bitmap?>) {
+        bitmaps.toList().forEach { bitmap ->
+            if (bitmap != null && !bitmap.isRecycled) bitmap.recycle()
+        }
+    }
+
     private fun showScanMode() {
         binding.scanContainer.isVisible = true
         binding.scanFrame.isVisible = true
@@ -324,7 +354,7 @@ class QrFragment : Fragment() {
         binding.showTabBtn.setTextColor(Color.rgb(167, 25, 36))
         binding.showTabBtn.iconTint = ColorStateList.valueOf(Color.rgb(167, 25, 36))
         binding.showTabBtn.setIconResource(R.drawable.ic_qr_scan)
-        if (::binding.isInitialized) ensureCameraAndStart()
+        if (_binding != null) ensureCameraAndStart()
     }
 
     private fun showShowMode() {
@@ -365,8 +395,20 @@ class QrFragment : Fragment() {
     }
 
     private fun decodeQrFromImageUri(uri: android.net.Uri): String? {
-        val bitmap = requireContext().contentResolver.openInputStream(uri)?.use { input ->
-            android.graphics.BitmapFactory.decodeStream(input)
+        val resolver = context?.contentResolver ?: return null
+        val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        resolver.openInputStream(uri)?.use { input ->
+            android.graphics.BitmapFactory.decodeStream(input, null, bounds)
+        }
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+
+        val sample = calculateDecodeSampleSize(bounds.outWidth, bounds.outHeight, MAX_QR_IMAGE_DIMENSION)
+        val options = android.graphics.BitmapFactory.Options().apply {
+            inSampleSize = sample
+            inPreferredConfig = Bitmap.Config.RGB_565
+        }
+        val bitmap = resolver.openInputStream(uri)?.use { input ->
+            android.graphics.BitmapFactory.decodeStream(input, null, options)
         } ?: return null
 
         return runCatching {
@@ -376,6 +418,14 @@ class QrFragment : Fragment() {
         }
     }
 
+    private fun calculateDecodeSampleSize(width: Int, height: Int, maxDimension: Int): Int {
+        var sample = 1
+        while (maxOf(width / sample, height / sample) > maxDimension) {
+            sample *= 2
+        }
+        return sample
+    }
+
     private fun shareQrCode(address: String, currency: CurrencyEnum) {
         val user = (model.myData.value as? UiState.Success)?.data
         val displayName = user?.let {
@@ -383,31 +433,54 @@ class QrFragment : Fragment() {
         }.orEmpty()
         val title = QrShareUtils.buildTitle(currency, displayName)
         val qrBitmap = QrShareUtils.createQrBitmap(address, currency)
-        val shareBitmap = QrShareUtils.createShareBitmap(
-            context = requireContext(),
-            title = title,
-            subtitle = null,
-            qrBitmap = qrBitmap
-        )
-        QrShareUtils.shareBitmap(
-            context = requireContext(),
-            bitmap = shareBitmap,
-            fileNamePrefix = "qr_${currency.name.lowercase()}",
-            chooserTitle = getString(R.string.share)
-        )
+        try {
+            val shareBitmap = QrShareUtils.createShareBitmap(
+                context = requireContext(),
+                title = title,
+                subtitle = null,
+                qrBitmap = qrBitmap
+            )
+            try {
+                QrShareUtils.shareBitmap(
+                    context = requireContext(),
+                    bitmap = shareBitmap,
+                    fileNamePrefix = "qr_${currency.name.lowercase()}",
+                    chooserTitle = getString(R.string.share)
+                )
+            } finally {
+                shareBitmap.recycle()
+            }
+        } finally {
+            qrBitmap.recycle()
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        if (::binding.isInitialized && binding.scanContainer.isVisible) ensureCameraAndStart()
+        if (_binding != null && binding.scanContainer.isVisible) ensureCameraAndStart()
     }
 
     override fun onPause() {
-        if (::binding.isInitialized) binding.fullScreenScanner.pause()
+        if (_binding != null) binding.fullScreenScanner.pause()
         super.onPause()
+    }
+
+    override fun onDestroyView() {
+        _binding?.fullScreenScanner?.pause()
+        _binding?.fullScreenScanner?.setTorchOff()
+        _binding?.let { currentBinding ->
+            currentBinding.phoneQrImage.setImageDrawable(null)
+            currentBinding.salamQrImage.setImageDrawable(null)
+            currentBinding.usdtQrImage.setImageDrawable(null)
+        }
+        displayedQrBitmaps?.let(::recycleQrBitmaps)
+        displayedQrBitmaps = null
+        _binding = null
+        super.onDestroyView()
     }
 
     companion object {
         private const val QR_SIZE = 360
+        private const val MAX_QR_IMAGE_DIMENSION = 2048
     }
 }

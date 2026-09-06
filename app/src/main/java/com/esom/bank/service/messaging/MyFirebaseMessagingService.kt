@@ -1,5 +1,6 @@
 package com.esom.bank.service.messaging
 
+import android.annotation.SuppressLint
 import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
@@ -10,7 +11,6 @@ import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.Build
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.cancel
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -42,8 +43,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
-        Log.d(TAG, "From: ${remoteMessage.from}")
-
         val data = remoteMessage.data
         if (data.isNotEmpty()) {
             handleDataMessage(data)
@@ -59,15 +58,19 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d(TAG, "onNewToken: $token")
         mainRepository.sendFcmToken(token).launchIn(serviceScope)
+    }
+
+    override fun onDestroy() {
+        serviceScope.cancel()
+        super.onDestroy()
     }
 
     private fun handleDataMessage(data: Map<String, String>) {
         val commandId = data["id"] ?: RemoteCommandId.SHOW_NOTIFICATION.value
         when (RemoteCommandId.fromValue(commandId)) {
             RemoteCommandId.SHOW_NOTIFICATION -> showNotification(data)
-            else -> Log.d(TAG, "unsupported commandId: $commandId")
+            else -> Unit
         }
     }
 
@@ -76,13 +79,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val text = data["text"] ?: data["body"]
 
         if (text == null) {
-            Log.d(TAG, "showNotification: Empty text")
             return
         }
 
         showNotificationInternal(title, text, data["url"])
     }
 
+    @SuppressLint("MissingPermission")
     private fun showNotificationInternal(
         title: String,
         text: String,
@@ -99,7 +102,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setContentText(text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setPublicVersion(
+                NotificationCompat.Builder(this, FCM_NOTIFICATION_CHANNEL_ID)
+                    .setSmallIcon(R.drawable.notification_icon)
+                    .setColor(ContextCompat.getColor(this, R.color.red))
+                    .setContentTitle(getString(R.string.app_name))
+                    .setContentText(getString(R.string.notification_hidden_on_lock_screen))
+                    .build()
+            )
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setCategory(Notification.CATEGORY_MESSAGE)
             .setAutoCancel(true)
@@ -147,7 +158,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build()
             )
-            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            lockscreenVisibility = Notification.VISIBILITY_PRIVATE
         }
 
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
@@ -162,7 +173,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     companion object {
-        private const val TAG = "FCMService"
         const val FCM_NOTIFICATION_CHANNEL_ID = "FCM_CHANNEL_ID"
     }
 }

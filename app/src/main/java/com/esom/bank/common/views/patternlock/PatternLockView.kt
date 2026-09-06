@@ -395,6 +395,14 @@ class PatternLockView : GridLayout {
         onPatternListener = listener
     }
 
+    override fun onDetachedFromWindow() {
+        // The listener is usually a Fragment callback. Drop it as soon as the
+        // custom view leaves the hierarchy so a detached view cannot retain it.
+        onPatternListener = null
+        reset()
+        super.onDetachedFromWindow()
+    }
+
     interface OnPatternListener {
         fun onStarted() {}
         fun onProgress(ids: ArrayList<Int>) {}

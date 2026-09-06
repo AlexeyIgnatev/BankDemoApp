@@ -37,12 +37,14 @@ import java.math.BigDecimal
 
 @AndroidEntryPoint
 class FinancialAnalysisFragment : Fragment() {
-    private lateinit var binding: FragmentFinancialAnalysisBinding
+    private var _binding: FragmentFinancialAnalysisBinding? = null
+    private val binding: FragmentFinancialAnalysisBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val uiModel: FinancialAnalysisUiStateViewModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
-        binding = FragmentFinancialAnalysisBinding.inflate(inflater, container, false)
+        _binding = FragmentFinancialAnalysisBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -208,5 +210,10 @@ class FinancialAnalysisFragment : Fragment() {
         .format(Date(model.getFromTime())).replaceFirstChar { it.uppercase(Locale("ru", "RU")) }
 
     private val Int.dp: Int get() = (this * resources.displayMetrics.density).toInt()
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
 }

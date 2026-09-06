@@ -21,7 +21,9 @@ import java.util.Locale
 
 @AndroidEntryPoint
 class ChooseDateFragment : BottomSheetDialogFragment() {
-    private lateinit var binding: FragmentChooseDateBinding
+    private var _binding: FragmentChooseDateBinding? = null
+    private val binding: FragmentChooseDateBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val calendar = Calendar.getInstance()
 
@@ -29,7 +31,7 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentChooseDateBinding.inflate(inflater, container, false)
+        _binding = FragmentChooseDateBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -221,5 +223,10 @@ class ChooseDateFragment : BottomSheetDialogFragment() {
         }
 
         return days
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

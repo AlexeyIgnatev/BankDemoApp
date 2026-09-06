@@ -1,14 +1,14 @@
 package com.esom.bank.screens.qr.data
 
 import com.esom.bank.screens.main.enums.CurrencyEnum
-import com.tencent.mmkv.MMKV
+import com.esom.bank.common.security.SecureMmkv
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class PrimaryCurrencyLocalDataSource @Inject constructor() {
     private val storage by lazy {
-        MMKV.mmkvWithID(STORAGE_ID, MMKV.MULTI_PROCESS_MODE)
+        SecureMmkv.storage(STORAGE_ID)
     }
 
     fun get(): CurrencyEnum =
@@ -17,6 +17,10 @@ class PrimaryCurrencyLocalDataSource @Inject constructor() {
 
     fun set(currency: CurrencyEnum) {
         storage.encode(PRIMARY_CURRENCY_KEY, currency.name)
+    }
+
+    fun clear() {
+        storage.removeValueForKey(PRIMARY_CURRENCY_KEY)
     }
 
     private companion object {

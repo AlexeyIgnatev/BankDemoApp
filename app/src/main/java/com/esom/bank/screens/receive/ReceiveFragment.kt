@@ -28,7 +28,9 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ReceiveFragment : Fragment() {
-    private lateinit var binding: FragmentReceiveBinding
+    private var _binding: FragmentReceiveBinding? = null
+    private val binding: FragmentReceiveBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val args: ReceiveFragmentArgs by navArgs()
 
     private val model: MainViewModel by activityViewModels()
@@ -37,7 +39,7 @@ class ReceiveFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentReceiveBinding.inflate(inflater, container, false)
+        _binding = FragmentReceiveBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -120,5 +122,10 @@ class ReceiveFragment : Fragment() {
             fileNamePrefix = "receive_${currency.name.lowercase()}",
             chooserTitle = getString(R.string.share)
         )
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

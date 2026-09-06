@@ -17,14 +17,16 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ChooseActiveFragment : BottomSheetDialogFragment() {
-    private lateinit var binding: FragmentChooseActiveBinding
+    private var _binding: FragmentChooseActiveBinding? = null
+    private val binding: FragmentChooseActiveBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentChooseActiveBinding.inflate(inflater, container, false)
+        _binding = FragmentChooseActiveBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -90,5 +92,10 @@ class ChooseActiveFragment : BottomSheetDialogFragment() {
                 == CurrencyEnum.SOM)
         binding.digitalCheck.isChecked = (currencies.find { it == CurrencyEnum.ESOM }
                 == CurrencyEnum.ESOM)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

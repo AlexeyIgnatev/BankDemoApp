@@ -244,21 +244,33 @@ object QrShareUtils {
             DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
             DecodeHintType.TRY_HARDER to true
         )
-        return listOf(
+        val bases = listOf(
             bitmap,
             centerCrop(bitmap, 0.82f),
             centerCrop(bitmap, 0.70f),
-        ).flatMap { candidate ->
-            listOf(candidate, rotate(candidate, 90), rotate(candidate, 180), rotate(candidate, 270))
-        }.asSequence().mapNotNull { candidate ->
-            runCatching {
-                val pixels = IntArray(candidate.width * candidate.height)
-                candidate.getPixels(pixels, 0, candidate.width, 0, 0, candidate.width, candidate.height)
-                val source = RGBLuminanceSource(candidate.width, candidate.height, pixels)
-                val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
-                MultiFormatReader().decode(binaryBitmap, hints).text
-            }.getOrNull()
-        }.firstOrNull()
+        )
+        for (base in bases) {
+            var decoded: String? = null
+            try {
+                for (degrees in intArrayOf(0, 90, 180, 270)) {
+                    val candidate = rotate(base, degrees)
+                    try {
+                        val pixels = IntArray(candidate.width * candidate.height)
+                        candidate.getPixels(pixels, 0, candidate.width, 0, 0, candidate.width, candidate.height)
+                        val source = RGBLuminanceSource(candidate.width, candidate.height, pixels)
+                        val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
+                        decoded = runCatching { MultiFormatReader().decode(binaryBitmap, hints).text }.getOrNull()
+                    } finally {
+                        if (candidate !== base) candidate.recycle()
+                    }
+                    if (decoded != null) break
+                }
+            } finally {
+                if (base !== bitmap) base.recycle()
+            }
+            if (decoded != null) return decoded
+        }
+        return null
     }
 
     private fun centerCrop(bitmap: Bitmap, factor: Float): Bitmap {

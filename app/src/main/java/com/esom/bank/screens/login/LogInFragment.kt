@@ -31,7 +31,9 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LogInFragment : Fragment() {
-    private lateinit var binding: FragmentLogInBinding
+    private var _binding: FragmentLogInBinding? = null
+    private val binding: FragmentLogInBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val uiModel: LogInUiStateViewModel by viewModels()
     private val maxPinLength = 4
@@ -40,7 +42,7 @@ class LogInFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentLogInBinding.inflate(inflater, container, false)
+        _binding = FragmentLogInBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -234,7 +236,12 @@ class LogInFragment : Fragment() {
             null,
             NavOptions.Builder()
                 .setPopUpTo(R.id.nav_graph, true)
-                .build()
+            .build()
         )
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

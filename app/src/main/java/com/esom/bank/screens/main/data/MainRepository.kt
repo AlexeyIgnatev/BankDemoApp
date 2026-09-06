@@ -441,6 +441,9 @@ class MainRepositoryImpl @Inject constructor(
         historyLocalDataSource.clearAllHistoryData()
         pinLocalDataSource.clearLock()
         messagingLocalDataSource.clearMessagingData()
+        recentTemplateLocalDataSource.clearTemplates()
+        primaryCurrencyLocalDataSource.clear()
+        appPreferencesLocalDataSource.clearAll()
     }
 
 }

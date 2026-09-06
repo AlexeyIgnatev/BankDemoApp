@@ -36,11 +36,14 @@ import ru.tinkoff.decoro.slots.Slot
 
 @AndroidEntryPoint
 class SettingsFragment : Fragment() {
-    private lateinit var binding: FragmentSettingsBinding
+    private var _binding: FragmentSettingsBinding? = null
+    private val binding: FragmentSettingsBinding
+        get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
+    private var headerBackgroundUpdate: Runnable? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
-        binding = FragmentSettingsBinding.inflate(inflater, container, false)
+        _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -50,15 +53,21 @@ class SettingsFragment : Fragment() {
             val headerHeight = resources.getDimensionPixelSize(R.dimen._68dp) +
                 insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
             header.layoutParams.height = headerHeight
-            binding.headerBackground.post {
-                binding.headerBackground.clipBounds = Rect(
-                    0,
-                    0,
-                    binding.headerBackground.width,
-                    headerHeight
-                )
-                binding.headerBackground.visibility = View.VISIBLE
+            val headerBackground = binding.headerBackground
+            headerBackgroundUpdate?.let(headerBackground::removeCallbacks)
+            val update = Runnable {
+                if (headerBackground.isAttachedToWindow) {
+                    headerBackground.clipBounds = Rect(
+                        0,
+                        0,
+                        headerBackground.width,
+                        headerHeight
+                    )
+                    headerBackground.visibility = View.VISIBLE
+                }
             }
+            headerBackgroundUpdate = update
+            headerBackground.post(update)
             insets
         }
         binding.backBtn.setOnClickListener { findNavController().navigateUp() }
@@ -192,5 +201,14 @@ class SettingsFragment : Fragment() {
             PredefinedSlots.hardcodedSlot('-'), PredefinedSlots.digit(),
             PredefinedSlots.digit(), PredefinedSlots.digit()
         )
+    }
+
+    override fun onDestroyView() {
+        _binding?.headerBackground?.let { view ->
+            headerBackgroundUpdate?.let(view::removeCallbacks)
+        }
+        headerBackgroundUpdate = null
+        super.onDestroyView()
+        _binding = null
     }
 }

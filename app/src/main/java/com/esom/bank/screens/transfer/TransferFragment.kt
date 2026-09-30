@@ -1,5 +1,6 @@
 package com.esom.bank.screens.transfer
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.text.TextWatcher
@@ -18,6 +19,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.esom.bank.NavGraphDirections
@@ -175,6 +177,16 @@ class TransferFragment : Fragment() {
                     uiModel.setPendingTemplate(null)
                     uiModel.clearTransferIdempotencyKey()
                     model.updateUserData()
+                    // The backend commits an internal transfer before it
+                    // returns success. Refresh both the live wallet feed and
+                    // an already-created history screen immediately.
+                    model.latestTransactions()
+                    model.monthTransactions(System.currentTimeMillis())
+                    LocalBroadcastManager.getInstance(requireContext())
+                        .sendBroadcast(
+                            Intent("ACTION_HISTORY")
+                                .putExtra("extra_live_refresh", true)
+                        )
                     model.updateLastSuccessOperationReceipt(
                         transactionId = it.data.transactionId,
                         receiptNumber = it.data.receiptNumber

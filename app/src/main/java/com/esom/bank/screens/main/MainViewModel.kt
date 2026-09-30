@@ -336,7 +336,16 @@ class MainViewModel @Inject constructor(
 
     fun latestTransactions(currencyEnum: CurrencyEnum? = null) {
         val currencies = currencyEnum?.let(::listOf) ?: CurrencyEnum.supportedValues.toList()
-        mainRepository.history(currencies, getFromTime(), getToTime(), 8, 0).onEach { uiState ->
+        // The wallet/home feed is a live view. A previously selected history
+        // period may contain an old upper bound and would hide a transaction
+        // created after that bound until the user changed the filter again.
+        mainRepository.history(
+            currencies,
+            getFromTime(),
+            System.currentTimeMillis(),
+            8,
+            0
+        ).onEach { uiState ->
             _history.value = when (uiState) {
                 is UiState.Success -> UiState.Success(uiState.data.filterNotNull())
                 else -> uiState
@@ -379,7 +388,7 @@ class MainViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun monthTransactions() {
+    fun monthTransactions(toTime: Long = getToTime()) {
         mainRepository.history(
             listOf(
                 CurrencyEnum.SOM,
@@ -387,7 +396,7 @@ class MainViewModel @Inject constructor(
                 CurrencyEnum.USDT_TRC20
             ),
             getFromTime(),
-            getToTime(),
+            toTime,
             100,
             0
         ).onEach { uiState ->

@@ -65,7 +65,8 @@ class HistoryFragment : Fragment() {
     private val uiModel: HistoryUiStateViewModel by viewModels()
 
     private val historyReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) = refreshData()
+        override fun onReceive(context: Context?, intent: Intent?) =
+            refreshData(intent?.getBooleanExtra(EXTRA_LIVE_REFRESH, false) == true)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?): View {
@@ -140,17 +141,18 @@ class HistoryFragment : Fragment() {
         refreshData()
     }
 
-    private fun refreshData() {
+    private fun refreshData(useCurrentUpperBound: Boolean = false) {
         updateFilterLabels()
-        loadTransactions()
-        model.monthTransactions()
+        val toTime = if (useCurrentUpperBound) System.currentTimeMillis() else model.getToTime()
+        loadTransactions(toTime)
+        model.monthTransactions(toTime)
     }
 
-    private fun loadTransactions() {
+    private fun loadTransactions(toTime: Long = model.getToTime()) {
         val adapter = binding.history.adapter as HistoryAdapter
         uiModel.replaceHistoryJob(viewLifecycleOwner.lifecycleScope.launch {
             try {
-                model.historyPaging(model.getCurrency(), model.getFromTime(), model.getToTime())
+                model.historyPaging(model.getCurrency(), model.getFromTime(), toTime)
                     .collectLatest { data ->
                         adapter.submitData(PagingData.empty())
                         adapter.submitData(data)
@@ -398,5 +400,6 @@ class HistoryFragment : Fragment() {
         const val MODE_EXPENSES = "expenses"
         const val MODE_INCOME = "income"
         private const val ACTION_HISTORY = "ACTION_HISTORY"
+        const val EXTRA_LIVE_REFRESH = "extra_live_refresh"
     }
 }

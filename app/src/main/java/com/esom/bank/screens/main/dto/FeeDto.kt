@@ -9,5 +9,9 @@ data class FeeDto(
     @SerializedName("usd_buy_rate")
     val usdBuyRate: BigDecimal,
     @SerializedName("usd_sell_rate")
-    val usdSellRate: BigDecimal = BigDecimal.ZERO
+    val usdSellRate: BigDecimal = BigDecimal.ZERO,
+    @SerializedName("usdt_withdraw_fee_fixed")
+    val usdtWithdrawFeeFixed: BigDecimal = BigDecimal.ZERO,
+    @SerializedName("min_withdraw_usdt_trc20")
+    val minWithdrawUsdtTrc20: BigDecimal = BigDecimal.ZERO
 )

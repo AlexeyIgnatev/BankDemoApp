@@ -69,6 +69,7 @@ interface MainRepository {
     fun isWalletHistoryExpanded(): Boolean
     fun setWalletHistoryExpanded(expanded: Boolean)
     fun authenticate(login: String, password: String): Flow<UiState<UserModel>>
+    fun logout(): Flow<UiState<Unit>>
     fun getUserInfo(): Flow<UiState<UserModel>>
 
     fun getSettings(): Flow<UiState<FeeModel>>
@@ -228,6 +229,14 @@ class MainRepositoryImpl @Inject constructor(
             if (!authenticated) authLocalDataSource.clearAuthData()
         }
     }
+
+    override fun logout(): Flow<UiState<Unit>> =
+        mainCloudDataSource.logout().map { response ->
+            when (response) {
+                is ApiResponse.Success -> UiState.Success(Unit)
+                is ApiResponse.Error -> UiState.Error(response.toString(context))
+            }
+        }
 
     override fun getUserInfo(): Flow<UiState<UserModel>> =
         mainCloudDataSource.getUserInfo().map { response ->

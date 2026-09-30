@@ -38,8 +38,12 @@ import com.esom.bank.screens.transfer.model.TransferTemplate
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.abs
 import java.math.BigDecimal
 
@@ -103,8 +107,16 @@ class MainViewModel @Inject constructor(
 
     fun clearAllDataAndNavigate() {
         clearSessionState()
-        mainRepository.clearAllLocalData()
-        sessionManager.notifyLoggedOut()
+        viewModelScope.launch {
+            try {
+                withTimeoutOrNull(LOGOUT_TIMEOUT_MS) {
+                    mainRepository.logout().catch { }.first()
+                }
+            } finally {
+                mainRepository.clearAllLocalData()
+                sessionManager.notifyLoggedOut()
+            }
+        }
     }
 
     /** Clears in-memory state as well as cancelling requests belonging to the old session. */
@@ -568,6 +580,7 @@ class MainViewModel @Inject constructor(
 
     companion object {
         private const val PENDING_MESSAGE_MATCH_WINDOW_MS = 5 * 60 * 1000L
+        private const val LOGOUT_TIMEOUT_MS = 5_000L
         const val RECEIPT_OPERATION_NOT_FOUND = "receipt_operation_not_found"
     }
 }

@@ -35,6 +35,9 @@ interface ServerApi {
         @Body request: UserAuthRequestDto
     ): Response<UserAuthResponseDto>
 
+    @POST("users/auth/logout")
+    suspend fun logout(): Response<StatusDto>
+
     @GET("users/info")
     suspend fun getUserInfo(
         @Query("device") device: String
@@ -73,25 +76,25 @@ interface ServerApi {
     @GET("payments/fees")
     suspend fun getFees(): Response<List<PaymentFeeDto>>
 
-    @GET("/support/history")
+    @GET("support/history")
     suspend fun getMessages(): Response<List<SupportDto>>
 
-    @POST("/support/message")
+    @POST("support/message")
     suspend fun sendMessage(
         @Body sendMessageDto: SendMessageDto
     ): Response<SupportDto>
 
-    @POST("/users/fcm-token")
+    @POST("users/fcm-token")
     suspend fun sendFcmToken(
         @Body requestDto: FcmTokenDto
-    ): Response<Unit>
+    ): Response<StatusDto>
 
-    @PATCH("/users/push-settings")
+    @PATCH("users/push-settings")
     suspend fun updatePushSettings(
         @Body requestDto: PushSettingsDto
-    ): Response<Unit>
+    ): Response<StatusDto>
 
-    @GET("/notifications")
+    @GET("notifications")
     suspend fun getNotifications(
         @Query("skip") skip: Int = 0,
         @Query("take") take: Int = 40

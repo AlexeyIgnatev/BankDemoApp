@@ -33,6 +33,7 @@ import java.math.BigDecimal
 
 interface MainCloudDataSource {
     fun login(username: String, password: String): Flow<ApiResponse<UserAuthResponseDto>>
+    fun logout(): Flow<ApiResponse<StatusDto>>
     fun getUserInfo(): Flow<ApiResponse<UserDto>>
     fun getSettings(): Flow<ApiResponse<FeeDto>>
     fun getFees(): Flow<ApiResponse<List<PaymentFeeDto>>>
@@ -68,6 +69,10 @@ class MainCloudDataSourceImpl @Inject constructor(
         safeApiCall {
             serverApi.login(UserAuthRequestDto(username, password))
         }
+
+    override fun logout(): Flow<ApiResponse<StatusDto>> = safeApiCall {
+        serverApi.logout()
+    }
 
     override fun getUserInfo(): Flow<ApiResponse<UserDto>> = safeApiCall {
         serverApi.getUserInfo(PhoneInfo.getFormattedPhoneInfo())

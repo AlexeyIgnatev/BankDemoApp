@@ -34,11 +34,15 @@ fun UserDto.toModel() = UserModel(
 data class FeeModel(
     val id: Int,
     val usdBuyRate: BigDecimal,
-    val usdSellRate: BigDecimal = BigDecimal.ZERO
+    val usdSellRate: BigDecimal = BigDecimal.ZERO,
+    val usdtWithdrawFeeFixed: BigDecimal = BigDecimal.ZERO,
+    val minWithdrawUsdtTrc20: BigDecimal = BigDecimal.ZERO
 ): Parcelable
 
 fun FeeDto.toModel() = FeeModel(
     id = id,
     usdBuyRate = usdBuyRate,
-    usdSellRate = usdSellRate
+    usdSellRate = usdSellRate,
+    usdtWithdrawFeeFixed = usdtWithdrawFeeFixed,
+    minWithdrawUsdtTrc20 = minWithdrawUsdtTrc20
 )

@@ -32,6 +32,10 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
         emit(ApiResponse.Success(UserAuthResponseDto(accessToken = "mock-user-token"), code = 200))
     }
 
+    override fun logout(): Flow<ApiResponse<StatusDto>> = flow {
+        emit(ApiResponse.Success(StatusDto(status = "OK"), code = 200))
+    }
+
     override fun getUserInfo(): Flow<ApiResponse<UserDto>> = flow {
         emit(
             ApiResponse.Success(

@@ -99,14 +99,18 @@ class MainCloudDataSourceImpl @Inject constructor(
         idempotencyKey: String
     ): Flow<ApiResponse<StatusDto>> =
         safeApiCall {
+            val normalizedPhone = phone.trim().takeIf { it.isNotEmpty() }
+            val normalizedAddress = address?.trim()?.takeIf { it.isNotEmpty() }
             Log.d(
                 "MainCloudDataSource",
                 "sending POST payments/transfer amount=$amount currency=$currencyEnum " +
-                    "hasPhone=${phone.isNotBlank()} hasAddress=${!address.isNullOrBlank()}"
+                    "hasPhone=${normalizedPhone != null} hasAddress=${normalizedAddress != null} " +
+                    "phoneLast4=${normalizedPhone?.takeLast(4) ?: "none"} " +
+                    "addressLength=${normalizedAddress?.length ?: 0}"
             )
             serverApi.transfer(
                 idempotencyKey,
-                TransferDto(amount.toPlainString(), phone, address, currencyEnum),
+                TransferDto(amount.toPlainString(), normalizedPhone, normalizedAddress, currencyEnum),
             )
         }
 

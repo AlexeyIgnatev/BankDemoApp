@@ -32,9 +32,18 @@ abstract class AbstractBaseCloudDataSource {
                     )
                 }
             } else {
+                val request = response.raw().request
+                val rawErrorBody = response.errorBody()?.string()
                 val errorData = ErrorResponse.fromJson(
-                    response.errorBody()?.string(),
+                    rawErrorBody,
                     response.code()
+                )
+                Log.e(
+                    "ApiCall",
+                    "error response=${response.code()} method=${request.method} " +
+                        "url=${request.url.encodedPath} " +
+                        "message=${errorData?.message ?: "<empty>"} " +
+                        "bodyLength=${rawErrorBody?.length ?: 0}"
                 )
                 emit(
                     ApiResponse.Error(

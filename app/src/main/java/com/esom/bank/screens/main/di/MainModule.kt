@@ -2,7 +2,6 @@ package com.esom.bank.screens.main.di
 
 import com.esom.bank.screens.main.data.MainCloudDataSource
 import com.esom.bank.screens.main.data.MainCloudDataSourceImpl
-import com.esom.bank.screens.main.data.MainCloudDataSourceMock
 import com.esom.bank.screens.main.data.MainRepository
 import com.esom.bank.screens.main.data.MainRepositoryImpl
 import dagger.Binds
@@ -15,7 +14,7 @@ import dagger.hilt.components.SingletonComponent
 abstract class MainModule {
     @Binds
     abstract fun bindMainCloudDataSource(
-        mainCloudDataSourceImpl: MainCloudDataSourceMock
+        mainCloudDataSourceImpl: MainCloudDataSourceImpl
     ): MainCloudDataSource
 
 

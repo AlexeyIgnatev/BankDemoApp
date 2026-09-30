@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import com.esom.bank.R
 import com.esom.bank.common.utils.toMoneyDecimalOrZero
@@ -14,6 +13,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.math.RoundingMode
+import androidx.navigation.fragment.findNavController
 
 @AndroidEntryPoint
 class TransferConfirmationFragment : BottomSheetDialogFragment() {
@@ -41,21 +41,21 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
         }
 
         binding.confirmBtn.setOnClickListener {
-            parentFragmentManager.setFragmentResult(
-                RESULT_REQUEST_KEY,
-                Bundle(uiModel.uiState.value.data).apply {
-                    putBoolean(CONFIRMED_KEY, true)
-                }
-            )
-            dismiss()
+            publishResult(confirmed = true)
         }
         binding.cancelBtn.setOnClickListener {
-            parentFragmentManager.setFragmentResult(
-                RESULT_REQUEST_KEY,
-                bundleOf(CONFIRMED_KEY to false)
-            )
-            dismiss()
+            publishResult(confirmed = false)
         }
+    }
+
+    private fun publishResult(confirmed: Boolean) {
+        requireActivity().supportFragmentManager.setFragmentResult(
+            RESULT_REQUEST_KEY,
+            Bundle(uiModel.uiState.value.data).apply {
+                putBoolean(CONFIRMED_KEY, confirmed)
+            }
+        )
+        findNavController().navigateUp()
     }
 
     private fun bindConfirmation(data: Bundle) {

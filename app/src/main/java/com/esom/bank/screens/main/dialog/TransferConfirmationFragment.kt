@@ -48,7 +48,7 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
     }
 
     private fun publishResult(confirmed: Boolean) {
-        requireActivity().supportFragmentManager.setFragmentResult(
+        parentFragmentManager.setFragmentResult(
             RESULT_REQUEST_KEY,
             Bundle(uiModel.uiState.value.data).apply {
                 putBoolean(CONFIRMED_KEY, confirmed)

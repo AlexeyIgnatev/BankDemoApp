@@ -225,7 +225,7 @@ class TransferFragment : Fragment() {
     }
 
     private fun setupTransferConfirmationResultListener() {
-        requireActivity().supportFragmentManager.setFragmentResultListener(
+        parentFragmentManager.setFragmentResultListener(
             TransferConfirmationFragment.RESULT_REQUEST_KEY,
             viewLifecycleOwner
         ) { _, bundle ->

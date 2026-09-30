@@ -3,6 +3,7 @@ package com.esom.bank.screens.transfer
 import android.os.Bundle
 import android.text.InputType
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -52,6 +53,7 @@ import java.math.RoundingMode
 
 private const val OPERATION_TRANSFER = "transfer"
 private const val MIN_WALLET_ADDRESS_LENGTH = 20
+private const val TRANSFER_FLOW_TAG = "TransferFlow"
 
 @AndroidEntryPoint
 class TransferFragment : Fragment() {
@@ -225,12 +227,19 @@ class TransferFragment : Fragment() {
     }
 
     private fun setupTransferConfirmationResultListener() {
+        Log.d(TRANSFER_FLOW_TAG, "registering confirmation listener manager=${parentFragmentManager.hashCode()}")
         parentFragmentManager.setFragmentResultListener(
             TransferConfirmationFragment.RESULT_REQUEST_KEY,
             viewLifecycleOwner
         ) { _, bundle ->
+            Log.d(
+                TRANSFER_FLOW_TAG,
+                "confirmation result received confirmed=${bundle.getBoolean(TransferConfirmationFragment.CONFIRMED_KEY)} " +
+                    "operation=${bundle.getString(TransferConfirmationFragment.OPERATION_KEY)}"
+            )
             if (!bundle.getBoolean(TransferConfirmationFragment.CONFIRMED_KEY)) return@setFragmentResultListener
             if (bundle.getString(TransferConfirmationFragment.OPERATION_KEY) != OPERATION_TRANSFER) {
+                Log.w(TRANSFER_FLOW_TAG, "confirmation result ignored: unexpected operation")
                 return@setFragmentResultListener
             }
 
@@ -239,7 +248,10 @@ class TransferFragment : Fragment() {
             val currencyName =
                 bundle.getString(TransferConfirmationFragment.FROM_CURRENCY_KEY).orEmpty()
             val currency = CurrencyEnum.fromNameOrNull(currencyName)
-                ?: return@setFragmentResultListener
+                ?: run {
+                    Log.e(TRANSFER_FLOW_TAG, "confirmation result ignored: invalid currency")
+                    return@setFragmentResultListener
+                }
             val phone = bundle.getString(TransferConfirmationFragment.PHONE_KEY).orEmpty()
             val address = bundle.getString(TransferConfirmationFragment.ADDRESS_KEY)
             val recipient = bundle.getString(TransferConfirmationFragment.RECIPIENT_KEY).orEmpty()
@@ -274,6 +286,11 @@ class TransferFragment : Fragment() {
                 address,
                 currency,
                 uiModel.currentTransferIdempotencyKey()
+            )
+            Log.d(
+                TRANSFER_FLOW_TAG,
+                "transfer dispatched amount=$amount currency=$currency " +
+                    "hasPhone=${phone.isNotBlank()} hasAddress=${!address.isNullOrBlank()}"
             )
         }
     }

@@ -1,5 +1,6 @@
 package com.esom.bank.retrofit.interceptor
 
+import android.util.Log
 import com.esom.bank.common.session.SessionManager
 import com.esom.bank.retrofit.exception.NotLoggedInException
 import com.esom.bank.screens.auth.data.AuthLocalDataSource
@@ -30,9 +31,16 @@ class AuthInterceptor @Inject constructor(
                 .build()
         }
 
+        Log.d(
+            "AuthInterceptor",
+            "request ${request.method} ${request.url.encodedPath} " +
+                "hasBearer=${!accessToken.isNullOrEmpty()}"
+        )
+
         val response = chain.proceed(request)
 
         if (!response.isSuccessful) {
+            Log.w("AuthInterceptor", "response ${response.code} ${request.url.encodedPath}")
             if (response.code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 authLocalDataSource.clearAuthData()
                 sessionManager.notifyLoggedOut()

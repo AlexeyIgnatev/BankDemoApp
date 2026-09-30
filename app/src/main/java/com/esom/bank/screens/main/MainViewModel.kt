@@ -1,5 +1,6 @@
 package com.esom.bank.screens.main
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -273,6 +274,11 @@ class MainViewModel @Inject constructor(
         currencyEnum: CurrencyEnum,
         idempotencyKey: String
     ) {
+        Log.d(
+            "MainViewModel",
+            "transferToUser called amount=$amount currency=$currencyEnum " +
+                "hasPhone=${phone.isNotBlank()} hasAddress=${!address.isNullOrBlank()}"
+        )
         _transferRes.value = UiState.Loading()
         mainRepository.transferToUser(
             amount,

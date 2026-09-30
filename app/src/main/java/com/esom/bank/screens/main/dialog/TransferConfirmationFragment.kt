@@ -1,6 +1,7 @@
 package com.esom.bank.screens.main.dialog
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,22 +38,31 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
         ) { _, bundle ->
             uiModel.setData(bundle)
             bindConfirmation(bundle)
+            Log.d(TAG, "confirmation data received operation=${bundle.getString(OPERATION_KEY)}")
         }
 
         binding.confirmBtn.setOnClickListener {
+            Log.d(TAG, "confirm button clicked")
             publishResult(confirmed = true)
         }
         binding.cancelBtn.setOnClickListener {
+            Log.d(TAG, "cancel button clicked")
             publishResult(confirmed = false)
         }
     }
 
     private fun publishResult(confirmed: Boolean) {
+        val data = Bundle(uiModel.uiState.value.data).apply {
+            putBoolean(CONFIRMED_KEY, confirmed)
+        }
+        Log.d(
+            TAG,
+            "publishing result confirmed=$confirmed operation=${data.getString(OPERATION_KEY)} " +
+                "manager=${parentFragmentManager.hashCode()}"
+        )
         parentFragmentManager.setFragmentResult(
             RESULT_REQUEST_KEY,
-            Bundle(uiModel.uiState.value.data).apply {
-                putBoolean(CONFIRMED_KEY, confirmed)
-            }
+            data
         )
         dismiss()
     }
@@ -101,6 +111,7 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
     }
 
     companion object {
+        private const val TAG = "TransferConfirmation"
         const val DATA_REQUEST_KEY = "transfer_confirmation_data"
         const val RESULT_REQUEST_KEY = "transfer_confirmation_result"
         const val CONFIRMED_KEY = "transfer_confirmation_confirmed"

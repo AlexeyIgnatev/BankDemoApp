@@ -1,5 +1,6 @@
 ﻿package com.esom.bank.common.data
 
+import android.util.Log
 import com.esom.bank.R
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.model.ErrorResponse
@@ -15,6 +16,7 @@ abstract class AbstractBaseCloudDataSource {
     fun <T> safeApiCall(apiToBeCalled: suspend () -> Response<T>): Flow<ApiResponse<T>> = flow {
         try {
             val response: Response<T> = apiToBeCalled()
+            Log.d("ApiCall", "response=${response.code()} url=${response.raw().request.url.encodedPath}")
 
             if (response.isSuccessful) {
                 val body = response.body()
@@ -51,6 +53,7 @@ abstract class AbstractBaseCloudDataSource {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            Log.e("ApiCall", "request failed: ${e::class.java.simpleName}")
             emit(ApiResponse.Error(R.string.something_went_wrong))
         }
     }

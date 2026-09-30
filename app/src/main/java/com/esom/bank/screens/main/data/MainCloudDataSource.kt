@@ -1,5 +1,6 @@
 package com.esom.bank.screens.main.data
 
+import android.util.Log
 import com.esom.bank.common.data.AbstractBaseCloudDataSource
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.utils.PhoneInfo
@@ -98,6 +99,11 @@ class MainCloudDataSourceImpl @Inject constructor(
         idempotencyKey: String
     ): Flow<ApiResponse<StatusDto>> =
         safeApiCall {
+            Log.d(
+                "MainCloudDataSource",
+                "sending POST payments/transfer amount=$amount currency=$currencyEnum " +
+                    "hasPhone=${phone.isNotBlank()} hasAddress=${!address.isNullOrBlank()}"
+            )
             serverApi.transfer(
                 idempotencyKey,
                 TransferDto(amount.toPlainString(), phone, address, currencyEnum),

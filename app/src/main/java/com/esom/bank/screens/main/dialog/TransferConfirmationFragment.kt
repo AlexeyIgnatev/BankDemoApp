@@ -13,7 +13,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.math.RoundingMode
-import androidx.navigation.fragment.findNavController
 
 @AndroidEntryPoint
 class TransferConfirmationFragment : BottomSheetDialogFragment() {
@@ -55,7 +54,7 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
                 putBoolean(CONFIRMED_KEY, confirmed)
             }
         )
-        findNavController().navigateUp()
+        dismiss()
     }
 
     private fun bindConfirmation(data: Bundle) {

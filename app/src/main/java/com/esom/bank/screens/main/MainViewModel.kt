@@ -21,7 +21,6 @@ import javax.inject.Inject
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import com.esom.bank.screens.chat.enums.SupportRole
 import com.esom.bank.screens.chat.model.SupportModel
 import com.esom.bank.screens.chat.model.SupportMessagesUiState
@@ -64,10 +63,13 @@ class MainViewModel @Inject constructor(
     private val _transferRes = SingleLiveEvent<UiState<StatusDto>>()
     val transferRes: LiveData<UiState<StatusDto>> = _transferRes
 
-    private val _history = SingleLiveEvent<UiState<List<TransactionModel?>>>()
+    // History is state, not a one-shot event. A refresh may finish while the
+    // destination fragment is being recreated; MutableLiveData must replay
+    // the latest server result to the next active observer.
+    private val _history = MutableLiveData<UiState<List<TransactionModel?>>>()
     val history: LiveData<UiState<List<TransactionModel?>>> = _history
 
-    private val _month = SingleLiveEvent<UiState<List<TransactionModel?>>>()
+    private val _month = MutableLiveData<UiState<List<TransactionModel?>>>()
     val month: LiveData<UiState<List<TransactionModel?>>> = _month
 
     private val _receipt = SingleLiveEvent<UiState<ReceiptModel>>()
@@ -128,8 +130,8 @@ class MainViewModel @Inject constructor(
         _myData.value = null
         _swapRes.clear()
         _transferRes.clear()
-        _history.clear()
-        _month.clear()
+        _history.value = null
+        _month.value = null
         _receipt.clear()
         _messages.value = null
         _sendMessage.clear()
@@ -331,7 +333,7 @@ class MainViewModel @Inject constructor(
                     toTime = toTime
                 )
             }
-        ).flow.cachedIn(viewModelScope)
+        ).flow
     }
 
     fun latestTransactions(currencyEnum: CurrencyEnum? = null) {

@@ -22,7 +22,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
-import androidx.paging.PagingData
 import com.esom.bank.MainNavGraphDirections
 import com.esom.bank.NavGraphDirections
 import com.esom.bank.R
@@ -154,7 +153,6 @@ class HistoryFragment : Fragment() {
             try {
                 model.historyPaging(model.getCurrency(), model.getFromTime(), toTime)
                     .collectLatest { data ->
-                        adapter.submitData(PagingData.empty())
                         adapter.submitData(data)
                     }
             } catch (error: CancellationException) {

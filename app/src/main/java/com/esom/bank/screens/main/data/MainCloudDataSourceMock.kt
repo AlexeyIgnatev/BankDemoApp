@@ -162,7 +162,7 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
     override fun history(
         currencyEnum: List<CurrencyEnum>?,
         fromTime: Long,
-        toTime: Long,
+        toTime: Long?,
         take: Int,
         skip: Int
     ): Flow<ApiResponse<List<TransactionDto>>> = flow {
@@ -207,7 +207,7 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
 
         val filtered = allTransactions.filter { tx ->
             val matchCurrency = currencyEnum?.let { it.contains(tx.currencyEnum) } ?: true
-            val matchTime = if (take == 5) true else tx.createdAt in fromTime..toTime
+            val matchTime = if (take == 5) true else tx.createdAt in fromTime..(toTime ?: Long.MAX_VALUE)
             matchCurrency && matchTime
         }
 

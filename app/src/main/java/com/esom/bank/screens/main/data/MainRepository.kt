@@ -93,7 +93,7 @@ interface MainRepository {
     fun recipientInfo(request: RecipientLookupRequestDto): Flow<UiState<RecipientLookupResponseDto>>
 
     fun history(
-        currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
+        currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long?,
         take: Int, skip: Int
     ): Flow<UiState<List<TransactionModel?>>>
     fun receipt(transactionId: Long, conversionSide: ConversionSide? = null): Flow<UiState<ReceiptModel>>
@@ -304,7 +304,7 @@ class MainRepositoryImpl @Inject constructor(
     override fun history(
         currencyEnum: List<CurrencyEnum>?,
         fromTime: Long,
-        toTime: Long,
+        toTime: Long?,
         take: Int,
         skip: Int
     ): Flow<UiState<List<TransactionModel?>>> =

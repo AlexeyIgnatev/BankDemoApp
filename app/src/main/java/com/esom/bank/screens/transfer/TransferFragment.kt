@@ -181,7 +181,7 @@ class TransferFragment : Fragment() {
                     // returns success. Refresh both the live wallet feed and
                     // an already-created history screen immediately.
                     model.latestTransactions()
-                    model.monthTransactions(System.currentTimeMillis())
+                    model.monthTransactions(null)
                     LocalBroadcastManager.getInstance(requireContext())
                         .sendBroadcast(
                             Intent("ACTION_HISTORY")

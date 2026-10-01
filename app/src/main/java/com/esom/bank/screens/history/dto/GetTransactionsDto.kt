@@ -9,7 +9,7 @@ data class GetTransactionsDto(
     @SerializedName("from_time")
     val fromTime: Long,
     @SerializedName("to_time")
-    val toTime: Long,
+    val toTime: Long?,
     @SerializedName("take")
     val take: Int,
     @SerializedName("skip")

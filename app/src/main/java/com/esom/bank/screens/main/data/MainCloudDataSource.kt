@@ -47,7 +47,7 @@ interface MainCloudDataSource {
         idempotencyKey: String
     ): Flow<ApiResponse<StatusDto>>
     fun recipientInfo(request: RecipientLookupRequestDto): Flow<ApiResponse<RecipientLookupResponseDto>>
-    fun history(currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long,
+    fun history(currencyEnum: List<CurrencyEnum>? = null, fromTime: Long, toTime: Long?,
                 take: Int, skip: Int): Flow<ApiResponse<List<TransactionDto?>>>
     fun receipt(transactionId: Long, conversionSide: ConversionSide? = null): Flow<ApiResponse<ReceiptResponseDto>>
     fun getMessages(): Flow<ApiResponse<List<SupportDto>>>
@@ -120,7 +120,7 @@ class MainCloudDataSourceImpl @Inject constructor(
     override fun history(
         currencyEnum: List<CurrencyEnum>?,
         fromTime: Long,
-        toTime: Long,
+        toTime: Long?,
         take: Int,
         skip: Int
     ): Flow<ApiResponse<List<TransactionDto?>>> = safeApiCall {

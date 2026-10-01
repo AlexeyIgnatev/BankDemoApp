@@ -317,7 +317,7 @@ class MainViewModel @Inject constructor(
     fun historyPaging(
         currencyEnum: List<CurrencyEnum>?,
         fromTime: Long,
-        toTime: Long,
+        toTime: Long?,
         pageSize: Int = 20
     ): Flow<PagingData<TransactionModel>> {
         return Pager(
@@ -344,7 +344,7 @@ class MainViewModel @Inject constructor(
         mainRepository.history(
             currencies,
             getFromTime(),
-            System.currentTimeMillis(),
+            null,
             8,
             0
         ).onEach { uiState ->
@@ -390,7 +390,7 @@ class MainViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun monthTransactions(toTime: Long = getToTime()) {
+    fun monthTransactions(toTime: Long? = getToTime()) {
         mainRepository.history(
             listOf(
                 CurrencyEnum.SOM,

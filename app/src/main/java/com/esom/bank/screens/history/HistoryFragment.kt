@@ -142,12 +142,12 @@ class HistoryFragment : Fragment() {
 
     private fun refreshData(useCurrentUpperBound: Boolean = false) {
         updateFilterLabels()
-        val toTime = if (useCurrentUpperBound) System.currentTimeMillis() else model.getToTime()
+        val toTime = if (useCurrentUpperBound) null else model.getToTime()
         loadTransactions(toTime)
         model.monthTransactions(toTime)
     }
 
-    private fun loadTransactions(toTime: Long = model.getToTime()) {
+    private fun loadTransactions(toTime: Long? = model.getToTime()) {
         val adapter = binding.history.adapter as HistoryAdapter
         uiModel.replaceHistoryJob(viewLifecycleOwner.lifecycleScope.launch {
             try {

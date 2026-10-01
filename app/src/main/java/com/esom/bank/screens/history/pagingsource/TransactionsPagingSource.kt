@@ -13,7 +13,7 @@ class TransactionsPagingSource(
     private val repository: MainRepository,
     private val currencyEnum: List<CurrencyEnum>?,
     private val fromTime: Long,
-    private val toTime: Long
+    private val toTime: Long?
 ) : PagingSource<Int, TransactionModel>() {
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TransactionModel> {

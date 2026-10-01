@@ -131,16 +131,16 @@ class SwapFragment : Fragment() {
 
         binding.peopleSumAllLayout.setOnClickListener {
             val allAvailable = getAvailableFromBalance()
-            val grossConvertedAmount = convertWithoutFee(allAvailable)
+            val receivedAmount = calculateReceivedFromSend(allAvailable)
 
             uiModel.setUpdatingAmounts(true)
             binding.sum.setText(formatInputAmount(allAvailable))
             binding.sum.setSelection(binding.sum.text?.length ?: 0)
-            binding.peopleSum.setText(formatInputAmount(grossConvertedAmount))
+            binding.peopleSum.setText(formatInputAmount(receivedAmount))
             binding.peopleSum.setSelection(binding.peopleSum.text?.length ?: 0)
             uiModel.setUpdatingAmounts(false)
 
-            updateCommissionAndTotal(allAvailable, grossConvertedAmount)
+            updateCommissionAndTotal(allAvailable)
         }
     }
 
@@ -656,16 +656,16 @@ class SwapFragment : Fragment() {
     }
 
     private fun updateAmountsFromSend(fromAmount: BigDecimal) {
-        val grossConvertedAmount = convertWithoutFee(fromAmount)
+        val receivedAmount = calculateReceivedFromSend(fromAmount)
 
         uiModel.setUpdatingAmounts(true)
         binding.peopleSum.setTextProgrammatically(
-            formatInputAmount(grossConvertedAmount)
+            formatInputAmount(receivedAmount)
         )
         binding.peopleSum.setSelection(binding.peopleSum.text?.length ?: 0)
         uiModel.setUpdatingAmounts(false)
 
-        updateCommissionAndTotal(fromAmount, grossConvertedAmount)
+        updateCommissionAndTotal(fromAmount)
     }
 
     private fun updateAmountsFromReceive(
@@ -685,18 +685,24 @@ class SwapFragment : Fragment() {
         }
         uiModel.setUpdatingAmounts(false)
 
-        updateCommissionAndTotal(fromAmount, receivedAmount)
+        // The receive field is already the desired net target amount. Do not
+        // subtract the source fee from it a second time in the preview.
+        updateCommissionAndTotal(fromAmount, targetAmountIsNet = true)
     }
 
     private fun updateCommissionAndTotal(
         fromAmount: BigDecimal? = null,
-        convertedAmount: BigDecimal? = null
+        targetAmountIsNet: Boolean = false
     ) {
         val grossAmount = fromAmount ?: parseAmount(binding.sum.text?.toString())
-        val actualConvertedAmount = convertedAmount ?: convertWithoutFee(grossAmount)
+        val actualConvertedAmount = convertWithoutFee(grossAmount)
         val fee = calculateFeePreview(grossAmount)
         val convertedFee = convertWithoutFee(fee)
-        val netConvertedAmount = (actualConvertedAmount - convertedFee).max(BigDecimal.ZERO)
+        val netConvertedAmount = if (targetAmountIsNet) {
+            parseAmount(binding.peopleSum.text?.toString())
+        } else {
+            (actualConvertedAmount - convertedFee).max(BigDecimal.ZERO)
+        }
 
         binding.thirdValue.text = formatCurrencyAmount(fee)
         binding.comissionValue.text = formatCurrencyAmount(grossAmount)
@@ -714,7 +720,31 @@ class SwapFragment : Fragment() {
 
     private fun calculateSendFromReceived(receivedAmount: BigDecimal): BigDecimal {
         if (receivedAmount <= BigDecimal.ZERO) return BigDecimal.ZERO
-        return invertConvertWithoutFee(receivedAmount)
+
+        // The receive field is a net amount. Find the source gross amount that
+        // remains after the source-side fee and converts to the requested value.
+        // This also works when the configured fee is fixed, percentage-based, or
+        // the greater of the two.
+        val netSourceAmount = invertConvertWithoutFee(receivedAmount)
+        if (netSourceAmount <= BigDecimal.ZERO) return BigDecimal.ZERO
+
+        var lower = netSourceAmount
+        var upper = netSourceAmount + calculateFeePreview(netSourceAmount).max(BigDecimal.ONE)
+        var guard = 0
+        while (calculateReceivedFromSend(upper) < receivedAmount && guard++ < 32) {
+            upper = upper.multiply(BigDecimal("2"))
+        }
+
+        repeat(80) {
+            val middle = lower.add(upper).divide(BigDecimal("2"), 24, RoundingMode.HALF_UP)
+            if (calculateReceivedFromSend(middle) < receivedAmount) {
+                lower = middle
+            } else {
+                upper = middle
+            }
+        }
+
+        return upper.setScale(18, RoundingMode.HALF_UP).stripTrailingZeros()
     }
 
     private fun isSomToEsomConversion(): Boolean {

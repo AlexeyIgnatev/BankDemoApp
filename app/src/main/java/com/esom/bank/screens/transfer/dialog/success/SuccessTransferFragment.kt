@@ -100,11 +100,14 @@ class SuccessTransferFragment : Fragment() {
                 is UiState.Success -> {
                     binding.previewReceiptBtn.isEnabled = true
                     binding.shareBtn.isEnabled = true
+                    val currentOperation = uiModel.uiState.value.operation
+                    val isConversion = currentOperation?.conversionSide != null ||
+                        currentOperation?.targetCurrency != null
                     val creditedAmount = resolveCreditedAmount(
-                        currentOperation = uiModel.uiState.value.operation,
+                        currentOperation = currentOperation,
                         receipt = state.data
                     )
-                    uiModel.setOperation(uiModel.uiState.value.operation?.copy(
+                    uiModel.setOperation(currentOperation?.copy(
                         receiptNumber = state.data.receiptNumber,
                         createdAt = state.data.createdAt,
                         fee = state.data.fee,
@@ -115,17 +118,19 @@ class SuccessTransferFragment : Fragment() {
                         paidFromAccount = resolvePaidFromAccount(state.data),
                         recipient = resolveRecipientAccount(state.data),
                         recipientName = state.data.recipientFullName.ifBlank {
-                            uiModel.uiState.value.operation?.recipientName.orEmpty()
+                            currentOperation.recipientName
                         },
                         creditedAmount = creditedAmount,
                         amountIsNet = false,
-                        totalDebitedAmount = state.data.totalDebitedAmount
-                            ?: uiModel.uiState.value.operation?.totalDebitedAmount
-                            ?: if (uiModel.uiState.value.operation?.conversionSide == null && uiModel.uiState.value.operation?.targetCurrency == null) {
-                                state.data.amount + state.data.fee
-                            } else {
-                                state.data.amount
-                            }
+                        totalDebitedAmount = if (isConversion) {
+                            // The conversion source amount is already gross.
+                            // Do not replace it with the server's net/credited amount.
+                            currentOperation.amount
+                        } else {
+                            state.data.totalDebitedAmount
+                                ?: currentOperation.totalDebitedAmount
+                                ?: (state.data.amount + state.data.fee)
+                        }
                     ))
                     val enrichedReceipt = fillOnlyBlankReceiptFields(state.data)
                     bindOperation(uiModel.uiState.value.operation)
@@ -176,8 +181,15 @@ class SuccessTransferFragment : Fragment() {
             data.feeCurrency ?: data.currency
         )
         binding.totalValue.text = totalText
+        val isConversion = data.conversionSide != null || data.targetCurrency != null
+        val totalWithdrawn = if (isConversion) {
+            // For conversion the amount is the gross source debit.
+            data.amount
+        } else {
+            data.totalDebitedAmount ?: data.amount
+        }
         binding.totalWithdrawnValue.text = formatAmount(
-            data.totalDebitedAmount ?: data.amount,
+            totalWithdrawn,
             data.debitedCurrency ?: data.currency
         )
         binding.createTemplateBtn.visibility = if (data.openedFromHistory) View.GONE else View.VISIBLE

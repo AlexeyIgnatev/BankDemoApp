@@ -76,7 +76,13 @@ class TransferConfirmationFragment : BottomSheetDialogFragment() {
         val amount = data.getString(AMOUNT_KEY).orEmpty().toMoneyDecimalOrZero()
         val creditedAmount = data.getString(CREDITED_AMOUNT_KEY).orEmpty().toMoneyDecimalOrZero()
         val fee = data.getString(FEE_KEY).orEmpty().toMoneyDecimalOrZero()
-        val totalDebited = data.getString(TOTAL_DEBITED_KEY).orEmpty().toMoneyDecimalOrZero()
+        val totalDebited = if (operation == OPERATION_CONVERT) {
+            // For conversion, the source amount is the gross amount withdrawn.
+            // The fee reduces the credited amount, not the debit.
+            amount
+        } else {
+            data.getString(TOTAL_DEBITED_KEY).orEmpty().toMoneyDecimalOrZero()
+        }
 
         binding.title.text = if (operation == OPERATION_CONVERT) {
             "Подтверждение конвертации"

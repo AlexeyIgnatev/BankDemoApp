@@ -216,10 +216,18 @@ class MainViewModel @Inject constructor(
         )
     }
 
-    fun calculateConvertFee(amount: BigDecimal, from: CurrencyEnum, to: CurrencyEnum): BigDecimal {
-        return calculateFeeForOperations(
+    fun calculateConvertFee(
+        amount: BigDecimal,
+        from: CurrencyEnum,
+        to: CurrencyEnum,
+        intermediateRate: BigDecimal = BigDecimal.ONE,
+    ): BigDecimal {
+        return PaymentFeeOperationResolver.calculateConvertFee(
             amount,
-            PaymentFeeOperationResolver.convertOperations(from, to)
+            from,
+            to,
+            ::feeForOperation,
+            intermediateRate,
         )
     }
 

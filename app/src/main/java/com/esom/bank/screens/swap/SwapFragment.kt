@@ -767,7 +767,14 @@ class SwapFragment : Fragment() {
 
     private fun calculateFeePreview(fromAmount: BigDecimal): BigDecimal {
         if (fromAmount <= BigDecimal.ZERO) return BigDecimal.ZERO
-        return model.calculateConvertFee(fromAmount, uiModel.uiState.value.fromCurrency, uiModel.uiState.value.toCurrency)
+        val from = uiModel.uiState.value.fromCurrency
+        val to = uiModel.uiState.value.toCurrency
+        val intermediateRate = if (from == CurrencyEnum.USDT_TRC20 && to == CurrencyEnum.SOM) {
+            getUsdBuyRateOrNull() ?: BigDecimal.ONE
+        } else {
+            BigDecimal.ONE
+        }
+        return model.calculateConvertFee(fromAmount, from, to, intermediateRate)
     }
 
     private fun convertWithoutFee(fromAmount: BigDecimal): BigDecimal {

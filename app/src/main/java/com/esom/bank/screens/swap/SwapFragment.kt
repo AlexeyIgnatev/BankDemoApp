@@ -374,6 +374,7 @@ class SwapFragment : Fragment() {
     private fun executeAutomaticRepeatIfReady() {
         val amount = args.amount.toMoneyDecimalOrZero()
         if (!args.autoExecute || amount <= BigDecimal.ZERO) return
+        if (uiModel.uiState.value.fromCurrency == uiModel.uiState.value.toCurrency) return
         if (model.fees.value !is UiState.Success || model.settings.value !is UiState.Success) return
         if (!uiModel.startAutomaticRepeat()) return
 
@@ -822,6 +823,10 @@ class SwapFragment : Fragment() {
 
     private fun handleConvertButtonClick() {
         if (model.swapRes.value is UiState.Loading) return
+        if (uiModel.uiState.value.fromCurrency == uiModel.uiState.value.toCurrency) {
+            binding.root.showErrorSnackbar("Выберите разные валюты для конвертации")
+            return
+        }
 
         val fromAmount = parseAmount(binding.sum.text?.toString())
         if (fromAmount <= BigDecimal.ZERO) {

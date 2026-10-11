@@ -274,7 +274,14 @@ class MainRepositoryImpl @Inject constructor(
         ).map {
             when (it) {
                 is ApiResponse.Success -> return@map UiState.Success(it.data)
-                is ApiResponse.Error -> return@map UiState.Error(it.toString(context))
+                is ApiResponse.Error -> {
+                    val message = when (it.code) {
+                        409 -> "Не удалось подтвердить состояние конвертации. Обновите историю операций и не повторяйте её, если она ожидает проверки."
+                        503 -> "Сервис временно недоступен. Сначала проверьте историю операций, затем повторите конвертацию."
+                        else -> it.toString(context)
+                    }
+                    return@map UiState.Error(message)
+                }
             }
         }
 

@@ -44,7 +44,13 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupStartDestination()
+        // Replacing the graph on every Activity recreation discards the
+        // NavController's restored back stack. This happens when AppCompat
+        // recreates the activity after a theme change and sends an already
+        // authenticated user back through the PIN destination.
+        if (savedInstanceState == null) {
+            setupStartDestination()
+        }
         observeSessionEvents()
         observeUiState()
     }

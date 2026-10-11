@@ -1,6 +1,7 @@
 package com.esom.bank.screens.history.model
 
 import com.esom.bank.screens.history.enums.TransactionEnum
+import com.esom.bank.screens.main.enums.CurrencyEnum
 import java.util.Locale
 import java.math.BigDecimal
 
@@ -58,3 +59,11 @@ fun TransactionModel.searchableText(): String = buildString {
     append(' ')
     append(senderFullName.orEmpty())
 }.lowercase(Locale.getDefault())
+
+fun List<TransactionModel>.filterHistoryCurrencies(
+    currencies: List<CurrencyEnum>
+): List<TransactionModel> {
+    if (currencies.isEmpty()) return this
+    val selected = currencies.toSet()
+    return filter { it.currencyEnum == null || it.currencyEnum in selected }
+}

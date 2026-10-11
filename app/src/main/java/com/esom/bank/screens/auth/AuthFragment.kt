@@ -29,6 +29,7 @@ class AuthFragment : Fragment() {
         get() = _binding ?: error("Binding accessed outside of the view lifecycle")
 
     private val model: MainViewModel by activityViewModels()
+    private var loginRequestInFlight = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,12 +55,20 @@ class AuthFragment : Fragment() {
         binding.version.text = getString(R.string.version_title, BuildConfig.VERSION_NAME)
 
         binding.logInBtn.setOnClickListener {
-            if (model.myData.value !is UiState.Loading) {
-                model.authenticate(
-                    binding.loginInput.text.toString(),
-                    binding.passwordInput.text.toString(),
-                )
+            if (loginRequestInFlight || model.myData.value is UiState.Loading) {
+                return@setOnClickListener
             }
+
+            // LiveData may not publish Loading until after several rapid taps.
+            // Lock the button synchronously to prevent duplicate login requests.
+            loginRequestInFlight = true
+            binding.logInBtn.isEnabled = false
+            binding.logInText.isVisible = false
+            binding.indicator.isVisible = true
+            model.authenticate(
+                binding.loginInput.text.toString(),
+                binding.passwordInput.text.toString(),
+            )
         }
 
         model.myData.observe(viewLifecycleOwner) {
@@ -72,6 +81,8 @@ class AuthFragment : Fragment() {
                 }
 
                 is UiState.Error -> {
+                    loginRequestInFlight = false
+                    binding.logInBtn.isEnabled = true
                     if(it.message == getString(R.string.logged_out)) {
                         binding.root.showErrorSnackbar(getString(R.string.invalid_login_or_password))
                     } else {
@@ -82,6 +93,7 @@ class AuthFragment : Fragment() {
                 }
 
                 is UiState.Success -> {
+                    binding.logInBtn.isEnabled = false
                     binding.logInText.isVisible = true
                     binding.indicator.isVisible = false
                     navigateToLockFlow()
@@ -113,6 +125,7 @@ class AuthFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        loginRequestInFlight = false
         _binding = null
         super.onDestroyView()
     }

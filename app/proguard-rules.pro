@@ -24,6 +24,11 @@
 -keepattributes Signature,*Annotation*
 -keep class com.esom.bank.**.dto.** { *; }
 
+# Retrofit reads Kotlin suspend Continuation<Response<...>> generic signatures
+# from this service interface before dispatching a request. Keep the methods
+# intact so R8 cannot erase the ParameterizedType Retrofit requires.
+-keep interface com.esom.bank.retrofit.api.ServerApi { *; }
+
 # Optional TLS providers referenced by OkHttp on some platforms.
 -dontwarn org.bouncycastle.jsse.**
 -dontwarn org.conscrypt.**

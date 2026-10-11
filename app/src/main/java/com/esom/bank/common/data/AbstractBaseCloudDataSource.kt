@@ -13,7 +13,10 @@ import retrofit2.Response
 import java.io.IOException
 
 abstract class AbstractBaseCloudDataSource {
-    fun <T> safeApiCall(apiToBeCalled: suspend () -> Response<T>): Flow<ApiResponse<T>> = flow {
+    fun <T> safeApiCall(
+        exposeUnexpectedException: Boolean = false,
+        apiToBeCalled: suspend () -> Response<T>,
+    ): Flow<ApiResponse<T>> = flow {
         try {
             val response: Response<T> = apiToBeCalled()
             Log.d("ApiCall", "response=${response.code()} url=${response.raw().request.url.encodedPath}")
@@ -58,13 +61,48 @@ abstract class AbstractBaseCloudDataSource {
         } catch (e: HttpException) {
             emit(ApiResponse.Error(R.string.server_error))
         } catch (e: IOException) {
-            emit(ApiResponse.Error(R.string.check_internet))
+            Log.e("ApiCall", "network request failed: ${e::class.java.simpleName}: ${e.message}", e)
+            if (exposeUnexpectedException) {
+                emit(
+                    ApiResponse.Error(
+                        R.string.something_went_wrong,
+                        data = ErrorResponse(message = safeDiagnostic(e)),
+                    ),
+                )
+            } else {
+                emit(ApiResponse.Error(R.string.check_internet))
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e("ApiCall", "request failed: ${e::class.java.simpleName}")
-            emit(ApiResponse.Error(R.string.something_went_wrong))
+            Log.e(
+                "ApiCall",
+                "request failed: ${e::class.java.simpleName}: ${e.message}",
+                e,
+            )
+            emit(
+                ApiResponse.Error(
+                    R.string.something_went_wrong,
+                    data = if (exposeUnexpectedException) {
+                        ErrorResponse(message = safeDiagnostic(e))
+                    } else {
+                        null
+                    },
+                ),
+            )
         }
+    }
+
+    private fun safeDiagnostic(error: Exception): String {
+        val detail = (error.message ?: "no details")
+            .replace(
+                Regex("(?i)(password|token|authorization|secret)(\\s*[:=]\\s*)[^,\\s}]+"),
+            ) { match ->
+                "${match.groupValues[1]}${match.groupValues[2]}[redacted]"
+            }
+            .replace(Regex("[\\r\\n\\t]+"), " ")
+            .take(180)
+        return "${error::class.java.simpleName}: $detail"
     }
 
     fun safeUnitApiCall(apiToBeCalled: suspend () -> Response<*>): Flow<ApiResponse<Unit>> = flow {
@@ -95,6 +133,11 @@ abstract class AbstractBaseCloudDataSource {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            Log.e(
+                "ApiCall",
+                "unit request failed: ${e::class.java.simpleName}: ${e.message}",
+                e,
+            )
             emit(ApiResponse.Error(R.string.something_went_wrong))
         }
     }

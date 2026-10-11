@@ -21,6 +21,7 @@
     <string name="use_bio">Использовать биометрию</string>
     <string name="biometric_unavailable">Биометрия недоступна или не настроена на устройстве</string>
     <string name="notification">Уведомление</string>
+    <string name="notifications_empty">Уведомлений пока нет</string>
     <string name="som">Сом</string>
     <string name="usdt">USDT TRC20</string>
     <string name="digital">Салам</string>
@@ -100,6 +101,10 @@
     <string name="home_all_operations">Все</string>
     <string name="no_wallets">Кошельки пока недоступны</string>
     <string name="no_operations">Операций пока нет</string>
+    <string name="history_no_filtered_operations">Операций по выбранным условиям нет</string>
+    <string name="reset_history_filters">Сбросить фильтры</string>
+    <string name="invalid_amount_range">Минимальная сумма не может быть больше максимальной</string>
+    <string name="balance_hidden_accessibility">Баланс скрыт</string>
     <string name="hide_balances">Скрыть балансы</string>
     <string name="show_balances">Показать балансы</string>
     <string name="home_transfer">Перевод</string>

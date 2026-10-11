@@ -138,10 +138,13 @@ class SecurityFragment : Fragment() {
     }
 
     private fun returnToMain() {
-        findNavController().navigate(R.id.mainFragment, null, navOptions {
-            launchSingleTop = true
-            popUpTo(R.id.mainFragment) { inclusive = true }
-        })
+        val navController = findNavController()
+        if (!navController.popBackStack()) {
+            navController.navigate(R.id.mainFragment, null, navOptions {
+                launchSingleTop = true
+                popUpTo(R.id.mainFragment) { inclusive = true }
+            })
+        }
     }
 
     override fun onDestroyView() {

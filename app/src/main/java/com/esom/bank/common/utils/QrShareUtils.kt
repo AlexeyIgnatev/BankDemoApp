@@ -1,5 +1,6 @@
 package com.esom.bank.common.utils
 
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -230,13 +231,18 @@ object QrShareUtils {
             file
         )
 
-        val intent = Intent(Intent.ACTION_SEND).apply {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "image/png"
             putExtra(Intent.EXTRA_STREAM, uri)
+            clipData = ClipData.newUri(context.contentResolver, "QR code", uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-        context.startActivity(Intent.createChooser(intent, chooserTitle))
+        val chooser = Intent.createChooser(shareIntent, chooserTitle).apply {
+            clipData = shareIntent.clipData
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(chooser)
     }
 
     fun decodeQrFromBitmap(bitmap: Bitmap): String? {

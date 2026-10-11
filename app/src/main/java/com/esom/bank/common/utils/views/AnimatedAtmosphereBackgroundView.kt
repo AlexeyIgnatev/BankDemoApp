@@ -86,7 +86,13 @@ class AnimatedAtmosphereBackgroundView @JvmOverloads constructor(
             meshPaint
         )
         drawMovingGlow(canvas, phase)
-        if (isAttachedToWindow && visibility == View.VISIBLE) postInvalidateOnAnimation()
+        // Keep the atmospheric movement as a short entrance effect, not a
+        // permanent full-screen 60fps render loop.
+        if (isAttachedToWindow && visibility == View.VISIBLE &&
+            SystemClock.uptimeMillis() - animationStartedAt < INTRO_DURATION_MS
+        ) {
+            postInvalidateOnAnimation()
+        }
     }
 
     private fun updateMesh(phase: Float) {
@@ -138,7 +144,7 @@ class AnimatedAtmosphereBackgroundView @JvmOverloads constructor(
     }
 
     private fun phase(): Float {
-        val elapsed = (SystemClock.uptimeMillis() - animationStartedAt) % LOOP_DURATION_MS
+        val elapsed = (SystemClock.uptimeMillis() - animationStartedAt).coerceAtMost(INTRO_DURATION_MS)
         return elapsed / LOOP_DURATION_MS.toFloat() * FULL_CIRCLE
     }
 
@@ -146,6 +152,7 @@ class AnimatedAtmosphereBackgroundView @JvmOverloads constructor(
         const val MESH_WIDTH = 18
         const val MESH_HEIGHT = 32
         const val LOOP_DURATION_MS = 10_000L
+        const val INTRO_DURATION_MS = 2_400L
         const val FULL_CIRCLE = (PI * 2.0).toFloat()
     }
 }

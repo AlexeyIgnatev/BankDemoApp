@@ -41,7 +41,14 @@ class AuthInterceptor @Inject constructor(
 
         if (!response.isSuccessful) {
             Log.w("AuthInterceptor", "response ${response.code} ${request.url.encodedPath}")
-            if (response.code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            // Anonymous startup calls (for example FCM registration) and failed login
+            // attempts can legitimately return 401. Only a protected request made with
+            // an existing bearer token proves that the current session has expired.
+            if (
+                response.code == HttpURLConnection.HTTP_UNAUTHORIZED &&
+                !isLoginRequest &&
+                !accessToken.isNullOrEmpty()
+            ) {
                 authLocalDataSource.clearAuthData()
                 sessionManager.notifyLoggedOut()
                 response.close()

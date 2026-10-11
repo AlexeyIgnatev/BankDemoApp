@@ -117,6 +117,34 @@ class HistoryTransactionFiltersTest {
         assertEquals(1, filtered.size)
     }
 
+    @Test
+    fun `currency filter uses the selected wallet scope`() {
+        val som = transaction(10, CurrencyEnum.SOM, TransactionEnum.INCOME, createdAt = 10_000, amount = 1.0)
+        val salam = transaction(11, CurrencyEnum.ESOM, TransactionEnum.INCOME, createdAt = 10_001, amount = 2.0)
+        val usdt = transaction(12, CurrencyEnum.USDT_TRC20, TransactionEnum.INCOME, createdAt = 10_002, amount = 3.0)
+
+        assertEquals(
+            listOf(salam),
+            listOf(som, salam, usdt).filterHistoryCurrencies(listOf(CurrencyEnum.ESOM))
+        )
+    }
+
+    @Test
+    fun `empty currency selection preserves unscoped results`() {
+        val transaction = transaction(
+            13,
+            CurrencyEnum.USDT_TRC20,
+            TransactionEnum.INCOME,
+            createdAt = 10_003,
+            amount = 3.0
+        )
+
+        assertEquals(
+            listOf(transaction),
+            listOf(transaction).filterHistoryCurrencies(emptyList())
+        )
+    }
+
     private fun transaction(
         id: Long,
         currency: CurrencyEnum,

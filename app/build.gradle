@@ -9,6 +9,14 @@ plugins {
     id 'kotlin-parcelize'
 }
 
+def productionBackendUrl = 'http://salam-t.fkb.kg:8000/'
+def localBackendBuild = providers.gradleProperty('localBackend')
+        .map { it.toBoolean() }
+        .getOrElse(false)
+def selectedBackendUrl = localBackendBuild
+        ? 'http://10.0.2.2:8000/'
+        : productionBackendUrl
+
 android {
     namespace 'com.esom.bank'
     compileSdk 34
@@ -17,10 +25,10 @@ android {
         applicationId "com.esom.bank"
         minSdk 24
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName "1.3"
 
-        buildConfigField "String", "BACKEND_URL", "\"http://salam-t.fkb.kg:8000/\""
+        buildConfigField "String", "BACKEND_URL", "\"${selectedBackendUrl}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,8 +44,13 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
+            // Local API builds are debug-only; never point a release APK at the emulator host.
+            buildConfigField "String", "BACKEND_URL", "\"${productionBackendUrl}\""
+            // Keep Retrofit's suspend-method generic signatures intact. R8 was
+            // erasing the Continuation<Response<...>> signature and Retrofit
+            // crashed before dispatching login with ClassCastException.
+            minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.debug
         }

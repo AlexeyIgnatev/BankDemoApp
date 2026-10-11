@@ -81,7 +81,11 @@ class AnimatedWalletArtView @JvmOverloads constructor(
         canvas.restore()
         drawGlassFinish(canvas, phase)
         canvas.restore()
-        if (isAttachedToWindow && visibility == VISIBLE) postInvalidateOnAnimation()
+        // The reveal is an entrance animation. Once the card is fully revealed,
+        // leave the final artwork still instead of invalidating on every frame.
+        if (isAttachedToWindow && visibility == VISIBLE && elapsedMs < INTRO_DURATION_MS) {
+            postInvalidateOnAnimation()
+        }
     }
 
     private fun updateMesh(phase: Float) {

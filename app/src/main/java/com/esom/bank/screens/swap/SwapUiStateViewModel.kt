@@ -15,12 +15,17 @@ class SwapUiStateViewModel : ViewModel() {
     val uiState: StateFlow<SwapUiState> = _uiState.asStateFlow()
 
     fun initialize(from: CurrencyEnum, to: CurrencyEnum) {
+        val safeTo = if (from == to) {
+            CurrencyEnum.supportedValues.first { it != from }
+        } else {
+            to
+        }
         _uiState.update {
             it.copy(
                 fromCurrency = from,
-                toCurrency = to,
+                toCurrency = safeTo,
                 fromPanelCurrencies = CurrencyEnum.supportedValues.filterNot { value -> value == from },
-                toPanelCurrencies = CurrencyEnum.supportedValues.filterNot { value -> value == to }
+                toPanelCurrencies = CurrencyEnum.supportedValues.filterNot { value -> value == safeTo }
             )
         }
     }
@@ -66,11 +71,12 @@ class SwapUiStateViewModel : ViewModel() {
     fun selectFrom(currency: CurrencyEnum) {
         _uiState.update { state ->
             val previous = state.fromCurrency
+            val newTo = if (currency == state.toCurrency) previous else state.toCurrency
             state.copy(
                 fromCurrency = currency,
-                fromPanelCurrencies = state.fromPanelCurrencies.map {
-                    if (it == currency) previous else it
-                }
+                toCurrency = newTo,
+                fromPanelCurrencies = CurrencyEnum.supportedValues.filterNot { it == currency },
+                toPanelCurrencies = CurrencyEnum.supportedValues.filterNot { it == newTo },
             )
         }
     }
@@ -78,11 +84,12 @@ class SwapUiStateViewModel : ViewModel() {
     fun selectTo(currency: CurrencyEnum) {
         _uiState.update { state ->
             val previous = state.toCurrency
+            val newFrom = if (currency == state.fromCurrency) previous else state.fromCurrency
             state.copy(
                 toCurrency = currency,
-                toPanelCurrencies = state.toPanelCurrencies.map {
-                    if (it == currency) previous else it
-                }
+                fromCurrency = newFrom,
+                fromPanelCurrencies = CurrencyEnum.supportedValues.filterNot { it == newFrom },
+                toPanelCurrencies = CurrencyEnum.supportedValues.filterNot { it == currency },
             )
         }
     }

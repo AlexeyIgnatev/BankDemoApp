@@ -5,7 +5,10 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.os.SystemClock
 import android.util.AttributeSet
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import androidx.appcompat.widget.AppCompatTextView
+import com.esom.bank.R
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -20,10 +23,15 @@ class AnimatedBalanceView @JvmOverloads constructor(
     private var transitionStartedAt = 0L
     private var transitioning = false
     private var initialized = false
+    private var balanceValue = ""
 
     fun setBalance(value: String, visible: Boolean) {
-        text = value
+        balanceValue = value
         val masked = !visible
+        // Do not keep the real amount in TextView.text while hidden. Drawing-only
+        // masking leaves the value available to TalkBack and accessibility dumps.
+        super.setText(if (masked) MASKED_TEXT else balanceValue)
+        contentDescription = if (masked) context.getString(R.string.balance_hidden_accessibility) else null
         if (!initialized) {
             initialized = true
             targetMasked = masked
@@ -37,8 +45,26 @@ class AnimatedBalanceView @JvmOverloads constructor(
         invalidate()
     }
 
+    override fun onInitializeAccessibilityNodeInfo(info: AccessibilityNodeInfo) {
+        super.onInitializeAccessibilityNodeInfo(info)
+        if (targetMasked) {
+            val hiddenLabel = context.getString(R.string.balance_hidden_accessibility)
+            info.text = hiddenLabel
+            info.contentDescription = hiddenLabel
+        }
+    }
+
+    override fun onPopulateAccessibilityEvent(event: AccessibilityEvent) {
+        super.onPopulateAccessibilityEvent(event)
+        if (targetMasked) {
+            event.text.clear()
+            event.text.add(context.getString(R.string.balance_hidden_accessibility))
+        }
+    }
+
     override fun onDraw(canvas: Canvas) {
         val now = SystemClock.uptimeMillis()
+        val animationFrame = transitioning
         val progress = if (transitioning) {
             ((now - transitionStartedAt) / TRANSITION_DURATION_MS.toFloat()).coerceIn(0f, 1f)
         } else {
@@ -58,9 +84,13 @@ class AnimatedBalanceView @JvmOverloads constructor(
         if (paint.alpha > 0) super.onDraw(canvas)
         paint.alpha = originalAlpha
 
-        if (particleAmount > 0f) drawParticles(canvas, now, particleAmount)
+        // Freeze the masked particle cloud after the transition. A perpetual
+        // postInvalidateOnAnimation loop keeps the main looper permanently busy,
+        // wasting CPU and preventing UI automation from ever reaching idle.
+        val particleTime = if (animationFrame) now else transitionStartedAt + TRANSITION_DURATION_MS
+        if (particleAmount > 0f) drawParticles(canvas, particleTime, particleAmount)
         if (transitioning && progress >= 1f) transitioning = false
-        if (transitioning || targetMasked) postInvalidateOnAnimation()
+        if (transitioning) postInvalidateOnAnimation()
     }
 
     private fun drawParticles(canvas: Canvas, now: Long, amount: Float) {
@@ -92,6 +122,7 @@ class AnimatedBalanceView @JvmOverloads constructor(
     }
 
     private companion object {
+        const val MASKED_TEXT = "••••••"
         const val PARTICLE_COLUMNS = 12
         const val PARTICLE_COUNT = 36
         const val TRANSITION_DURATION_MS = 520L

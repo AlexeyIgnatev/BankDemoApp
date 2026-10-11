@@ -87,6 +87,7 @@ class WalletDetailFragment : Fragment() {
         }
         model.history.observe(viewLifecycleOwner) { state ->
             when (state) {
+                null -> Unit
                 is UiState.Loading -> Unit
                 is UiState.Error -> {
                     binding.emptyHistory.visibility = View.VISIBLE

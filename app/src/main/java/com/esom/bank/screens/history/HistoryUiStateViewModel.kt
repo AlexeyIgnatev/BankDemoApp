@@ -32,6 +32,17 @@ class HistoryUiStateViewModel : ViewModel() {
         it.copy(adapterState = it.adapterState.copy(minimumAmount = minimum, maximumAmount = maximum))
     }
 
+    fun resetListFilters() = mutableUiState.update {
+        it.copy(
+            adapterState = it.adapterState.copy(
+                typeFilter = HistoryTypeFilter.ALL,
+                minimumAmount = null,
+                maximumAmount = null,
+                searchQuery = ""
+            )
+        )
+    }
+
     fun replaceHistoryJob(job: Job) {
         activeHistoryJob.value?.cancel()
         activeHistoryJob.value = job

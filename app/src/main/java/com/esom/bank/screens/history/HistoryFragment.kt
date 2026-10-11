@@ -15,6 +15,7 @@ import android.widget.TextView
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.setPadding
 import androidx.core.view.updatePadding
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -36,6 +37,7 @@ import com.esom.bank.screens.history.model.HistoryTypeFilter
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.TransactionSuccessMapper
 import com.esom.bank.screens.history.model.filterHistoryTransactions
+import com.esom.bank.screens.history.model.filterHistoryCurrencies
 import com.esom.bank.screens.history.model.isHistoryExpenseTransaction
 import com.esom.bank.screens.history.model.isHistoryIncomeTransaction
 import com.esom.bank.screens.history.model.isHistoryTransferTransaction
@@ -62,6 +64,8 @@ class HistoryFragment : Fragment() {
         get() = _binding ?: error("Binding accessed outside of the view lifecycle")
     private val model: MainViewModel by activityViewModels()
     private val uiModel: HistoryUiStateViewModel by viewModels()
+    private var viewLifecycle: Lifecycle? = null
+    private var activeDialog: BottomSheetDialog? = null
 
     private val historyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) =
@@ -75,6 +79,7 @@ class HistoryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewLifecycle = viewLifecycleOwner.lifecycle
         binding.root.doOnApplyWindowInsets { root, insets, rect ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             root.updatePadding(
@@ -93,6 +98,28 @@ class HistoryFragment : Fragment() {
             onTransactionClick = ::openSuccessTransfer
         )
         binding.history.adapter = adapter
+        adapter.onFilteredStateChanged = { itemCount, loading, endReached ->
+            _binding?.let { current ->
+                val showEmpty = itemCount == 0 && !loading && endReached
+                current.historyEmptyState.visibility = if (showEmpty) View.VISIBLE else View.GONE
+                current.history.visibility = if (showEmpty) View.GONE else View.VISIBLE
+            }
+        }
+        binding.historyScroll.setOnScrollChangeListener(
+            NestedScrollView.OnScrollChangeListener { scroll, _, scrollY, _, _ ->
+                val content = scroll.getChildAt(0) ?: return@OnScrollChangeListener
+                if (scrollY + scroll.height >= content.height - 2 * resources.displayMetrics.density) {
+                    adapter.requestNextPage()
+                }
+            }
+        )
+        binding.historyEmptyReset.setOnClickListener {
+            uiModel.resetListFilters()
+            model.setCurrency(CurrencyEnum.supportedValues)
+            updateFilterLabels()
+            adapter.regroup()
+            refreshData()
+        }
         binding.swipeRefreshLayout.setOnRefreshListener(::refreshData)
         binding.backBtn.setOnClickListener { findNavController().popBackStack() }
         binding.balanceVisibilityBtn.setOnClickListener { model.toggleBalancesVisibility() }
@@ -124,6 +151,7 @@ class HistoryFragment : Fragment() {
         }
         model.month.observe(viewLifecycleOwner) { state ->
             when (state) {
+                null -> Unit
                 is UiState.Loading -> Unit
                 is UiState.Error -> {
                     binding.swipeRefreshLayout.isRefreshing = false
@@ -149,6 +177,7 @@ class HistoryFragment : Fragment() {
 
     private fun loadTransactions(toTime: Long? = model.getToTime()) {
         val adapter = binding.history.adapter as HistoryAdapter
+        adapter.resetPagingPrefetchState()
         uiModel.replaceHistoryJob(viewLifecycleOwner.lifecycleScope.launch {
             try {
                 model.historyPaging(model.getCurrency(), model.getFromTime(), toTime)
@@ -164,6 +193,13 @@ class HistoryFragment : Fragment() {
                 }
             }
         })
+        val state = uiModel.uiState.value.adapterState
+        if (state.typeFilter != HistoryTypeFilter.ALL ||
+            state.minimumAmount != null || state.maximumAmount != null ||
+            model.getCurrency().toSet() != CurrencyEnum.supportedValues.toSet()
+        ) {
+            adapter.fillFilteredPage()
+        }
     }
 
     private fun renderStats(visible: Boolean) {
@@ -179,7 +215,7 @@ class HistoryFragment : Fragment() {
 
     private fun visiblePeriodTransactions(): List<TransactionModel> =
         uiModel.uiState.value.periodTransactions
-            .filter { it.currencyEnum == null || it.currencyEnum in model.getCurrency() }
+            .filterHistoryCurrencies(model.getCurrency())
             .filterHistoryTransactions(uiModel.uiState.value.adapterState)
 
     private fun amountInSom(transaction: TransactionModel): BigDecimal {
@@ -204,7 +240,9 @@ class HistoryFragment : Fragment() {
             )
         ) { label, filter ->
             uiModel.setTypeFilter(filter)
-            (binding.history.adapter as HistoryAdapter).regroup()
+            val adapter = binding.history.adapter as HistoryAdapter
+            adapter.regroup()
+            adapter.fillFilteredPage()
             binding.typeFilter.text = label
             renderStats(model.balancesVisible.value ?: true)
         }
@@ -256,15 +294,53 @@ class HistoryFragment : Fragment() {
         val fields = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
         }
-        val from = amountInput("От").apply { layoutParams = weightedParams(8) }
-        val to = amountInput("До").apply { layoutParams = weightedParams(0) }
+        val currentFilter = uiModel.uiState.value.adapterState
+        val from = amountInput("От").apply {
+            layoutParams = weightedParams(8)
+            currentFilter.minimumAmount?.let { setText(it.toPlainString()) }
+        }
+        val to = amountInput("До").apply {
+            layoutParams = weightedParams(0)
+            currentFilter.maximumAmount?.let { setText(it.toPlainString()) }
+        }
         fields.addView(from)
         fields.addView(to)
         content.addView(fields)
+        content.addView(actionButton(getString(R.string.lock_reset)).apply {
+            setOnClickListener {
+                val lifecycle = viewLifecycle
+                if (!isViewActive(lifecycle)) {
+                    dialog.dismiss()
+                    return@setOnClickListener
+                }
+                uiModel.setAmountFilter(null, null)
+                (binding.history.adapter as HistoryAdapter).apply {
+                    regroup()
+                    fillFilteredPage()
+                }
+                binding.amountFilter.text = "Сумма"
+                renderStats(model.balancesVisible.value ?: true)
+                dialog.dismiss()
+            }
+        })
         content.addView(actionButton(getString(R.string.apply_filter)).apply {
             setOnClickListener {
-                uiModel.setAmountFilter(from.number(), to.number())
-                (binding.history.adapter as HistoryAdapter).regroup()
+                val lifecycle = viewLifecycle
+                if (!isViewActive(lifecycle)) {
+                    dialog.dismiss()
+                    return@setOnClickListener
+                }
+                val minimum = from.number()
+                val maximum = to.number()
+                if (minimum != null && maximum != null && minimum > maximum) {
+                    to.error = getString(R.string.invalid_amount_range)
+                    return@setOnClickListener
+                }
+                uiModel.setAmountFilter(minimum, maximum)
+                (binding.history.adapter as HistoryAdapter).apply {
+                    regroup()
+                    fillFilteredPage()
+                }
                 binding.amountFilter.text = when {
                     from.text.isNotBlank() && to.text.isNotBlank() -> "${from.text}–${to.text}"
                     from.text.isNotBlank() -> "От ${from.text}"
@@ -276,11 +352,18 @@ class HistoryFragment : Fragment() {
             }
         })
         dialog.setContentView(content)
-        dialog.setOnShowListener { from.requestFocus(); showKeyboard(from) }
-        dialog.show()
+        dialog.setOnShowListener {
+            if (isViewActive(viewLifecycle)) {
+                from.requestFocus()
+                showKeyboard(from)
+            }
+        }
+        showManagedDialog(dialog)
     }
 
     private fun <T> showOptions(title: String, values: List<Pair<String, T>>, selected: (String, T) -> Unit) {
+        val lifecycle = viewLifecycle ?: return
+        if (!isViewActive(lifecycle)) return
         val dialog = BottomSheetDialog(requireContext())
         val content = dialogContainer(title)
         values.forEach { (label, value) ->
@@ -289,12 +372,31 @@ class HistoryFragment : Fragment() {
                 textSize = 18f
                 setTextColor(requireContext().getColor(R.color.title))
                 setPadding(4.dp, 18.dp, 4.dp, 18.dp)
-                setOnClickListener { selected(label, value); dialog.dismiss() }
+                setOnClickListener {
+                    if (!isViewActive(lifecycle)) {
+                        dialog.dismiss()
+                        return@setOnClickListener
+                    }
+                    selected(label, value)
+                    dialog.dismiss()
+                }
             })
         }
         dialog.setContentView(content)
+        showManagedDialog(dialog)
+    }
+
+    private fun showManagedDialog(dialog: BottomSheetDialog) {
+        activeDialog?.dismiss()
+        activeDialog = dialog
+        dialog.setOnDismissListener {
+            if (activeDialog === dialog) activeDialog = null
+        }
         dialog.show()
     }
+
+    private fun isViewActive(lifecycle: Lifecycle?): Boolean =
+        _binding != null && lifecycle?.currentState?.isAtLeast(Lifecycle.State.STARTED) == true
 
     private fun dialogContainer(title: String) = LinearLayout(requireContext()).apply {
         orientation = LinearLayout.VERTICAL
@@ -354,10 +456,38 @@ class HistoryFragment : Fragment() {
             days <= 370 -> "Год"
             else -> "Период"
         }
-        binding.walletFilter.text = if (model.getCurrency().size == CurrencyEnum.supportedValues.size) {
-            "Все кошельки"
-        } else {
-            "Кошелёк: ${model.getCurrency().size}"
+        binding.walletFilter.text = walletFilterLabel(model.getCurrency())
+        val state = uiModel.uiState.value.adapterState
+        binding.typeFilter.text = when (state.typeFilter) {
+            HistoryTypeFilter.ALL -> "Все операции"
+            HistoryTypeFilter.TRANSFERS -> "Переводы"
+            HistoryTypeFilter.CONVERSIONS -> "Конвертации"
+            HistoryTypeFilter.INCOME -> "Зачисления"
+            HistoryTypeFilter.EXPENSES -> "Расходы"
+        }
+        binding.amountFilter.text = when {
+            state.minimumAmount != null && state.maximumAmount != null ->
+                "${state.minimumAmount.toPlainString()}–${state.maximumAmount.toPlainString()}"
+            state.minimumAmount != null -> "От ${state.minimumAmount.toPlainString()}"
+            state.maximumAmount != null -> "До ${state.maximumAmount.toPlainString()}"
+            else -> "Сумма"
+        }
+    }
+
+    private fun walletFilterLabel(currencies: List<CurrencyEnum>): String {
+        val selected = currencies.toSet()
+        if (selected == CurrencyEnum.supportedValues.toSet()) return "Все кошельки"
+        return when (selected) {
+            setOf(CurrencyEnum.SOM) -> "Сом"
+            setOf(CurrencyEnum.ESOM) -> "Салам"
+            setOf(CurrencyEnum.USDT_TRC20) -> "USDT"
+            else -> selected.mapNotNull { currency ->
+                when (currency) {
+                    CurrencyEnum.SOM -> "Сом"
+                    CurrencyEnum.ESOM -> "Салам"
+                    CurrencyEnum.USDT_TRC20 -> "USDT"
+                }
+            }.joinToString(", ").ifBlank { "Все кошельки" }
         }
     }
 
@@ -386,9 +516,14 @@ class HistoryFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        viewLifecycle = null
+        activeDialog?.setOnDismissListener(null)
+        activeDialog?.dismiss()
+        activeDialog = null
         context?.let {
             runCatching { LocalBroadcastManager.getInstance(it).unregisterReceiver(historyReceiver) }
         }
+        (_binding?.history?.adapter as? HistoryAdapter)?.onFilteredStateChanged = null
         _binding?.history?.adapter = null
         _binding = null
         super.onDestroyView()

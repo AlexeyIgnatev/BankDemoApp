@@ -26,6 +26,7 @@ import com.esom.bank.screens.history.HistoryFragment
 import com.esom.bank.screens.history.model.TransactionModel
 import com.esom.bank.screens.history.model.FinancialAnalysisCategory
 import com.esom.bank.screens.history.model.isUserTransfer
+import com.esom.bank.screens.history.model.filterHistoryCurrencies
 import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.WalletModel
@@ -110,7 +111,9 @@ class FinancialAnalysisFragment : Fragment() {
     }
 
     private fun buildCategories(incomeMode: Boolean): List<FinancialAnalysisCategory> {
-        val relevant = uiModel.uiState.value.transactions.filter { item ->
+        val relevant = uiModel.uiState.value.transactions
+            .filterHistoryCurrencies(model.getCurrency())
+            .filter { item ->
             if (incomeMode) {
                 item.isIncoming() || item.type == TransactionEnum.CONVERSION &&
                     item.conversionSide == ConversionSide.IN
@@ -118,7 +121,7 @@ class FinancialAnalysisFragment : Fragment() {
                 item.isOutgoing() || item.type == TransactionEnum.CONVERSION &&
                     item.conversionSide != ConversionSide.IN
             }
-        }
+            }
         return relevant
             .groupBy(::categoryTitle)
             .map { (title, items) -> FinancialAnalysisCategory(title, items.sumOf(::amountInSom), items.size) }

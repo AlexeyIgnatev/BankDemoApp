@@ -166,6 +166,7 @@ class WalletFragment : Fragment() {
 
         model.myData.observe(viewLifecycleOwner) { state ->
             when (state) {
+                null -> Unit
                 is UiState.Loading -> Unit
                 is UiState.Error -> {
                     binding.swipeRefreshLayout.isRefreshing = false
@@ -187,12 +188,12 @@ class WalletFragment : Fragment() {
                     binding.exchangeRatesCard.visibility =
                         if (exchangeRateWallets.isEmpty()) View.GONE else View.VISIBLE
                 }
-                null -> Unit
             }
         }
 
         model.history.observe(viewLifecycleOwner) { state ->
             when (state) {
+                null -> Unit
                 is UiState.Loading -> Unit
                 is UiState.Error -> {
                     binding.swipeRefreshLayout.isRefreshing = false

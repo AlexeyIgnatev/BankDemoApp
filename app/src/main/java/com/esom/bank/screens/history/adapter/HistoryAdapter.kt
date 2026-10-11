@@ -3,6 +3,8 @@ package com.esom.bank.screens.history.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
+import androidx.paging.LoadState
+import androidx.paging.CombinedLoadStates
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.RecyclerView
@@ -24,6 +26,11 @@ class HistoryAdapter(
     private val onTransactionClick: ((TransactionModel) -> Unit)? = null
 ) : PagingDataAdapter<TransactionModel, HistoryAdapter.HistoryGroupViewHolder>(HistoryDiffCallback()) {
     private val groups = AsyncListDiffer(this, HistoryGroupDiffCallback())
+    private var filteredItemsCount = 0
+    private var fillUntilCount = 0
+    private var lastRequestedItemCount = -1
+    private var currentLoadStates: CombinedLoadStates? = null
+    var onFilteredStateChanged: ((itemCount: Int, loading: Boolean, endReached: Boolean) -> Unit)? = null
     private val dateFormat = SimpleDateFormat("dd MMMM yyyy", Locale("ru", "RU")).apply {
         dateFormatSymbols = object : DateFormatSymbols(Locale("ru", "RU")) {
             override fun getMonths(): Array<String> = arrayOf(
@@ -35,21 +42,80 @@ class HistoryAdapter(
 
     init {
         addOnPagesUpdatedListener(::regroup)
+        addLoadStateListener { states ->
+            currentLoadStates = states
+            notifyFilteredState()
+            maybeFillFilteredPage()
+        }
     }
 
     fun refreshBalanceVisibility() {
         notifyItemRangeChanged(0, itemCount)
     }
 
+    fun resetPagingPrefetchState() {
+        lastRequestedItemCount = -1
+    }
+
+    fun fillFilteredPage() {
+        fillUntilCount = MIN_FILTERED_ITEMS
+        lastRequestedItemCount = -1
+        maybeFillFilteredPage()
+    }
+
+    fun requestNextPage() {
+        val loadedItems = snapshot().items
+        val states = currentLoadStates ?: return
+        val append = states.append
+        if (loadedItems.isEmpty() || states.refresh is LoadState.Loading ||
+            append is LoadState.Loading || append !is LoadState.NotLoading ||
+            append.endOfPaginationReached || lastRequestedItemCount == loadedItems.size
+        ) return
+
+        lastRequestedItemCount = loadedItems.size
+        // Accessing the last loaded item asks Paging to prefetch the next page.
+        getItem(loadedItems.lastIndex)
+    }
+
     fun regroup() {
         val state = stateProvider()
         val filtered = snapshot().items.filterHistoryTransactions(state)
+        filteredItemsCount = filtered.size
 
         val groups = filtered
             .groupBy { dateFormat.format(Date(it.createdAt ?: 0L)) }
             .map { (date, list) -> HistoryGroup(date, list.sortedByDescending { it.createdAt }) }
             .sortedByDescending { it.list.firstOrNull()?.createdAt ?: 0L }
-        this.groups.submitList(groups)
+        this.groups.submitList(groups) {
+            notifyFilteredState()
+        }
+        notifyFilteredState()
+        maybeFillFilteredPage()
+    }
+
+    private fun notifyFilteredState() {
+        val states = currentLoadStates
+        val append = states?.append as? LoadState.NotLoading
+        val loading = states?.refresh is LoadState.Loading || states?.append is LoadState.Loading
+        onFilteredStateChanged?.invoke(
+            filteredItemsCount,
+            loading,
+            append?.endOfPaginationReached == true
+        )
+    }
+
+    private fun maybeFillFilteredPage() {
+        if (fillUntilCount <= 0) return
+        val states = currentLoadStates ?: return
+        val append = states.append as? LoadState.NotLoading ?: return
+        if (filteredItemsCount >= fillUntilCount || append.endOfPaginationReached) {
+            fillUntilCount = 0
+            notifyFilteredState()
+            return
+        }
+        if (states.refresh !is LoadState.Loading && states.append !is LoadState.Loading) {
+            requestNextPage()
+        }
     }
 
     inner class HistoryGroupViewHolder(private val binding: ItemHistoryBinding) :
@@ -75,6 +141,8 @@ class HistoryAdapter(
         groups.currentList.getOrNull(position)?.let(holder::bind)
     }
 }
+
+private const val MIN_FILTERED_ITEMS = 20
 
 private class HistoryGroupDiffCallback : DiffUtil.ItemCallback<HistoryGroup>() {
     override fun areItemsTheSame(oldItem: HistoryGroup, newItem: HistoryGroup): Boolean =

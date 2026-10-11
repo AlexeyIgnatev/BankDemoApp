@@ -66,11 +66,11 @@ class MainViewModel @Inject constructor(
     // History is state, not a one-shot event. A refresh may finish while the
     // destination fragment is being recreated; MutableLiveData must replay
     // the latest server result to the next active observer.
-    private val _history = MutableLiveData<UiState<List<TransactionModel?>>>()
-    val history: LiveData<UiState<List<TransactionModel?>>> = _history
+    private val _history = MutableLiveData<UiState<List<TransactionModel?>>?>()
+    val history: LiveData<UiState<List<TransactionModel?>>?> = _history
 
-    private val _month = MutableLiveData<UiState<List<TransactionModel?>>>()
-    val month: LiveData<UiState<List<TransactionModel?>>> = _month
+    private val _month = MutableLiveData<UiState<List<TransactionModel?>>?>()
+    val month: LiveData<UiState<List<TransactionModel?>>?> = _month
 
     private val _receipt = SingleLiveEvent<UiState<ReceiptModel>>()
     val receipt: LiveData<UiState<ReceiptModel>> = _receipt

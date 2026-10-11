@@ -98,4 +98,20 @@
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+    <TextView
+        android:id="@+id/empty_state"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingStart="@dimen/_32dp"
+        android:paddingEnd="@dimen/_32dp"
+        android:text="@string/notifications_empty"
+        android:textColor="@color/text_color_secondary"
+        android:textSize="@dimen/_14sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/notification_title" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

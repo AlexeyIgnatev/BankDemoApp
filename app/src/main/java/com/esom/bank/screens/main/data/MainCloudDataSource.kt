@@ -67,7 +67,12 @@ class MainCloudDataSourceImpl @Inject constructor(
 ) : MainCloudDataSource,
     AbstractBaseCloudDataSource() {
     override fun login(username: String, password: String): Flow<ApiResponse<UserAuthResponseDto>> =
-        safeApiCall {
+        safeApiCall(exposeUnexpectedException = true) {
+            Log.i(
+                "MainCloudDataSource",
+                "sending POST users/auth/login username=${username.trim()} " +
+                    "passwordPresent=${password.isNotEmpty()}",
+            )
             serverApi.login(UserAuthRequestDto(username, password))
         }
 

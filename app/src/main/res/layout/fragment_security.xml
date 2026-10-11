@@ -37,7 +37,6 @@
                     android:id="@+id/back_btn"
                     android:layout_width="@dimen/_48dp"
                     android:layout_height="@dimen/_48dp"
-                    android:layout_marginStart="-12dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/back"
                     android:padding="@dimen/_12dp"

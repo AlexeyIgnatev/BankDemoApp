@@ -349,7 +349,7 @@ class QrFragment : Fragment() {
         binding.showContainer.isVisible = false
         binding.scanTabBtn.isSelected = true
         binding.showTabBtn.isSelected = false
-        binding.showTabBtn.text = "Показать QR"
+        binding.showTabBtn.text = "Показать мой QR"
         binding.showTabBtn.backgroundTintList = ColorStateList.valueOf(Color.argb(239, 255, 255, 255))
         binding.showTabBtn.setTextColor(Color.rgb(167, 25, 36))
         binding.showTabBtn.iconTint = ColorStateList.valueOf(Color.rgb(167, 25, 36))

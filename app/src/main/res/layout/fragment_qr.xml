@@ -90,7 +90,7 @@
             android:layout_height="@dimen/_48dp"
             android:backgroundTint="#EFFFFFFF"
             android:fontFamily="@font/mont_semibold"
-            android:text="Показать QR"
+            android:text="Показать мой QR"
             android:textAllCaps="false"
             android:textColor="#A71924"
             app:cornerRadius="@dimen/_24dp"

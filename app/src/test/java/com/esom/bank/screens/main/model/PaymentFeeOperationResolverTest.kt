@@ -65,4 +65,18 @@ class PaymentFeeOperationResolverTest {
         percentFee = BigDecimal(percent),
         fixedFee = BigDecimal(fixed),
     )
+
+    @Test
+    fun `usdt to som rounds the combined source fee up to token precision`() {
+        val total = PaymentFeeOperationResolver.calculateConvertFee(
+            amount = BigDecimal("1"),
+            from = CurrencyEnum.USDT_TRC20,
+            to = CurrencyEnum.SOM,
+            feeForOperation = { operation ->
+                if (operation == PaymentFeeOperationResolver.CONVERT_ESOM_TO_SOM) fee("0", "1") else fee("0", "0")
+            },
+            intermediateRate = BigDecimal("88"),
+        )
+        assertEquals(0, BigDecimal("0.011364").compareTo(total))
+    }
 }

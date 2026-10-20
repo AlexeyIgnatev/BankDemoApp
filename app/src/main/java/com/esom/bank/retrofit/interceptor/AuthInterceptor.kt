@@ -1,6 +1,5 @@
 package com.esom.bank.retrofit.interceptor
 
-import android.util.Log
 import com.esom.bank.common.session.SessionManager
 import com.esom.bank.retrofit.exception.NotLoggedInException
 import com.esom.bank.screens.auth.data.AuthLocalDataSource
@@ -22,7 +21,8 @@ class AuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         var request = chain.request()
 
-        val accessToken = authLocalDataSource.getAccessToken()?.trim()
+        val session = authLocalDataSource.getSessionSnapshot()
+        val accessToken = session.accessToken
         val isLoginRequest = request.url.encodedPath.endsWith("/users/auth/login")
 
         if (!accessToken.isNullOrEmpty() && !isLoginRequest) {
@@ -31,16 +31,9 @@ class AuthInterceptor @Inject constructor(
                 .build()
         }
 
-        Log.d(
-            "AuthInterceptor",
-            "request ${request.method} ${request.url.encodedPath} " +
-                "hasBearer=${!accessToken.isNullOrEmpty()}"
-        )
-
         val response = chain.proceed(request)
 
         if (!response.isSuccessful) {
-            Log.w("AuthInterceptor", "response ${response.code} ${request.url.encodedPath}")
             // Anonymous startup calls (for example FCM registration) and failed login
             // attempts can legitimately return 401. Only a protected request made with
             // an existing bearer token proves that the current session has expired.
@@ -49,8 +42,9 @@ class AuthInterceptor @Inject constructor(
                 !isLoginRequest &&
                 !accessToken.isNullOrEmpty()
             ) {
-                authLocalDataSource.clearAuthData()
-                sessionManager.notifyLoggedOut()
+                if (authLocalDataSource.clearAuthDataIfCurrent(session)) {
+                    sessionManager.notifyLoggedOut()
+                }
                 response.close()
                 throw NotLoggedInException()
             }

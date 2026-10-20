@@ -39,12 +39,6 @@ object PaymentFeeOperationResolver {
             else -> emptyList()
         }
 
-    /**
-     * Returns the source-currency equivalent of all fees in a conversion route.
-     * SOM -> USDT is executed as SOM -> ESOM -> USDT; both fee stages must be
-     * included, with the second tariff based on the ESOM remaining after stage 1.
-     * SOM and ESOM are 1:1 pegged, so their fee amounts share the same value scale.
-     */
     fun calculateConvertFee(
         amount: BigDecimal,
         from: CurrencyEnum,
@@ -71,7 +65,7 @@ object PaymentFeeOperationResolver {
             val esomFee = feeForOperation(CONVERT_ESOM_TO_SOM)
                 ?.calculateFee(esomAfterFirstFee) ?: BigDecimal.ZERO
             val usdtEquivalentEsomFee = esomFee.divide(rate, 18, java.math.RoundingMode.HALF_UP)
-            return usdtFee + usdtEquivalentEsomFee
+            return (usdtFee + usdtEquivalentEsomFee).setScale(6, java.math.RoundingMode.UP)
         }
 
         return convertOperations(from, to).asSequence()

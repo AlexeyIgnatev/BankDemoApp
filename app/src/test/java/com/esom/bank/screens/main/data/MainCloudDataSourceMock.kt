@@ -24,9 +24,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.math.BigDecimal
 import java.util.Calendar
-import javax.inject.Inject
 
-class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
+class MainCloudDataSourceMock : MainCloudDataSource {
 
     override fun login(username: String, password: String): Flow<ApiResponse<UserAuthResponseDto>> = flow {
         emit(ApiResponse.Success(UserAuthResponseDto(accessToken = "mock-user-token"), code = 200))
@@ -40,16 +39,16 @@ class MainCloudDataSourceMock @Inject constructor(): MainCloudDataSource {
         emit(
             ApiResponse.Success(
                 UserDto(
-                    id = 21028,
-                    firstName = "Мадина",
-                    middleName = "Салморбековна",
-                    lastName = "Байбосунова",
-                    phone = "+996 555 687878",
-                    email = "madina.b@fkb.kg",
+                    id = 1,
+                    firstName = "Тест",
+                    middleName = "",
+                    lastName = "Пользователь",
+                    phone = "+996 000 000001",
+                    email = "user@example.invalid",
                     wallets = listOf(
                         WalletDto(
                             currency = CurrencyEnum.SOM,
-                            address = "+996 555 687878",
+                            address = "+996 000 000001",
                             balance = BigDecimal("1010.62"),
                             buyRate = BigDecimal.ONE,
                             sellRate = BigDecimal.ONE

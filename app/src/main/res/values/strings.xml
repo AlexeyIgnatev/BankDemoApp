@@ -142,6 +142,7 @@
     <string name="lock_pattern_not_match">Графические ключи не совпадают</string>
     <string name="lock_pattern_min_points">Минимум 4 точки</string>
     <string name="lock_wrong_password">Неверный код доступа</string>
+    <string name="lock_retry_after">Слишком много попыток. Повторите через %1$d сек.</string>
     <string name="forgot_password">Забыли пароль?</string>
     <string name="send_title">Отправить</string>
     <string name="available_title">Доступно: %s</string>

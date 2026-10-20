@@ -27,6 +27,7 @@ import com.esom.bank.screens.main.MainViewModel
 import com.esom.bank.screens.pinCreate.data.LockType
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -37,6 +38,8 @@ class LogInFragment : Fragment() {
     private val model: MainViewModel by activityViewModels()
     private val uiModel: LogInUiStateViewModel by viewModels()
     private val maxPinLength = 4
+    private var retryJob: Job? = null
+    private var pinErrorJob: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -79,13 +82,24 @@ class LogInFragment : Fragment() {
     }
 
     private fun onBackspaceClicked() {
+        if (pinErrorJob?.isActive == true) return
         uiModel.removeLastDigit()
         updatePinDots()
     }
 
     private fun onDigitClicked(digit: String) {
+        if (pinErrorJob?.isActive == true || showUnlockBackoff()) return
         uiModel.appendDigit(digit, maxPinLength)
         updatePinDots()
+        val pinCode = uiModel.uiState.value.pinCode
+        if (pinCode.length == maxPinLength) {
+            if (model.verifyPin(pinCode)) {
+                onUnlockSuccess()
+            } else {
+                uiModel.clearPin()
+                if (!showUnlockBackoff()) showPinError(getString(R.string.lock_wrong_password))
+            }
+        }
     }
 
     private fun updatePinDots() {
@@ -97,22 +111,15 @@ class LogInFragment : Fragment() {
             view.background = if (index < uiModel.uiState.value.pinCode.length) pinChooseBg else pinNotChooseBg
         }
 
-        val pinCode = uiModel.uiState.value.pinCode
-        if (pinCode.length == maxPinLength) {
-            if (model.verifyPin(pinCode)) {
-                onUnlockSuccess()
-            } else {
-                showPinError(getString(R.string.lock_wrong_password))
-            }
-        }
     }
 
     private fun setupPatternListener() {
         binding.patternLockView.setOnPatternListener(object : PatternLockView.OnPatternListener {
             override fun onComplete(ids: ArrayList<Int>): Boolean {
+                if (showUnlockBackoff()) return false
                 val input = ids.toList()
-                if (input.size < 4 || !model.verifyPattern(input)) {
-                    showPatternError(getString(R.string.lock_wrong_password))
+                if (!model.verifyPattern(input)) {
+                    if (!showUnlockBackoff()) showPatternError(getString(R.string.lock_wrong_password))
                     return false
                 }
                 onUnlockSuccess()
@@ -160,6 +167,7 @@ class LogInFragment : Fragment() {
         binding.errorCard.isVisible = false
         binding.patternErrorCard.isVisible = false
         updatePinDots()
+        showUnlockBackoff()
     }
 
     private fun isModeAvailable(mode: LockType): Boolean = when (mode) {
@@ -212,9 +220,9 @@ class LogInFragment : Fragment() {
         binding.errorCard.isVisible = true
         val shake = AnimationUtils.loadAnimation(requireContext(), R.anim.shake)
         binding.pinLayout.startAnimation(shake)
-        viewLifecycleOwner.lifecycleScope.launch {
+        pinErrorJob = viewLifecycleOwner.lifecycleScope.launch {
             delay(900L)
-            binding.errorCard.isVisible = false
+            if (model.unlockRetryAfterMillis() == 0L) binding.errorCard.isVisible = false
             uiModel.clearPin()
             updatePinDots()
         }
@@ -230,6 +238,7 @@ class LogInFragment : Fragment() {
     }
 
     private fun onUnlockSuccess() {
+        model.resetUnlockAttempts()
         (activity as? MainActivity)?.markUserAuthenticated()
         findNavController().navigate(
             R.id.mainFragment,
@@ -241,7 +250,30 @@ class LogInFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        retryJob?.cancel()
+        retryJob = null
+        pinErrorJob?.cancel()
+        pinErrorJob = null
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showUnlockBackoff(): Boolean {
+        if (model.unlockRetryAfterMillis() == 0L) return false
+        uiModel.clearPin()
+        updatePinDots()
+        if (retryJob?.isActive == true) return true
+        retryJob = viewLifecycleOwner.lifecycleScope.launch {
+            var remaining = model.unlockRetryAfterMillis()
+            while (remaining > 0L) {
+                binding.errorText.text = getString(R.string.lock_retry_after, (remaining + 999L) / 1000L)
+                binding.errorCard.isVisible = true
+                binding.patternErrorCard.isVisible = false
+                delay(minOf(remaining, 1000L))
+                remaining = model.unlockRetryAfterMillis()
+            }
+            binding.errorCard.isVisible = false
+        }
+        return true
     }
 }

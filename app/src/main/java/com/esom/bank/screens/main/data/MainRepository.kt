@@ -3,6 +3,7 @@ package com.esom.bank.screens.main.data
 import android.content.Context
 import com.esom.bank.common.model.ApiResponse
 import com.esom.bank.common.model.UiState
+import com.esom.bank.common.session.SessionSnapshot
 import com.esom.bank.screens.auth.data.AuthLocalDataSource
 import com.esom.bank.screens.chat.model.SupportModel
 import com.esom.bank.screens.chat.model.toModel
@@ -50,6 +51,8 @@ interface MainRepository {
     fun verifyPin(pin: String): Boolean
     fun savePattern(pattern: List<Int>)
     fun verifyPattern(pattern: List<Int>): Boolean
+    fun unlockRetryAfterMillis(): Long
+    fun resetUnlockAttempts()
     fun isBiometricEnabled(): Boolean
     fun setBiometricEnabled(enabled: Boolean)
     fun getPrimaryCurrency(): CurrencyEnum
@@ -162,6 +165,10 @@ class MainRepositoryImpl @Inject constructor(
 
     override fun verifyPattern(pattern: List<Int>): Boolean = pinLocalDataSource.verifyPattern(pattern)
 
+    override fun unlockRetryAfterMillis(): Long = pinLocalDataSource.unlockRetryAfterMillis()
+
+    override fun resetUnlockAttempts() = pinLocalDataSource.resetUnlockAttempts()
+
     override fun isBiometricEnabled(): Boolean = pinLocalDataSource.isBio()
 
     override fun setBiometricEnabled(enabled: Boolean) = pinLocalDataSource.setBio(enabled)
@@ -209,16 +216,17 @@ class MainRepositoryImpl @Inject constructor(
 
     override fun authenticate(login: String, password: String): Flow<UiState<UserModel>> = flow {
         var authenticated = false
+        var pendingSession: SessionSnapshot? = null
         try {
             when (val loginResponse = mainCloudDataSource.login(login, password).first()) {
                 is ApiResponse.Error -> emit(UiState.Error(loginResponse.toString(context)))
                 is ApiResponse.Success -> {
-                    authLocalDataSource.setLogin(login)
-                    authLocalDataSource.setAccessToken(loginResponse.data.accessToken)
+                    pendingSession = authLocalDataSource.saveSession(login, loginResponse.data.accessToken)
 
                     when (val userResponse = mainCloudDataSource.getUserInfo().first()) {
                         is ApiResponse.Success -> {
                             authenticated = true
+                            pinLocalDataSource.resetUnlockAttempts()
                             emit(UiState.Success(userResponse.data.toModel()))
                         }
                         is ApiResponse.Error -> emit(UiState.Error(userResponse.toString(context)))
@@ -226,7 +234,7 @@ class MainRepositoryImpl @Inject constructor(
                 }
             }
         } finally {
-            if (!authenticated) authLocalDataSource.clearAuthData()
+            if (!authenticated) pendingSession?.let(authLocalDataSource::clearAuthDataIfCurrent)
         }
     }
 

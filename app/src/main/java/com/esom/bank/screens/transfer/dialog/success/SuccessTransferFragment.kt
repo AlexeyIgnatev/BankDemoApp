@@ -34,6 +34,7 @@ import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import com.esom.bank.screens.transfer.model.ReceiptAction
 import com.esom.bank.screens.transfer.model.TransferTemplate
+import com.esom.bank.screens.transfer.model.withConversionSummary
 import com.esom.bank.screens.swap.model.SwapTemplate
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -101,38 +102,39 @@ class SuccessTransferFragment : Fragment() {
                     binding.previewReceiptBtn.isEnabled = true
                     binding.shareBtn.isEnabled = true
                     val currentOperation = uiModel.uiState.value.operation
+                    val displayReceipt = state.data.withConversionSummary(currentOperation)
                     val isConversion = currentOperation?.conversionSide != null ||
                         currentOperation?.targetCurrency != null
                     val creditedAmount = resolveCreditedAmount(
                         currentOperation = currentOperation,
-                        receipt = state.data
+                        receipt = displayReceipt
                     )
-                    uiModel.setOperation(currentOperation?.copy(
-                        receiptNumber = state.data.receiptNumber,
-                        createdAt = state.data.createdAt,
-                        fee = state.data.fee,
-                        feeCurrency = CurrencyEnum.fromNameOrNull(state.data.feeCurrency),
-                        creditedCurrency = CurrencyEnum.fromNameOrNull(state.data.creditedCurrency),
-                        debitedCurrency = CurrencyEnum.fromNameOrNull(state.data.debitedCurrency),
-                        operationTitle = resolveOperationTitle(state.data, uiModel.uiState.value.operation),
-                        paidFromAccount = resolvePaidFromAccount(state.data),
-                        recipient = resolveRecipientAccount(state.data),
-                        recipientName = state.data.recipientFullName.ifBlank {
-                            currentOperation.recipientName
-                        },
-                        creditedAmount = creditedAmount,
-                        amountIsNet = false,
-                        totalDebitedAmount = if (isConversion) {
-                            // The conversion source amount is already gross.
-                            // Do not replace it with the server's net/credited amount.
-                            currentOperation.amount
-                        } else {
-                            state.data.totalDebitedAmount
-                                ?: currentOperation.totalDebitedAmount
-                                ?: (state.data.amount + state.data.fee)
-                        }
-                    ))
-                    val enrichedReceipt = fillOnlyBlankReceiptFields(state.data)
+                    uiModel.setOperation(currentOperation?.let { operation ->
+                        operation.copy(
+                            receiptNumber = displayReceipt.receiptNumber,
+                            createdAt = displayReceipt.createdAt,
+                            fee = displayReceipt.fee,
+                            feeCurrency = CurrencyEnum.fromNameOrNull(displayReceipt.feeCurrency),
+                            creditedCurrency = CurrencyEnum.fromNameOrNull(displayReceipt.creditedCurrency),
+                            debitedCurrency = CurrencyEnum.fromNameOrNull(displayReceipt.debitedCurrency),
+                            operationTitle = resolveOperationTitle(displayReceipt, operation),
+                            paidFromAccount = resolvePaidFromAccount(displayReceipt),
+                            recipient = resolveRecipientAccount(displayReceipt),
+                            recipientName = displayReceipt.recipientFullName.ifBlank {
+                                operation.recipientName
+                            },
+                            creditedAmount = creditedAmount,
+                            amountIsNet = false,
+                            totalDebitedAmount = if (isConversion) {
+                                operation.totalDebitedAmount ?: operation.amount
+                            } else {
+                                displayReceipt.totalDebitedAmount
+                                    ?: operation.totalDebitedAmount
+                                    ?: (displayReceipt.amount + displayReceipt.fee)
+                            }
+                        )
+                    })
+                    val enrichedReceipt = fillOnlyBlankReceiptFields(displayReceipt)
                     bindOperation(uiModel.uiState.value.operation)
                     when (uiModel.consumeReceiptAction()) {
                         ReceiptAction.PREVIEW -> previewReceiptPdf(enrichedReceipt)
@@ -381,30 +383,30 @@ class SuccessTransferFragment : Fragment() {
 
     private fun fillOnlyBlankReceiptFields(receipt: ReceiptModel): ReceiptModel {
         val currentOperation = uiModel.uiState.value.operation ?: return receipt
-        return receipt.copy(
-            amount = currentOperation.amount,
+        val summary = receipt.withConversionSummary(currentOperation)
+        return summary.copy(
             paidFromAccount = firstNotBlank(
-                receipt.paidFromAccount,
-                receipt.absFromAccount,
+                summary.paidFromAccount,
+                summary.absFromAccount,
                 currentOperation.paidFromAccount
             ),
             accountDetails = firstNotBlank(
-                receipt.accountDetails,
-                receipt.absToAccount,
+                summary.accountDetails,
+                summary.absToAccount,
                 currentOperation.recipient
             ),
-            recipientFullName = receipt.recipientFullName.ifBlank {
+            recipientFullName = summary.recipientFullName.ifBlank {
                 currentOperation.recipientName
             },
-            senderFullName = receipt.senderFullName.ifBlank {
+            senderFullName = summary.senderFullName.ifBlank {
                 currentOperation.senderName
             },
-            receiptNumber = receipt.receiptNumber.ifBlank {
+            receiptNumber = summary.receiptNumber.ifBlank {
                 currentOperation.receiptNumber
             },
-            creditedAmount = currentOperation.creditedAmount,
-            targetCurrency = currentOperation.targetCurrency?.name.orEmpty(),
-            totalDebitedAmount = currentOperation.totalDebitedAmount
+            creditedAmount = summary.creditedAmount ?: currentOperation.creditedAmount,
+            targetCurrency = currentOperation.targetCurrency?.name ?: summary.targetCurrency,
+            totalDebitedAmount = currentOperation.totalDebitedAmount ?: currentOperation.amount
         )
     }
 

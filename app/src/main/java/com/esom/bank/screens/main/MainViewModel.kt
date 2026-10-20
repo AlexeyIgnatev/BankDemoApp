@@ -156,6 +156,8 @@ class MainViewModel @Inject constructor(
     fun verifyPin(pin: String): Boolean = mainRepository.verifyPin(pin)
     fun savePattern(pattern: List<Int>) = mainRepository.savePattern(pattern)
     fun verifyPattern(pattern: List<Int>): Boolean = mainRepository.verifyPattern(pattern)
+    fun unlockRetryAfterMillis(): Long = mainRepository.unlockRetryAfterMillis()
+    fun resetUnlockAttempts() = mainRepository.resetUnlockAttempts()
     fun isBiometricEnabled(): Boolean = mainRepository.isBiometricEnabled()
     fun setBiometricEnabled(enabled: Boolean) = mainRepository.setBiometricEnabled(enabled)
     fun getPrimaryCurrency(): CurrencyEnum = mainRepository.getPrimaryCurrency()

@@ -38,6 +38,7 @@ import com.esom.bank.screens.main.dialog.TransferConfirmationFragment
 import com.esom.bank.screens.main.enums.CurrencyEnum
 import com.esom.bank.screens.main.model.WalletModel
 import com.esom.bank.screens.swap.model.SwapTemplate
+import com.esom.bank.screens.swap.model.conversionReceiptSide
 import com.esom.bank.screens.transfer.model.SuccessOperationModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
@@ -716,7 +717,14 @@ class SwapFragment : Fragment() {
         if (fromAmount <= BigDecimal.ZERO) return BigDecimal.ZERO
         val fee = calculateFeePreview(fromAmount)
         val netAmount = (fromAmount - fee).max(BigDecimal.ZERO)
-        return convertWithoutFee(netAmount)
+        val output = convertWithoutFee(netAmount)
+        val from = uiModel.uiState.value.fromCurrency
+        val to = uiModel.uiState.value.toCurrency
+        return when {
+            from == CurrencyEnum.SOM && to == CurrencyEnum.USDT_TRC20 -> output.setScale(6, RoundingMode.DOWN)
+            from == CurrencyEnum.USDT_TRC20 && to == CurrencyEnum.SOM -> output.setScale(2, RoundingMode.DOWN)
+            else -> output
+        }
     }
 
     private fun calculateSendFromReceived(receivedAmount: BigDecimal): BigDecimal {
@@ -745,7 +753,12 @@ class SwapFragment : Fragment() {
             }
         }
 
-        return upper.setScale(18, RoundingMode.HALF_UP).stripTrailingZeros()
+        val scale = when (uiModel.uiState.value.fromCurrency) {
+            CurrencyEnum.SOM -> 2
+            CurrencyEnum.USDT_TRC20 -> 6
+            CurrencyEnum.ESOM -> 18
+        }
+        return upper.setScale(scale, RoundingMode.CEILING).stripTrailingZeros()
     }
 
     private fun isSomToEsomConversion(): Boolean {
@@ -909,11 +922,7 @@ class SwapFragment : Fragment() {
     }
 
     private fun getConversionSide(from: CurrencyEnum, to: CurrencyEnum): ConversionSide? =
-        when {
-            from == CurrencyEnum.ESOM && to == CurrencyEnum.SOM -> ConversionSide.IN
-            from == CurrencyEnum.SOM && to == CurrencyEnum.ESOM -> ConversionSide.OUT
-            else -> null
-        }
+        conversionReceiptSide(from, to)
 
 
     private fun slideIn(view: View) {

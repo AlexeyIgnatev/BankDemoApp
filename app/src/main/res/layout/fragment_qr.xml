@@ -63,14 +63,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/title" />
 
-    <com.google.android.material.button.MaterialButtonToggleGroup
+    <LinearLayout
         android:id="@+id/mode_toggle_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_16dp"
         android:layout_marginTop="@dimen/_10dp"
         android:layout_marginEnd="@dimen/_16dp"
         android:elevation="12dp"
+        android:orientation="horizontal"
+        app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.button.MaterialButton
@@ -86,10 +91,15 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/show_tab_btn"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="200dp"
-            android:layout_height="@dimen/_48dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:backgroundTint="#EFFFFFFF"
             android:fontFamily="@font/mont_semibold"
+            android:maxLines="2"
+            android:minWidth="200dp"
+            android:minHeight="@dimen/_48dp"
+            android:paddingStart="@dimen/_16dp"
+            android:paddingEnd="@dimen/_16dp"
             android:text="Показать мой QR"
             android:textAllCaps="false"
             android:textColor="#A71924"
@@ -99,7 +109,7 @@
             app:iconSize="@dimen/_22dp"
             app:iconTint="#A71924"
             app:strokeWidth="0dp" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+    </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_view"
